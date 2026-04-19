@@ -1,0 +1,90 @@
+# === Dependencies ===
+node_modules/
+.pnp/
+.pnp.js
+.yarn/
+.npm/
+
+# === Environment & Secrets (NEVER commit) ===
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+secrets/
+credentials/
+service-account*.json
+firebase-adminsdk*.json
+*.env.local
+*.env.production
+*.env.staging
+
+# === Build output ===
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+
+# === Coverage & test artifacts ===
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+playwright-report/
+
+# === Logs ===
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# === Editor / IDE ===
+.vscode/
+!.vscode/settings.example.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# === OS junk ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# === Runtime / temp ===
+uploads/
+tmp/
+temp/
+*.pid
+*.seed
+*.pid.lock
+
+# === Misc ===
+.eslintcache
+.stylelintcache
+.vercel/
+.netlify/
+.serverless/
+.history/
+.sentryclirc
