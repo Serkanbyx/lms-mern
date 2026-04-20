@@ -32,6 +32,8 @@
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-fade-in: fadeIn 160ms ease-out;
   --animate-progress-indeterminate: progressIndeterminate 1.4s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-blob: blob 14s ease-in-out infinite;
 
   @keyframes shimmer {
     0% {
@@ -59,6 +61,29 @@
     }
     100% {
       transform: translateX(400%);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes blob {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(20px, -15px) scale(1.05);
+    }
+    66% {
+      transform: translate(-15px, 10px) scale(0.97);
     }
   }
 }
