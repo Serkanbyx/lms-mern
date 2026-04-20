@@ -1,16 +1,16 @@
 /**
  * `/api/courses` route group.
  *
- * Two distinct middleware stacks share this router:
+ * Three distinct middleware stacks share this router:
  *
- *   PUBLIC  (optionalAuth)            — catalog list, detail, curriculum
- *   AUTHOR  (protect + instructorOrAdmin) — create/update/delete + lifecycle
+ *   PUBLIC   (optionalAuth)              — catalog list, detail, curriculum
+ *   STUDENT  (protect)                   — enroll / unenroll / progress / per-course enrollment
+ *   AUTHOR   (protect + instructorOrAdmin) — create/update/delete + lifecycle
  *
- * The router declares the public routes FIRST and only then installs the
- * `protect + instructorOrAdmin` gate via `router.use(...)`. Express only
- * applies a `router.use` middleware to routes declared AFTER it, so this
- * ordering keeps the marketing surface anonymous-accessible while
- * locking down everything below it.
+ * Routes are declared in that order. Express only applies a `router.use`
+ * middleware to routes declared AFTER it, so the public surface stays
+ * anonymous-accessible, the student surface only requires a valid JWT,
+ * and the instructor gate locks down everything below it.
  *
  * Route ordering rules:
  *   1. `GET /` (public catalog) and `GET /mine` (instructor only) live
@@ -22,12 +22,20 @@
  *   3. The most specific lifecycle paths (`/:id/submit`, `/:id/archive`)
  *      come BEFORE the generic `/:id` PATCH/DELETE so they win the
  *      match (Express matches in declaration order).
+ *   4. Student-facing per-course endpoints (`/:id/enroll`,
+ *      `/:id/enrollment`, `/:id/progress`) all use a static second
+ *      segment, so they cannot collide with the dynamic public
+ *      `GET /:slug` matcher.
  *
  * Endpoints:
  *   GET    /                      — public catalog (filters + pagination)
  *   GET    /mine                  — owner's courses (instructor/admin)
  *   GET    /:slug/curriculum      — public curriculum (gated lessons)
  *   GET    /:slug                 — public course detail
+ *   POST   /:id/enroll            — enroll authenticated user (student)
+ *   DELETE /:id/enroll            — unenroll authenticated user (student)
+ *   GET    /:id/enrollment        — get current user's enrollment
+ *   GET    /:id/progress          — get current user's progress
  *   POST   /                      — create draft course
  *   POST   /:id/submit            — promote draft → pending review
  *   POST   /:id/archive           — pull a published course off the catalog
@@ -48,6 +56,12 @@ import {
   submitForReview,
   updateCourse,
 } from '../controllers/course.controller.js';
+import {
+  enrollInCourse,
+  getEnrollmentForCourse,
+  unenroll,
+} from '../controllers/enrollment.controller.js';
+import { getCourseProgress } from '../controllers/progress.controller.js';
 import { optionalAuth, protect } from '../middleware/auth.middleware.js';
 import { instructorOrAdmin } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -58,6 +72,7 @@ import {
   slugParamValidator,
   updateCourseValidator,
 } from '../validators/course.validator.js';
+import { courseIdParamValidator as enrollmentCourseIdParamValidator } from '../validators/enrollment.validator.js';
 
 const router = Router();
 
@@ -84,6 +99,33 @@ router.get(
   getCourseCurriculum,
 );
 router.get('/:slug', optionalAuth, validate(slugParamValidator), getCourseBySlug);
+
+// -----------------------------------------------------------------
+// STUDENT routes — any authenticated user (including instructors and
+// admins acting as learners) can hit these. They are declared BEFORE
+// the `protect + instructorOrAdmin` gate below so the role check
+// doesn't shut students out. Each route carries its own explicit
+// `protect` middleware.
+// -----------------------------------------------------------------
+
+router
+  .route('/:id/enroll')
+  .post(protect, validate(enrollmentCourseIdParamValidator), enrollInCourse)
+  .delete(protect, validate(enrollmentCourseIdParamValidator), unenroll);
+
+router.get(
+  '/:id/enrollment',
+  protect,
+  validate(enrollmentCourseIdParamValidator),
+  getEnrollmentForCourse,
+);
+
+router.get(
+  '/:id/progress',
+  protect,
+  validate(enrollmentCourseIdParamValidator),
+  getCourseProgress,
+);
 
 // -----------------------------------------------------------------
 // PROTECTED routes — every handler from here on requires an

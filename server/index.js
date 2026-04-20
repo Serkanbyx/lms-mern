@@ -26,8 +26,10 @@ import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
+import enrollmentRoutes from './routes/enrollment.routes.js';
 import instructorRoutes from './routes/instructor.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
+import progressRoutes from './routes/progress.routes.js';
 import quizRoutes from './routes/quiz.routes.js';
 import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
@@ -94,16 +96,23 @@ app.get('/api/health', (_req, res) => {
 // 9) Feature route modules — mounted under /api/*. Additional groups
 //    (quizzes, enrollments, …) are added by later steps.
 //
-//    Mount order note: the course-scoped sections sub-router
-//    (`/api/courses/:courseId/sections/...`) is registered BEFORE the
-//    bare course router so its more specific path wins the match
-//    instead of being shadowed by `/api/courses/:id`.
+//    Mount order notes:
+//    - The course-scoped sections sub-router
+//      (`/api/courses/:courseId/sections/...`) is registered BEFORE
+//      the bare course router so its more specific path wins the match
+//      instead of being shadowed by `/api/courses/:id`.
+//    - `progressRoutes` is mounted at `/api/lessons` BEFORE
+//      `lessonRoutes` so its student-only `/:id/complete` and
+//      `/:id/access` paths are matched without first traversing the
+//      `protect + instructorOrAdmin` gate that lessonRoutes installs.
 app.use('/api/auth', authRoutes);
 app.use('/api/courses/:courseId/sections', courseSectionsRouter);
 app.use('/api/courses', courseRoutes);
 app.use('/api/sections', sectionRoutes);
+app.use('/api/lessons', progressRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/instructors', instructorRoutes);
 app.use('/api/upload', uploadRoutes);
 
