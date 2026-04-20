@@ -22,6 +22,9 @@ import morgan from 'morgan';
 
 import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
+import { errorHandler } from './middleware/error.middleware.js';
+import { notFound } from './middleware/notFound.middleware.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -82,27 +85,16 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// 9) Feature route modules — mounted under /api/* by later steps.
-//    e.g. app.use('/api/auth', authRoutes);
+// 9) Feature route modules — mounted under /api/*. Additional groups
+//    (courses, lessons, quizzes, …) are added by later steps.
+app.use('/api/auth', authRoutes);
 
 // 10) 404 handler — must come after all real routes.
-app.use((req, res, _next) => {
-  res.status(404).json({
-    message: `Route not found: ${req.method} ${req.originalUrl}`,
-  });
-});
+app.use(notFound);
 
 // 11) Error handler — must be the last middleware. Express 5 forwards
 //     thrown errors and rejected promises here automatically.
-// eslint-disable-next-line no-unused-vars
-app.use((err, _req, res, _next) => {
-  const status = err.status || err.statusCode || 500;
-  const payload = { message: err.message || 'Internal server error' };
-  if (!env.isProd && err.stack) payload.stack = err.stack;
-  // eslint-disable-next-line no-console
-  if (status >= 500) console.error('[error]', err);
-  res.status(status).json(payload);
-});
+app.use(errorHandler);
 
 const start = async () => {
   await connectDB();
