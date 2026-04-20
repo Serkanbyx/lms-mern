@@ -25,6 +25,7 @@ import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import authRoutes from './routes/auth.routes.js';
+import courseRoutes from './routes/course.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
@@ -89,6 +90,7 @@ app.get('/api/health', (_req, res) => {
 // 9) Feature route modules — mounted under /api/*. Additional groups
 //    (courses, lessons, quizzes, …) are added by later steps.
 app.use('/api/auth', authRoutes);
+app.use('/api/courses', courseRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // 10) 404 handler — must come after all real routes.
