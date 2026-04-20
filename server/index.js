@@ -26,6 +26,8 @@ import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
+import lessonRoutes from './routes/lesson.routes.js';
+import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 
 const app = express();
@@ -88,9 +90,17 @@ app.get('/api/health', (_req, res) => {
 });
 
 // 9) Feature route modules — mounted under /api/*. Additional groups
-//    (courses, lessons, quizzes, …) are added by later steps.
+//    (quizzes, enrollments, …) are added by later steps.
+//
+//    Mount order note: the course-scoped sections sub-router
+//    (`/api/courses/:courseId/sections/...`) is registered BEFORE the
+//    bare course router so its more specific path wins the match
+//    instead of being shadowed by `/api/courses/:id`.
 app.use('/api/auth', authRoutes);
+app.use('/api/courses/:courseId/sections', courseSectionsRouter);
 app.use('/api/courses', courseRoutes);
+app.use('/api/sections', sectionRoutes);
+app.use('/api/lessons', lessonRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // 10) 404 handler — must come after all real routes.
