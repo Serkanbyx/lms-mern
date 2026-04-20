@@ -20,12 +20,15 @@
 
 import { body, query } from 'express-validator';
 
+import { COURSE_STATUSES } from '../models/Course.model.js';
 import { USER_ROLES } from '../models/User.model.js';
 import { mongoIdParam } from './course.validator.js';
 
 const SEARCH_MAX_LENGTH = 100;
 const PAGINATION_DEFAULT_LIMIT = 20;
 const PAGINATION_MAX_LIMIT = 100;
+const REJECTION_REASON_MIN = 10;
+const REJECTION_REASON_MAX = 500;
 
 const USER_LIST_SORT_VALUES = Object.freeze([
   'newest',
@@ -33,6 +36,15 @@ const USER_LIST_SORT_VALUES = Object.freeze([
   'name',
   'email',
   'role',
+]);
+
+const COURSE_LIST_SORT_VALUES = Object.freeze([
+  'newest',
+  'oldest',
+  'title',
+  'price',
+  'enrollments',
+  'status',
 ]);
 
 const pageChain = () =>
@@ -106,6 +118,74 @@ export const updateUserRoleValidator = [mongoIdParam('id'), roleBodyChain()];
 
 export const toggleUserActiveValidator = [mongoIdParam('id'), isActiveBodyChain()];
 
+// ---------------------------------------------------------------------------
+// Admin course moderation validators.
+//
+// These guard `/api/admin/courses*`. The route group is already gated by
+// `protect + adminOnly + adminLimiter`, so the validators only enforce
+// request shape (status enum membership, search bounds, rejection reason
+// length, force-delete confirmation flag). All workflow rules — must-be-
+// pending-to-approve, cascade-delete, etc. — live in the controller because
+// they need a database round-trip.
+// ---------------------------------------------------------------------------
+
+const courseStatusQueryChain = () =>
+  query('status')
+    .optional()
+    .isIn(COURSE_STATUSES)
+    .withMessage(`Status must be one of: ${COURSE_STATUSES.join(', ')}.`);
+
+const courseSortChain = () =>
+  query('sort')
+    .optional()
+    .isIn(COURSE_LIST_SORT_VALUES)
+    .withMessage(`Sort must be one of: ${COURSE_LIST_SORT_VALUES.join(', ')}.`);
+
+const rejectionReasonChain = () =>
+  body('reason')
+    .exists({ checkNull: true })
+    .withMessage('Rejection reason is required.')
+    .bail()
+    .isString()
+    .withMessage('Rejection reason must be a string.')
+    .bail()
+    .trim()
+    .isLength({ min: REJECTION_REASON_MIN, max: REJECTION_REASON_MAX })
+    .withMessage(
+      `Rejection reason must be between ${REJECTION_REASON_MIN} and ${REJECTION_REASON_MAX} characters.`,
+    );
+
+// Force-delete bypasses the "no active enrollments" guard, so we require an
+// explicit `confirm: true` flag in the body. Missing or `false` is rejected
+// before the controller runs — the admin must opt in to the cascade.
+const forceDeleteConfirmChain = () =>
+  body('confirm')
+    .exists({ checkNull: true })
+    .withMessage('Confirmation flag is required for force-delete.')
+    .bail()
+    .isBoolean()
+    .withMessage('Confirmation flag must be a boolean.')
+    .bail()
+    .custom((value) => value === true)
+    .withMessage('Confirmation flag must be true to force-delete a course.');
+
+export const listCoursesAdminValidator = [
+  searchChain(),
+  courseStatusQueryChain(),
+  courseSortChain(),
+  pageChain(),
+  limitChain(),
+];
+
+export const courseIdParamValidator = [mongoIdParam('id')];
+
+export const rejectCourseValidator = [mongoIdParam('id'), rejectionReasonChain()];
+
+export const forceDeleteCourseValidator = [
+  mongoIdParam('id'),
+  forceDeleteConfirmChain(),
+];
+
 export const ADMIN_USER_PAGINATION_DEFAULTS = Object.freeze({
   defaultLimit: PAGINATION_DEFAULT_LIMIT,
   maxLimit: PAGINATION_MAX_LIMIT,
@@ -113,11 +193,24 @@ export const ADMIN_USER_PAGINATION_DEFAULTS = Object.freeze({
 
 export const ADMIN_USER_LIST_SORTS = USER_LIST_SORT_VALUES;
 
+export const ADMIN_COURSE_LIST_SORTS = COURSE_LIST_SORT_VALUES;
+
+export const ADMIN_COURSE_PAGINATION_DEFAULTS = Object.freeze({
+  defaultLimit: PAGINATION_DEFAULT_LIMIT,
+  maxLimit: PAGINATION_MAX_LIMIT,
+});
+
 export default {
   listUsersValidator,
   userIdParamValidator,
   updateUserRoleValidator,
   toggleUserActiveValidator,
+  listCoursesAdminValidator,
+  courseIdParamValidator,
+  rejectCourseValidator,
+  forceDeleteCourseValidator,
   ADMIN_USER_PAGINATION_DEFAULTS,
   ADMIN_USER_LIST_SORTS,
+  ADMIN_COURSE_LIST_SORTS,
+  ADMIN_COURSE_PAGINATION_DEFAULTS,
 };
