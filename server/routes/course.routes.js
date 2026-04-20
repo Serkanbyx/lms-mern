@@ -36,6 +36,7 @@
  *   DELETE /:id/enroll            — unenroll authenticated user (student)
  *   GET    /:id/enrollment        — get current user's enrollment
  *   GET    /:id/progress          — get current user's progress
+ *   POST   /:id/certificate       — issue completion certificate (100% only)
  *   POST   /                      — create draft course
  *   POST   /:id/submit            — promote draft → pending review
  *   POST   /:id/archive           — pull a published course off the catalog
@@ -59,6 +60,7 @@ import {
 import {
   enrollInCourse,
   getEnrollmentForCourse,
+  issueCertificate,
   unenroll,
 } from '../controllers/enrollment.controller.js';
 import { getCourseProgress } from '../controllers/progress.controller.js';
@@ -125,6 +127,13 @@ router.get(
   protect,
   validate(enrollmentCourseIdParamValidator),
   getCourseProgress,
+);
+
+router.post(
+  '/:id/certificate',
+  protect,
+  validate(enrollmentCourseIdParamValidator),
+  issueCertificate,
 );
 
 // -----------------------------------------------------------------

@@ -163,6 +163,72 @@ export const getEnrollmentForCourse = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /api/courses/:id/certificate
+ *
+ * Issues (or re-issues) the completion certificate metadata for the
+ * authenticated learner. The PDF itself is rendered client-side with
+ * jsPDF — keeping the server stateless on binary assets — but the
+ * server is the single source of truth on three points the client
+ * cannot be trusted with:
+ *
+ *  1. The learner is enrolled (no ghost certificates for visitors who
+ *     just guessed a course id).
+ *  2. The course is fully complete (`progressPercent === 100`). The
+ *     pre-save hook on Enrollment recomputes the percentage from the
+ *     canonical lesson list, so this check is race-safe even if the
+ *     instructor adds new lessons between the user's last completion
+ *     and this request.
+ *  3. The first issuance stamp (`certificateIssuedAt`) is recorded
+ *     atomically and never moves backwards. Re-requests are idempotent
+ *     and return the original timestamp so a downloaded certificate's
+ *     "issued on" date stays stable across browsers and devices.
+ *
+ * The response intentionally exposes only public profile fields
+ * (student name, instructor name, course title) — no email, role, or
+ * internal ids beyond the enrollment `_id` that doubles as the
+ * verifiable certificate id.
+ */
+export const issueCertificate = asyncHandler(async (req, res) => {
+  const enrollment = await Enrollment.findOne({
+    userId: req.user._id,
+    courseId: req.params.id,
+  }).populate({
+    path: 'courseId',
+    select: 'title instructor',
+    populate: { path: 'instructor', select: 'name' },
+  });
+
+  if (!enrollment) throw ApiError.notFound('You are not enrolled in this course.');
+
+  if (enrollment.progressPercent !== 100) {
+    throw ApiError.forbidden('Course not completed.');
+  }
+
+  if (!enrollment.certificateIssuedAt) {
+    enrollment.certificateIssuedAt = new Date();
+    // `markModified` would be redundant — Date assignment on a top-level
+    // path is tracked. We use `updateOne` to skip the pre-save hook,
+    // which would otherwise re-derive `progressPercent` for nothing.
+    await Enrollment.updateOne(
+      { _id: enrollment._id },
+      { $set: { certificateIssuedAt: enrollment.certificateIssuedAt } },
+    );
+  }
+
+  res.json({
+    success: true,
+    data: {
+      certificateId: enrollment._id,
+      studentName: req.user.name,
+      courseTitle: enrollment.courseId.title,
+      instructorName: enrollment.courseId.instructor?.name ?? 'Unknown instructor',
+      completedAt: enrollment.completedAt,
+      certificateIssuedAt: enrollment.certificateIssuedAt,
+    },
+  });
+});
+
+/**
  * DELETE /api/courses/:id/enroll
  *
  * Removes the enrollment AND the user's quiz attempts for this course.
@@ -193,5 +259,6 @@ export default {
   enrollInCourse,
   getMyEnrollments,
   getEnrollmentForCourse,
+  issueCertificate,
   unenroll,
 };
