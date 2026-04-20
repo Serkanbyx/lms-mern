@@ -1,11 +1,14 @@
 /**
- * Course controller — instructor-facing CRUD + lifecycle endpoints.
+ * Course controller — instructor-facing CRUD + lifecycle endpoints **and**
+ * the public catalog / detail / curriculum / instructor-profile readers.
  *
- * Public catalog/detail handlers (`GET /api/courses`, `GET /:slug`, …) are
- * intentionally NOT in this file — they belong to a later step that mounts
- * them on the same router. Keeping the surfaces split prevents an
- * authorization regression where a public endpoint accidentally inherits a
- * `protect`-only middleware stack at the router level.
+ * Even though both surfaces live in this file, they are wired into the
+ * router with completely different middleware stacks (the public readers
+ * use `optionalAuth`, the authoring endpoints use `protect` +
+ * `instructorOrAdmin`). Keeping them in one file lets us share helpers
+ * like `isOwner` / `isAdmin` / the cascade-delete utility without
+ * duplicating ownership semantics — but the route layer is what
+ * ultimately decides whether a given handler can be reached anonymously.
  *
  * Security guarantees enforced here:
  *  - Mass-assignment: every body is run through `pickFields` so only the
@@ -32,14 +35,20 @@
 
 import mongoose from 'mongoose';
 
-import { Course } from '../models/Course.model.js';
+import {
+  Course,
+  COURSE_CATEGORIES,
+  COURSE_LEVELS,
+} from '../models/Course.model.js';
 import { Enrollment } from '../models/Enrollment.model.js';
 import { Lesson } from '../models/Lesson.model.js';
 import { Quiz } from '../models/Quiz.model.js';
 import { QuizAttempt } from '../models/QuizAttempt.model.js';
 import { Section } from '../models/Section.model.js';
+import { User } from '../models/User.model.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { escapeRegex } from '../utils/escapeRegex.js';
 import { pickFields } from '../utils/pickFields.js';
 
 const CREATE_FIELDS = [
@@ -309,6 +318,321 @@ export const archiveCourse = asyncHandler(async (req, res) => {
   res.json({ success: true, course });
 });
 
+// ---------------------------------------------------------------------------
+// Public catalog / detail / curriculum / instructor-profile handlers.
+//
+// These are mounted with `optionalAuth` (NOT `protect`) so anonymous
+// visitors can browse the marketing surface. `req.user` may therefore be
+// `null` — every helper below treats that case as "not the owner, not an
+// admin, not enrolled" and degrades gracefully.
+// ---------------------------------------------------------------------------
+
+const CATALOG_DEFAULT_LIMIT = 12;
+const CATALOG_MAX_LIMIT = 50;
+const PRICE_MIN = 0;
+const PRICE_MAX = 9999;
+const SEARCH_MAX_LENGTH = 100;
+
+// Whitelisted sort orders. Any other value (including `$where`-shaped
+// payloads or unknown keys) silently falls back to `newest` so a
+// crafted query string can never inject a Mongo operator into `.sort()`.
+const CATALOG_SORT_MAP = Object.freeze({
+  newest: { publishedAt: -1, createdAt: -1 },
+  popular: { enrollmentCount: -1, publishedAt: -1 },
+  'price-asc': { price: 1, publishedAt: -1 },
+  'price-desc': { price: -1, publishedAt: -1 },
+});
+
+// Lean projection used for catalog cards. Trimming the wire payload
+// keeps the marketing list page snappy even when filters return dozens
+// of results, and it deliberately excludes `requirements`,
+// `learningOutcomes`, and `rejectionReason` which only matter on the
+// detail page (and the latter must never leak publicly anyway).
+const CATALOG_CARD_FIELDS = [
+  'title',
+  'slug',
+  'shortDescription',
+  'price',
+  'thumbnail',
+  'category',
+  'level',
+  'language',
+  'tags',
+  'totalLessons',
+  'totalDuration',
+  'enrollmentCount',
+  'averageRating',
+  'publishedAt',
+  'createdAt',
+  'instructor',
+].join(' ');
+
+const clampPage = (raw) => Math.max(1, parseInt(raw, 10) || 1);
+
+const clampLimit = (raw) => {
+  const requested = parseInt(raw, 10) || CATALOG_DEFAULT_LIMIT;
+  return Math.min(CATALOG_MAX_LIMIT, Math.max(1, requested));
+};
+
+const parsePrice = (raw) => {
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) ? value : null;
+};
+
+/**
+ * Translate `?search=` / `?category=` / `?level=` / `?minPrice=` /
+ * `?maxPrice=` / `?sort=` / `?page=` / `?limit=` into a safe Mongo
+ * filter + pagination tuple for the public catalog. Every user-supplied
+ * value is either:
+ *   - clamped to a numeric range,
+ *   - matched against a frozen enum (categories, levels, sort keys), or
+ *   - escaped via `escapeRegex` before being embedded in a `RegExp`.
+ *
+ * Nothing in this function can produce a Mongo operator key from
+ * untrusted input — that is the entire point.
+ */
+const buildCatalogQuery = (query) => {
+  const filter = { status: 'published' };
+
+  if (typeof query.search === 'string' && query.search.trim().length > 0) {
+    const safe = escapeRegex(query.search.trim().slice(0, SEARCH_MAX_LENGTH));
+    if (safe.length > 0) {
+      const re = new RegExp(safe, 'i');
+      filter.$or = [{ title: re }, { description: re }, { tags: re }];
+    }
+  }
+
+  if (typeof query.category === 'string' && COURSE_CATEGORIES.includes(query.category)) {
+    filter.category = query.category;
+  }
+
+  if (typeof query.level === 'string' && COURSE_LEVELS.includes(query.level)) {
+    filter.level = query.level;
+  }
+
+  const minPrice = parsePrice(query.minPrice);
+  const maxPrice = parsePrice(query.maxPrice);
+  if (minPrice !== null || maxPrice !== null) {
+    filter.price = {};
+    if (minPrice !== null) filter.price.$gte = Math.max(PRICE_MIN, minPrice);
+    if (maxPrice !== null) filter.price.$lte = Math.min(PRICE_MAX, maxPrice);
+  }
+
+  const sort = CATALOG_SORT_MAP[query.sort] ?? CATALOG_SORT_MAP.newest;
+  const page = clampPage(query.page);
+  const limit = clampLimit(query.limit);
+
+  return { filter, sort, page, limit, skip: (page - 1) * limit };
+};
+
+/**
+ * Resolve a course by slug and assert the requester is allowed to read
+ * it. Anonymous visitors only see `published` courses; the owning
+ * instructor and admins can preview drafts / pending / rejected /
+ * archived courses through the same URL so the authoring UI doesn't
+ * need a parallel endpoint.
+ *
+ * Always returns 404 (never 403) for unauthorized status — leaking the
+ * 403/404 distinction would let an attacker enumerate which slugs
+ * correspond to non-published courses.
+ */
+const findVisibleCourseBySlugOr404 = async (slug, user, { populateInstructor = true } = {}) => {
+  let query = Course.findOne({ slug });
+  if (populateInstructor) {
+    query = query.populate('instructor', 'name avatar headline bio');
+  }
+  const course = await query;
+
+  if (!course) throw ApiError.notFound('Course not found.');
+
+  if (course.status !== 'published' && !isOwner(course, user) && !isAdmin(user)) {
+    throw ApiError.notFound('Course not found.');
+  }
+
+  return course;
+};
+
+/**
+ * GET /api/courses
+ * Public catalog. Always filters `status: 'published'` server-side; the
+ * client cannot widen visibility by sending `?status=draft` because
+ * that key is never read here.
+ */
+export const listPublishedCourses = asyncHandler(async (req, res) => {
+  const { filter, sort, page, limit, skip } = buildCatalogQuery(req.query);
+
+  const [items, total] = await Promise.all([
+    Course.find(filter)
+      .select(CATALOG_CARD_FIELDS)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .populate('instructor', 'name avatar headline')
+      .lean(),
+    Course.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      items,
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  });
+});
+
+/**
+ * GET /api/courses/:slug
+ * Public detail page. Returns the full marketing payload (description,
+ * requirements, learning outcomes, denormalized counters, instructor
+ * card) for `published` courses; owners/admins additionally get
+ * preview access to non-published states for the authoring UI.
+ */
+export const getCourseBySlug = asyncHandler(async (req, res) => {
+  const course = await findVisibleCourseBySlugOr404(req.params.slug, req.user);
+  res.json({ success: true, course });
+});
+
+/**
+ * GET /api/courses/:slug/curriculum
+ *
+ * Returns the section/lesson tree with content gated per-lesson:
+ *   - `videoUrl` / `content` are included ONLY when the requester is the
+ *     course owner, an admin, currently enrolled, OR the lesson is
+ *     flagged `isFreePreview`.
+ *   - All other viewers receive a thin shape (`title`, `type`,
+ *     `duration`, `isFreePreview`, `hasQuiz`) suitable for rendering a
+ *     locked / "Enroll to unlock" affordance on the marketing page.
+ *
+ * `videoPublicId` is intentionally never exposed on this surface — it
+ * is an authoring-only handle used to manage Cloudinary assets.
+ */
+export const getCourseCurriculum = asyncHandler(async (req, res) => {
+  const course = await findVisibleCourseBySlugOr404(req.params.slug, req.user, {
+    populateInstructor: false,
+  });
+
+  const [sections, lessons] = await Promise.all([
+    Section.find({ courseId: course._id }).sort({ order: 1 }).lean(),
+    Lesson.find({ courseId: course._id }).sort({ order: 1 }).lean(),
+  ]);
+
+  const viewerIsOwner = isOwner(course, req.user);
+  const viewerIsAdmin = isAdmin(req.user);
+
+  // Only run the enrollment lookup when it could change the outcome —
+  // owners and admins already see everything, anonymous visitors can
+  // never be enrolled. `Enrollment.exists` returns the lean doc id
+  // (or null), avoiding the cost of hydrating a full document.
+  let viewerIsEnrolled = false;
+  if (req.user && !viewerIsOwner && !viewerIsAdmin) {
+    const enrollment = await Enrollment.exists({
+      userId: req.user._id,
+      courseId: course._id,
+    });
+    viewerIsEnrolled = Boolean(enrollment);
+  }
+
+  const projectLesson = (lesson) => {
+    const base = {
+      _id: lesson._id,
+      title: lesson.title,
+      type: lesson.type,
+      duration: lesson.duration,
+      isFreePreview: lesson.isFreePreview,
+      hasQuiz: lesson.hasQuiz,
+      order: lesson.order,
+      sectionId: lesson.sectionId,
+    };
+    const canSeeContent =
+      viewerIsOwner || viewerIsAdmin || viewerIsEnrolled || lesson.isFreePreview === true;
+    if (!canSeeContent) return base;
+
+    return {
+      ...base,
+      videoUrl: lesson.videoUrl,
+      videoProvider: lesson.videoProvider,
+      content: lesson.content,
+    };
+  };
+
+  const lessonsBySection = new Map();
+  for (const lesson of lessons) {
+    const key = String(lesson.sectionId);
+    if (!lessonsBySection.has(key)) lessonsBySection.set(key, []);
+    lessonsBySection.get(key).push(projectLesson(lesson));
+  }
+
+  const data = sections.map((section) => ({
+    _id: section._id,
+    title: section.title,
+    order: section.order,
+    lessons: lessonsBySection.get(String(section._id)) ?? [],
+  }));
+
+  res.json({
+    success: true,
+    data: {
+      sections: data,
+      isEnrolled: viewerIsEnrolled,
+    },
+  });
+});
+
+/**
+ * GET /api/instructors/:id/courses
+ * Public instructor profile feed — returns the (paginated) `published`
+ * courses authored by the user, plus a thin instructor card so the
+ * client can render the profile header without a second round-trip.
+ *
+ * Hard-filters by `role: instructor|admin` and `isActive: true` so a
+ * deactivated account or a misclassified student id can never surface
+ * a profile page — both return 404 consistent with the rest of the
+ * public surface.
+ */
+export const getInstructorPublicCourses = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const page = clampPage(req.query.page);
+  const limit = clampLimit(req.query.limit);
+  const skip = (page - 1) * limit;
+
+  const instructor = await User.findOne({
+    _id: id,
+    role: { $in: ['instructor', 'admin'] },
+    isActive: true,
+  })
+    .select('name avatar headline bio')
+    .lean();
+
+  if (!instructor) throw ApiError.notFound('Instructor not found.');
+
+  const filter = { instructor: id, status: 'published' };
+  const [items, total] = await Promise.all([
+    Course.find(filter)
+      .select(CATALOG_CARD_FIELDS)
+      .sort({ publishedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Course.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: {
+      instructor,
+      items,
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  });
+});
+
 export default {
   createCourse,
   getMyCourses,
@@ -316,4 +640,8 @@ export default {
   deleteCourse,
   submitForReview,
   archiveCourse,
+  listPublishedCourses,
+  getCourseBySlug,
+  getCourseCurriculum,
+  getInstructorPublicCourses,
 };

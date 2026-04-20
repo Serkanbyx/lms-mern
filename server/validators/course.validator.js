@@ -18,12 +18,17 @@
  *    policy and to prevent mixed-content issues on the client.
  */
 
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 
 import {
   COURSE_CATEGORIES,
   COURSE_LEVELS,
 } from '../models/Course.model.js';
+
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const CATALOG_SORT_VALUES = ['newest', 'popular', 'price-asc', 'price-desc'];
+const CATALOG_LIMIT_MAX = 50;
+const SEARCH_MAX_LENGTH = 100;
 
 const TAG_MAX_LENGTH = 20;
 const TAGS_MAX_COUNT = 10;
@@ -201,9 +206,90 @@ export const updateCourseValidator = [
 
 export const courseIdParamValidator = [mongoIdParam('id')];
 
+// ---------------------------------------------------------------------------
+// Public catalog / detail / curriculum / instructor-profile validators.
+//
+// These guard the optionalAuth route group: malformed query strings are
+// rejected with 422 BEFORE the controller runs, so the catalog handler
+// can assume the inputs it sees are within range and the right type.
+//
+// IMPORTANT — Express 5 compatibility: `req.query` is a read-only getter
+// in Express 5, so we deliberately avoid `.toInt()` / `.toFloat()`
+// sanitizers that would mutate the query object and crash the request.
+// The controller re-parses the (validated) string values itself.
+// ---------------------------------------------------------------------------
+
+const slugParamChain = () =>
+  param('slug')
+    .isString()
+    .withMessage('Slug must be a string.')
+    .bail()
+    .trim()
+    .isLength({ min: 1, max: 160 })
+    .withMessage('Slug length is out of range.')
+    .bail()
+    .matches(SLUG_PATTERN)
+    .withMessage('Slug must be lowercase alphanumeric with single hyphen separators.');
+
+export const slugParamValidator = [slugParamChain()];
+
+export const listCoursesValidator = [
+  query('search')
+    .optional()
+    .isString()
+    .withMessage('Search must be a string.')
+    .bail()
+    .trim()
+    .isLength({ max: SEARCH_MAX_LENGTH })
+    .withMessage(`Search must be at most ${SEARCH_MAX_LENGTH} characters.`),
+  query('category')
+    .optional()
+    .isIn(COURSE_CATEGORIES)
+    .withMessage(`Category must be one of: ${COURSE_CATEGORIES.join(', ')}.`),
+  query('level')
+    .optional()
+    .isIn(COURSE_LEVELS)
+    .withMessage(`Level must be one of: ${COURSE_LEVELS.join(', ')}.`),
+  query('minPrice')
+    .optional()
+    .isFloat({ min: 0, max: 9999 })
+    .withMessage('minPrice must be a number between 0 and 9999.'),
+  query('maxPrice')
+    .optional()
+    .isFloat({ min: 0, max: 9999 })
+    .withMessage('maxPrice must be a number between 0 and 9999.'),
+  query('sort')
+    .optional()
+    .isIn(CATALOG_SORT_VALUES)
+    .withMessage(`Sort must be one of: ${CATALOG_SORT_VALUES.join(', ')}.`),
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer.'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: CATALOG_LIMIT_MAX })
+    .withMessage(`Limit must be between 1 and ${CATALOG_LIMIT_MAX}.`),
+];
+
+export const instructorPublicCoursesValidator = [
+  mongoIdParam('id'),
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer.'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: CATALOG_LIMIT_MAX })
+    .withMessage(`Limit must be between 1 and ${CATALOG_LIMIT_MAX}.`),
+];
+
 export default {
   createCourseValidator,
   updateCourseValidator,
   courseIdParamValidator,
+  slugParamValidator,
+  listCoursesValidator,
+  instructorPublicCoursesValidator,
   mongoIdParam,
 };

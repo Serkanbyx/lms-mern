@@ -26,6 +26,7 @@ import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
+import instructorRoutes from './routes/instructor.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 import quizRoutes from './routes/quiz.routes.js';
 import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
@@ -103,6 +104,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/sections', sectionRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/quizzes', quizRoutes);
+app.use('/api/instructors', instructorRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // 10) 404 handler — must come after all real routes.
