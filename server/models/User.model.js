@@ -161,6 +161,7 @@ export const USER_ROLES = ROLES;
 export const USER_THEMES = THEMES;
 export const USER_FONT_SIZES = FONT_SIZES;
 export const USER_DENSITIES = DENSITIES;
+export const USER_LANGUAGES = LANGUAGES;
 export const USER_PLAYBACK_SPEEDS = PLAYBACK_SPEEDS;
 
 export const User = mongoose.models.User || mongoose.model('User', userSchema);

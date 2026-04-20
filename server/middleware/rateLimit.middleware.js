@@ -10,15 +10,112 @@
  * and single-instance deployments. The Redis upgrade only requires changing
  * the `store` option of each limiter — call sites stay untouched.
  *
+ * The full STEP 18 matrix:
+ *
+ *   | Limiter            | Window | Max | Routes                                  |
+ *   |--------------------|--------|-----|-----------------------------------------|
+ *   | apiLimiter         | 15 min | 300 | global API (mounted in `index.js`)      |
+ *   | authLimiter        | 15 min |  10 | `/api/auth/login`, `/api/auth/register` |
+ *   | passwordLimiter    | 15 min |   5 | `PATCH /api/auth/me/password`,          |
+ *   |                    |        |     | `DELETE /api/auth/me`                    |
+ *   | uploadLimiter      | 10 min |  20 | `/api/upload/*`                         |
+ *   | quizSubmitLimiter  | 10 min |  30 | `POST /api/quizzes/:id/submit`          |
+ *   | adminLimiter       | 10 min | 100 | `/api/admin/*`                          |
+ *   | enrollLimiter      | 10 min |  30 | `POST /api/courses/:id/enroll`          |
+ *
  * SECURITY NOTES:
- *   - Limits are per-IP using the trust-proxy aware `req.ip` lookup.
+ *   - Limits are per-IP using the trust-proxy aware `req.ip` lookup, except
+ *     where the limiter sits AFTER `protect` and can key off `req.user._id`.
  *   - `standardHeaders: 'draft-7'` exposes RateLimit-* headers so clients
  *     can show retry hints; legacy `X-RateLimit-*` headers are disabled.
+ *   - The `authLimiter` keys by IP+email so a single attacker can't lock
+ *     out a victim by burning the bucket on their behalf — and so a single
+ *     IP can still be probed across many emails (but with the global IP
+ *     bucket capping the overall blast radius via `apiLimiter`).
+ *   - The `passwordLimiter` ALWAYS sees an authenticated user (it sits
+ *     after `protect`), so we key by user id with an IP fallback.
  *   - Upload limiter is intentionally tighter than the global API limiter
  *     because each upload consumes bandwidth and Cloudinary quota.
  */
 
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+
+const FIFTEEN_MINUTES = 15 * 60 * 1000;
+const TEN_MINUTES = 10 * 60 * 1000;
+
+const tooManyMessage = (message) => ({
+  success: false,
+  message,
+});
+
+/**
+ * Global API rate limiter — wraps every `/api/*` request. Mounted once
+ * in `index.js` BEFORE any route module so it forms the outermost layer
+ * of defence (per-route limiters narrow specific endpoints further).
+ *
+ * 300 / 15 min / IP is generous for a typical SPA boot (catalog list +
+ * a handful of detail / curriculum reads + auth) while still containing
+ * scripted enumeration of public endpoints.
+ */
+export const apiLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 300,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: tooManyMessage('Too many requests. Please try again in a few minutes.'),
+});
+
+/**
+ * Auth rate limiter — caps register/login attempts.
+ *
+ * Keyed by IP + lowercased email so a single IP can be probed across many
+ * emails (each bucket counts independently) but a single email can't be
+ * brute-forced from one IP either. The `ipKeyGenerator` helper collapses
+ * IPv6 to a `/64` prefix so an attacker can't rotate host bits to dodge
+ * the limit.
+ *
+ * Mounted BEFORE the validator runs, so the body may be malformed or
+ * missing. We coerce `req.body.email` to a string + lowercase before
+ * folding it into the key — never trust shape at this layer.
+ */
+export const authLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = ipKeyGenerator(req.ip);
+    const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
+    return `auth:${ip}:${email}`;
+  },
+  message: tooManyMessage(
+    'Too many authentication attempts. Please try again in 15 minutes.',
+  ),
+});
+
+/**
+ * Password / account rate limiter — caps the destructive self-service
+ * endpoints (`PATCH /api/auth/me/password`, `DELETE /api/auth/me`).
+ *
+ * Keyed by `req.user._id` (the routes always sit behind `protect`, so
+ * the user is guaranteed populated). 5 attempts per 15 minutes is
+ * comfortably above legitimate usage (a user typing a wrong current
+ * password a few times) while immediately stopping a token-thief from
+ * iterating through possible current passwords.
+ */
+export const passwordLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    req.user?._id
+      ? `pwd:user:${req.user._id.toString()}`
+      : `pwd:ip:${ipKeyGenerator(req.ip)}`,
+  message: tooManyMessage(
+    'Too many password change attempts. Please try again in 15 minutes.',
+  ),
+});
 
 /**
  * Upload rate limiter — caps thumbnail/video uploads per IP.
@@ -26,14 +123,13 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
  * course, but immediately blocks scripted abuse.
  */
 export const uploadLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
+  windowMs: TEN_MINUTES,
   limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: 'Too many upload attempts. Please try again in a few minutes.',
-  },
+  message: tooManyMessage(
+    'Too many upload attempts. Please try again in a few minutes.',
+  ),
 });
 
 /**
@@ -52,7 +148,7 @@ export const uploadLimiter = rateLimit({
  * their own IPv6 block to dodge the limit.
  */
 export const quizSubmitLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
+  windowMs: TEN_MINUTES,
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
@@ -60,10 +156,9 @@ export const quizSubmitLimiter = rateLimit({
     req.user?._id
       ? `quiz-submit:user:${req.user._id.toString()}`
       : `quiz-submit:ip:${ipKeyGenerator(req.ip)}`,
-  message: {
-    success: false,
-    message: 'Too many quiz submissions. Please slow down and try again in a few minutes.',
-  },
+  message: tooManyMessage(
+    'Too many quiz submissions. Please slow down and try again in a few minutes.',
+  ),
 });
 
 /**
@@ -81,7 +176,7 @@ export const quizSubmitLimiter = rateLimit({
  * inside their own /64 to dodge the limit.
  */
 export const adminLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
+  windowMs: TEN_MINUTES,
   limit: 100,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
@@ -89,10 +184,43 @@ export const adminLimiter = rateLimit({
     req.user?._id
       ? `admin:user:${req.user._id.toString()}`
       : `admin:ip:${ipKeyGenerator(req.ip)}`,
-  message: {
-    success: false,
-    message: 'Too many admin requests. Please slow down and try again in a few minutes.',
-  },
+  message: tooManyMessage(
+    'Too many admin requests. Please slow down and try again in a few minutes.',
+  ),
 });
 
-export default { uploadLimiter, quizSubmitLimiter, adminLimiter };
+/**
+ * Enrollment limiter — caps `POST /api/courses/:id/enroll` per
+ * authenticated user. 30 enrolls / 10 minutes is more than enough for
+ * any human (a learner browsing the catalog and adding a few courses
+ * to their roster) while immediately stopping the scripted enroll-
+ * unenroll-enroll loops that would otherwise inflate the
+ * `Course.enrollmentCount` denormalized counter and skew analytics.
+ *
+ * Mounted AFTER `protect` so `req.user._id` is the natural key. The
+ * IPv6 fallback exists only to keep the limiter functional if it is
+ * ever wired in front of the auth middleware.
+ */
+export const enrollLimiter = rateLimit({
+  windowMs: TEN_MINUTES,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    req.user?._id
+      ? `enroll:user:${req.user._id.toString()}`
+      : `enroll:ip:${ipKeyGenerator(req.ip)}`,
+  message: tooManyMessage(
+    'Too many enrollment attempts. Please slow down and try again in a few minutes.',
+  ),
+});
+
+export default {
+  apiLimiter,
+  authLimiter,
+  passwordLimiter,
+  uploadLimiter,
+  quizSubmitLimiter,
+  adminLimiter,
+  enrollLimiter,
+};

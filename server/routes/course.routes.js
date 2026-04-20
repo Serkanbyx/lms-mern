@@ -65,6 +65,7 @@ import {
 } from '../controllers/enrollment.controller.js';
 import { getCourseProgress } from '../controllers/progress.controller.js';
 import { optionalAuth, protect } from '../middleware/auth.middleware.js';
+import { enrollLimiter } from '../middleware/rateLimit.middleware.js';
 import { instructorOrAdmin } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
@@ -110,9 +111,15 @@ router.get('/:slug', optionalAuth, validate(slugParamValidator), getCourseBySlug
 // `protect` middleware.
 // -----------------------------------------------------------------
 
+// `enrollLimiter` is mounted on POST only — the destructive enroll path
+// is the one that mutates `Course.enrollmentCount` and seeds an
+// `Enrollment` document, so it's the surface a script could weaponize
+// to inflate analytics or stress the unique-index path. The DELETE side
+// is naturally bounded (you can only unenroll from courses you're
+// enrolled in) and is happy to share the global `apiLimiter` cap.
 router
   .route('/:id/enroll')
-  .post(protect, validate(enrollmentCourseIdParamValidator), enrollInCourse)
+  .post(protect, enrollLimiter, validate(enrollmentCourseIdParamValidator), enrollInCourse)
   .delete(protect, validate(enrollmentCourseIdParamValidator), unenroll);
 
 router.get(

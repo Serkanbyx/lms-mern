@@ -16,7 +16,6 @@
 import cors from 'cors';
 import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
@@ -24,6 +23,7 @@ import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
+import { apiLimiter } from './middleware/rateLimit.middleware.js';
 import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
@@ -35,6 +35,7 @@ import quizStudentRoutes from './routes/quiz.student.routes.js';
 import quizRoutes from './routes/quiz.routes.js';
 import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import userRoutes from './routes/user.routes.js';
 
 const app = express();
 
@@ -73,17 +74,12 @@ if (!env.isProd) {
   app.use(morgan('dev'));
 }
 
-// 7) Global rate limiter.
-//    NOTE: A Redis-backed factory (`apiLimiter`) lands in the rate-limit step;
-//    until then we use an in-memory limiter with the same window/limit defaults.
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 300,
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
-  message: { message: 'Too many requests, please try again later.' },
-});
-app.use(globalLimiter);
+// 7) Global rate limiter — `apiLimiter` lives in the shared rate-limit
+//    module so the per-route limiters (auth, password, upload, quiz,
+//    admin, enroll) and this global cap stay in one place. The global
+//    bucket forms the outermost layer of defence; per-route limiters
+//    narrow specific endpoints further down the chain.
+app.use(apiLimiter);
 
 // 8) Health check — used by uptime probes and load balancers.
 app.get('/api/health', (_req, res) => {
@@ -122,6 +118,7 @@ app.use('/api/quizzes', quizStudentRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/instructors', instructorRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 
