@@ -1,7 +1,9 @@
 /**
- * Validation chains for the instructor-facing quiz endpoints
+ * Validation chains for both the instructor-facing quiz endpoints
  * (`/api/lessons/:lessonId/quiz`, `/api/quizzes/:id`,
- * `/api/quizzes/:id/instructor`).
+ * `/api/quizzes/:id/instructor`) and the student-facing surface
+ * (`GET /api/quizzes/:id`, `POST /api/quizzes/:id/submit`,
+ * `/api/quizzes/:id/attempts/mine`, `/api/quizzes/:id/best/mine`).
  *
  * The validator mirrors the model's field-level constraints (question
  * count, option count, passing-score range, time-limit ceiling, per-
@@ -20,9 +22,13 @@
  *  - On update, the `questions` chain stays optional but, when present,
  *    must contain a fully valid set — partial / sparse arrays are not
  *    supported by the model.
+ *  - The submit validator only checks SHAPE (array of integers + a
+ *    sane upper bound on `timeSpentSeconds`). The
+ *    `answers.length === quiz.questions.length` rule needs the live
+ *    quiz, so it is enforced inside the controller, not here.
  */
 
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 
 import {
   QUIZ_OPTIONS_MAX_COUNT,
@@ -34,6 +40,15 @@ import {
   QUIZ_TIME_LIMIT_MAX_SECONDS,
 } from '../models/Quiz.model.js';
 import { mongoIdParam } from './course.validator.js';
+
+const ATTEMPTS_PAGINATION_DEFAULT_LIMIT = 10;
+const ATTEMPTS_PAGINATION_MAX_LIMIT = 50;
+// Hard ceiling on the client-reported "time spent" payload.
+// Generous enough to cover the largest legitimate quiz (the model's
+// own `QUIZ_TIME_LIMIT_MAX_SECONDS` is 7200) plus a small buffer for
+// network round-trip; anything past this is obviously a forged body.
+const SUBMIT_TIME_SPENT_MAX = QUIZ_TIME_LIMIT_MAX_SECONDS + 60;
+const ANSWER_INDEX_MAX = QUIZ_OPTIONS_MAX_COUNT - 1;
 
 const TITLE_MIN_LENGTH = 3;
 const TITLE_MAX_LENGTH = 120;
@@ -188,8 +203,90 @@ export const updateQuizValidator = [
 
 export const quizIdParamValidator = [mongoIdParam('id')];
 
+// ---------------------------------------------------------------------------
+// STUDENT-FACING VALIDATORS
+// ---------------------------------------------------------------------------
+
+/**
+ * Validates the `answers` payload of `POST /api/quizzes/:id/submit`.
+ *
+ * Each item must be a non-negative integer within the maximum option
+ * range any quiz can declare (`QUIZ_OPTIONS_MAX_COUNT - 1`). The
+ * exact `answers.length === quiz.questions.length` rule and the
+ * per-question option-count check require the live quiz, so they
+ * live in the controller.
+ *
+ * The array length itself is bounded by `QUIZ_QUESTIONS_MAX_COUNT`
+ * here so a forged 10k-element body is rejected before it reaches
+ * the model's scoring loop.
+ */
+const answersChain = () =>
+  body('answers')
+    .isArray({ min: QUIZ_QUESTIONS_MIN_COUNT, max: QUIZ_QUESTIONS_MAX_COUNT })
+    .withMessage(
+      `Answers must be an array of ${QUIZ_QUESTIONS_MIN_COUNT}-${QUIZ_QUESTIONS_MAX_COUNT} items.`,
+    )
+    .bail()
+    .custom((answers) => {
+      const allValid = answers.every(
+        (value) => Number.isInteger(value) && value >= 0 && value <= ANSWER_INDEX_MAX,
+      );
+      if (!allValid) {
+        throw new Error(
+          `Each answer must be an integer option index between 0 and ${ANSWER_INDEX_MAX}.`,
+        );
+      }
+      return true;
+    });
+
+const timeSpentChain = () =>
+  body('timeSpentSeconds')
+    .optional()
+    .isInt({ min: 0, max: SUBMIT_TIME_SPENT_MAX })
+    .withMessage(
+      `timeSpentSeconds must be an integer between 0 and ${SUBMIT_TIME_SPENT_MAX} seconds.`,
+    )
+    .bail()
+    .toInt();
+
+const attemptsPageChain = () =>
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer.')
+    .bail()
+    .toInt();
+
+const attemptsLimitChain = () =>
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: ATTEMPTS_PAGINATION_MAX_LIMIT })
+    .withMessage(`Limit must be between 1 and ${ATTEMPTS_PAGINATION_MAX_LIMIT}.`)
+    .bail()
+    .toInt();
+
+export const submitQuizValidator = [
+  mongoIdParam('id'),
+  answersChain(),
+  timeSpentChain(),
+];
+
+export const myAttemptsValidator = [
+  mongoIdParam('id'),
+  attemptsPageChain(),
+  attemptsLimitChain(),
+];
+
+export const QUIZ_ATTEMPTS_PAGINATION_DEFAULTS = Object.freeze({
+  defaultLimit: ATTEMPTS_PAGINATION_DEFAULT_LIMIT,
+  maxLimit: ATTEMPTS_PAGINATION_MAX_LIMIT,
+});
+
 export default {
   createQuizValidator,
   updateQuizValidator,
   quizIdParamValidator,
+  submitQuizValidator,
+  myAttemptsValidator,
+  QUIZ_ATTEMPTS_PAGINATION_DEFAULTS,
 };
