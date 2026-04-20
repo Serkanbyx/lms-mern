@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="No courses yet">
+  <title>No courses yet</title>
+  <rect x="56" y="48" width="180" height="120" rx="14" fill="#e2e8f0" />
+  <rect x="76" y="32" width="180" height="120" rx="14" fill="#cbd5e1" />
+  <rect x="96" y="16" width="180" height="120" rx="14" fill="#4f46e5" fill-opacity="0.12" stroke="#4f46e5" stroke-opacity="0.55" stroke-width="2" />
+  <rect x="120" y="40" width="100" height="10" rx="5" fill="#4f46e5" fill-opacity="0.65" />
+  <rect x="120" y="58" width="70" height="8" rx="4" fill="#4f46e5" fill-opacity="0.4" />
+  <rect x="120" y="84" width="132" height="36" rx="8" fill="#4f46e5" fill-opacity="0.18" />
+  <path d="M170 178 l8 14 l16 -22" stroke="#16a34a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <circle cx="180" cy="186" r="22" fill="#22c55e" fill-opacity="0.18" />
+</svg>

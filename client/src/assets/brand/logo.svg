@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 32" role="img" aria-label="Lumen LMS">
+  <title>Lumen LMS</title>
+  <rect width="32" height="32" rx="8" fill="currentColor" />
+  <path d="M16 6 L24 13 L16 20 L8 13 Z" fill="#ffffff" fill-opacity="0.95" />
+  <path d="M16 14 L24 21 L16 28 L8 21 Z" fill="#ffffff" fill-opacity="0.6" />
+  <text x="42" y="22" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="18" font-weight="700" letter-spacing="-0.01em" fill="currentColor">Lumen</text>
+  <text x="105" y="22" font-family="Inter, system-ui, sans-serif"
+        font-size="13" font-weight="500" letter-spacing="0.12em" fill="currentColor" fill-opacity="0.55">LMS</text>
+</svg>

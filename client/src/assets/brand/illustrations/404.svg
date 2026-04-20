@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" role="img" aria-label="Page not found">
+  <title>Page not found</title>
+  <defs>
+    <linearGradient id="lumen404Grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
+  <circle cx="240" cy="120" r="92" fill="#4f46e5" fill-opacity="0.08" />
+  <text x="240" y="160" font-family="Inter, system-ui, sans-serif"
+        font-size="140" font-weight="800" letter-spacing="-0.04em"
+        text-anchor="middle" fill="url(#lumen404Grad)">404</text>
+  <circle cx="80" cy="60" r="6" fill="#f59e0b" />
+  <circle cx="420" cy="180" r="8" fill="#22c55e" fill-opacity="0.8" />
+  <circle cx="60" cy="190" r="5" fill="#0284c7" />
+  <circle cx="430" cy="60" r="5" fill="#dc2626" fill-opacity="0.7" />
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Lumen LMS mark">
+  <title>Lumen LMS</title>
+  <rect width="32" height="32" rx="8" fill="currentColor" />
+  <path d="M16 6 L24 13 L16 20 L8 13 Z" fill="#ffffff" fill-opacity="0.95" />
+  <path d="M16 14 L24 21 L16 28 L8 21 Z" fill="#ffffff" fill-opacity="0.6" />
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-label="No results found">
+  <title>No results found</title>
+  <circle cx="140" cy="110" r="64" fill="#4f46e5" fill-opacity="0.12" stroke="#4f46e5" stroke-opacity="0.7" stroke-width="4" />
+  <line x1="186" y1="156" x2="232" y2="200" stroke="#4f46e5" stroke-opacity="0.85" stroke-width="10" stroke-linecap="round" />
+  <circle cx="140" cy="110" r="40" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 6" />
+  <line x1="116" y1="98" x2="164" y2="122" stroke="#dc2626" stroke-width="3" stroke-linecap="round" />
+  <line x1="164" y1="98" x2="116" y2="122" stroke="#dc2626" stroke-width="3" stroke-linecap="round" />
+  <circle cx="60" cy="60" r="6" fill="#f59e0b" fill-opacity="0.6" />
+  <circle cx="252" cy="80" r="4" fill="#22c55e" fill-opacity="0.7" />
+  <circle cx="48" cy="180" r="5" fill="#0284c7" fill-opacity="0.55" />
+</svg>
