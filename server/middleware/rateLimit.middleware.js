@@ -66,4 +66,33 @@ export const quizSubmitLimiter = rateLimit({
   },
 });
 
-export default { uploadLimiter, quizSubmitLimiter };
+/**
+ * Admin-route limiter — caps every call to `/api/admin/*` per
+ * authenticated admin. 100 requests / 10 minutes is generous for an
+ * admin actively using the dashboard (stats + several user lookups +
+ * a handful of moderation actions per minute) while still containing
+ * the blast radius of a compromised admin token: a stolen credential
+ * can no longer enumerate the entire user table or fire a deletion
+ * loop without immediately tripping the limiter.
+ *
+ * Like `quizSubmitLimiter`, the key generator MUST be mounted AFTER
+ * `protect` so `req.user._id` is populated. The IPv6 fallback uses
+ * `ipKeyGenerator` so an attacker can't rotate through host bits
+ * inside their own /64 to dodge the limit.
+ */
+export const adminLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    req.user?._id
+      ? `admin:user:${req.user._id.toString()}`
+      : `admin:ip:${ipKeyGenerator(req.ip)}`,
+  message: {
+    success: false,
+    message: 'Too many admin requests. Please slow down and try again in a few minutes.',
+  },
+});
+
+export default { uploadLimiter, quizSubmitLimiter, adminLimiter };

@@ -24,6 +24,7 @@ import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
+import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
 import enrollmentRoutes from './routes/enrollment.routes.js';
@@ -122,6 +123,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/instructors', instructorRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 10) 404 handler — must come after all real routes.
 app.use(notFound);
