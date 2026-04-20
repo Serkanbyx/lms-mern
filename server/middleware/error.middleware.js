@@ -41,8 +41,28 @@ const formatJwtError = (err) => {
   return new ApiError(401, 'Invalid authentication token.');
 };
 
+// Multer surfaces upload-time failures (size, count, unexpected field…) as
+// `MulterError` instances with stable `code` values. We translate them to
+// 400 with friendly messages so the client can show inline form errors.
+const MULTER_MESSAGES = {
+  LIMIT_FILE_SIZE: 'File is larger than the allowed limit.',
+  LIMIT_FILE_COUNT: 'Too many files uploaded in a single request.',
+  LIMIT_PART_COUNT: 'Multipart form contains too many parts.',
+  LIMIT_FIELD_KEY: 'Form field name is too long.',
+  LIMIT_FIELD_VALUE: 'Form field value is too long.',
+  LIMIT_FIELD_COUNT: 'Form contains too many fields.',
+  LIMIT_UNEXPECTED_FILE: 'Unexpected file field.',
+};
+
+const formatMulterError = (err) => {
+  const message = MULTER_MESSAGES[err.code] || err.message || 'Upload failed.';
+  const detail = err.field ? `${message} (field: "${err.field}")` : message;
+  return new ApiError(400, detail);
+};
+
 const normalizeError = (err) => {
   if (err instanceof ApiError) return err;
+  if (err?.name === 'MulterError') return formatMulterError(err);
   if (err?.name === 'ValidationError') return formatMongooseValidation(err);
   if (err?.name === 'CastError') return formatCastError();
   if (err?.code === 11000) return formatDuplicateKey(err);
