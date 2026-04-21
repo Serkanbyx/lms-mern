@@ -11,6 +11,13 @@
 
 export const STORAGE_KEYS = Object.freeze({
   token: 'lms.token',
+  // Non-sensitive hint that a refresh cookie probably exists, used to
+  // decide whether the cold-boot AuthContext should speculatively call
+  // `/auth/refresh`. Holds the ISO expiry timestamp written on every
+  // successful login/register/refresh (mirrors the server's
+  // `JWT_REFRESH_EXPIRES_IN`, currently 30d). Anonymous visitors never
+  // see it, so they never trigger a 401 in the console.
+  sessionHint: 'lms.session.hint',
   theme: 'lms.theme',
   preferences: 'lms.preferences',
   returnTo: 'lms.returnTo',
@@ -18,6 +25,11 @@ export const STORAGE_KEYS = Object.freeze({
   pwaEnrolledOnce: 'lms.pwa.enrolled',
   pwaInstallDismissedAt: 'lms.pwa.installDismissedAt',
 });
+
+// Mirror of the server's refresh-cookie maxAge (`JWT_REFRESH_EXPIRES_IN`).
+// Kept slightly under the server value so we never assume a session is
+// alive after the cookie has actually expired.
+export const SESSION_HINT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 export const ROLES = Object.freeze({
   student: 'student',

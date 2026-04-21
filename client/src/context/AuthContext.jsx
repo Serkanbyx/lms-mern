@@ -35,6 +35,11 @@ import {
 
 import * as authService from '../services/auth.service.js';
 import { ROLES, ROUTES, STORAGE_KEYS } from '../utils/constants.js';
+import {
+  clearSessionHint,
+  hasFreshSessionHint,
+  writeSessionHint,
+} from '../utils/sessionHint.js';
 
 const AuthContext = createContext(null);
 
@@ -63,26 +68,43 @@ const writeStoredToken = (token) => {
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => readStoredToken());
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(Boolean(readStoredToken()));
+  // Stay in `loading` while either path will issue a network call:
+  // an existing access token (→ /auth/me) or a non-expired session
+  // hint (→ silent /auth/refresh). Otherwise mount as resolved-guest
+  // so public pages render immediately with no spinner flash.
+  const [loading, setLoading] = useState(
+    () => Boolean(readStoredToken()) || hasFreshSessionHint(),
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     const hydrate = async () => {
       if (!token) {
-        // Even with no access token we may still have a valid refresh
-        // cookie from a previous session. Try ONE silent refresh before
-        // we treat the visitor as a logged-out guest — that's what makes
-        // a browser refresh on a protected page survive.
+        // We only attempt a speculative refresh when a session-hint
+        // says a refresh cookie *probably* still exists. Without that
+        // marker an anonymous landing-page visitor would always see a
+        // 401 in the console (the browser logs HTTP errors regardless
+        // of axios `silent`). See `hasFreshSessionHint` for the full
+        // rationale + trade-offs.
+        if (!hasFreshSessionHint()) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
         try {
           const { token: refreshed, user: me } = await authService.refreshAccessToken();
           if (!cancelled && refreshed && me) {
             writeStoredToken(refreshed);
+            writeSessionHint();
             setToken(refreshed);
             setUser(me);
           }
         } catch {
-          // No valid session at all — anonymous visitor.
+          // Hint was stale (e.g. server invalidated the cookie or the
+          // user logged out from another tab). Drop it so future cold
+          // boots stay quiet until the next real login.
+          clearSessionHint();
         } finally {
           if (!cancelled) setLoading(false);
         }
@@ -95,6 +117,7 @@ export const AuthProvider = ({ children }) => {
       } catch {
         if (!cancelled) {
           writeStoredToken(null);
+          clearSessionHint();
           setToken(null);
           setUser(null);
         }
@@ -114,6 +137,11 @@ export const AuthProvider = ({ children }) => {
 
   const persistSession = useCallback((nextToken, nextUser) => {
     writeStoredToken(nextToken);
+    if (nextToken && nextUser) {
+      writeSessionHint();
+    } else {
+      clearSessionHint();
+    }
     setToken(nextToken);
     setUser(nextUser);
   }, []);

@@ -36,6 +36,7 @@ import axios from 'axios';
 
 import { toast } from '../components/ui/toast.js';
 import { HTTP_TIMEOUT_MS, ROUTES, STORAGE_KEYS } from '../utils/constants.js';
+import { clearSessionHint, writeSessionHint } from '../utils/sessionHint.js';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -140,10 +141,21 @@ const performRefresh = async () => {
   // Lazy import avoids a circular dependency between api/axios and
   // services/auth.service.
   const { refreshAccessToken } = await import('../services/auth.service.js');
-  const { token: newToken } = await refreshAccessToken();
-  if (!newToken) throw new Error('Refresh did not return a token.');
-  writeToken(newToken);
-  return newToken;
+  try {
+    const { token: newToken } = await refreshAccessToken();
+    if (!newToken) throw new Error('Refresh did not return a token.');
+    writeToken(newToken);
+    // Cookie was rotated server-side — extend our local hint so future
+    // cold boots know the session is still alive.
+    writeSessionHint();
+    return newToken;
+  } catch (err) {
+    // Refresh failed → cookie is gone or invalid. Drop the hint so the
+    // next AuthContext cold boot doesn't speculatively retry and log
+    // another 401 in the console.
+    clearSessionHint();
+    throw err;
+  }
 };
 
 const refreshOnce = () => {
@@ -162,6 +174,7 @@ const redirectToLogin = () => {
     pathname.startsWith(ROUTES.login) || pathname.startsWith(ROUTES.register);
 
   writeToken(null);
+  clearSessionHint();
 
   if (!isOnAuthScreen) {
     isRedirectingToLogin = true;
