@@ -34,6 +34,7 @@
   --animate-progress-indeterminate: progressIndeterminate 1.4s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-blob: blob 14s ease-in-out infinite;
+  --animate-confetti: confettiFall 2.4s ease-out forwards;
 
   @keyframes shimmer {
     0% {
@@ -84,6 +85,18 @@
     }
     66% {
       transform: translate(-15px, 10px) scale(0.97);
+    }
+  }
+
+  @keyframes confettiFall {
+    0% {
+      transform: translate3d(0, -20vh, 0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(var(--confetti-x, 0), 110vh, 0)
+        rotate(var(--confetti-rot, 720deg));
+      opacity: 0;
     }
   }
 }
