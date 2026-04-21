@@ -26,7 +26,7 @@
  * never recomputes them by hand.
  */
 
-import { cloudinary } from '../config/cloudinary.js';
+import { cloudinary, signedVideoUrl } from '../config/cloudinary.js';
 import { Course } from '../models/Course.model.js';
 import { Lesson } from '../models/Lesson.model.js';
 import { Section } from '../models/Section.model.js';
@@ -81,14 +81,36 @@ const findOwnedLessonOr404 = async (lessonId, user) => {
 const destroyCloudinaryVideo = async (publicId) => {
   if (!publicId) return;
   try {
+    // Lesson videos live under `type: 'authenticated'` since STEP 47, so the
+    // destroy call MUST pass the matching delivery type — otherwise Cloudinary
+    // looks under the default `upload` namespace and silently returns
+    // "not found" while the real asset stays orphaned in the account.
     await cloudinary.uploader.destroy(publicId, {
       resource_type: 'video',
+      type: 'authenticated',
       invalidate: true,
     });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.warn(`[lesson] Cloudinary destroy failed for "${publicId}": ${err.message}`);
   }
+};
+
+/**
+ * Project a Lesson document for an authoring response.
+ *
+ * STEP 47 — when the lesson is hosted on Cloudinary AND has a publicId, we
+ * replace the stored `videoUrl` (the unplayable authenticated URL recorded at
+ * upload time) with a freshly minted, short-lived signed URL. YouTube / Vimeo
+ * provider lessons are returned untouched because their URLs are governed by
+ * the provider's own access controls.
+ */
+const projectLessonForResponse = (lesson) => {
+  const obj = typeof lesson.toObject === 'function' ? lesson.toObject() : { ...lesson };
+  if (obj.videoProvider === 'cloudinary' && obj.videoPublicId) {
+    obj.videoUrl = signedVideoUrl(obj.videoPublicId);
+  }
+  return obj;
 };
 
 /**
@@ -113,7 +135,7 @@ export const createLesson = asyncHandler(async (req, res) => {
     order,
   });
 
-  res.status(201).json({ success: true, lesson });
+  res.status(201).json({ success: true, lesson: projectLessonForResponse(lesson) });
 });
 
 /**
@@ -146,7 +168,7 @@ export const updateLesson = asyncHandler(async (req, res) => {
     await destroyCloudinaryVideo(previousPublicId);
   }
 
-  res.json({ success: true, lesson });
+  res.json({ success: true, lesson: projectLessonForResponse(lesson) });
 });
 
 /**
@@ -200,7 +222,7 @@ export const reorderLessons = asyncHandler(async (req, res) => {
   await Lesson.bulkWrite(finalOps, { ordered: true });
 
   const lessons = await Lesson.find({ sectionId: section._id }).sort({ order: 1 });
-  res.json({ success: true, lessons });
+  res.json({ success: true, lessons: lessons.map(projectLessonForResponse) });
 });
 
 /**
@@ -211,7 +233,7 @@ export const reorderLessons = asyncHandler(async (req, res) => {
  */
 export const getLessonForInstructor = asyncHandler(async (req, res) => {
   const { lesson } = await findOwnedLessonOr404(req.params.id, req.user);
-  res.json({ success: true, lesson });
+  res.json({ success: true, lesson: projectLessonForResponse(lesson) });
 });
 
 export default {

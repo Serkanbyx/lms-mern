@@ -1,10 +1,28 @@
 /**
  * LMS API — Express 5 entry point.
  *
- * Middleware ordering follows STEP 2 of the build guide. Order matters:
- * security headers and CORS run before the body parsers, sanitization runs
- * after parsing, the global rate limiter wraps every route, and the error
- * handlers stay last so they catch anything that throws above them.
+ * Middleware ordering follows STEP 2 of the build guide, refined by the
+ * STEP 47 hardening pass. Order matters:
+ *
+ *   1. `trust proxy`          — required so `req.secure`, `req.ip`, and the
+ *                               rate limiter all see the real client IP /
+ *                               protocol behind Render's load balancer.
+ *   2. `requestId`            — every request gets a correlation id BEFORE
+ *                               anything that might log or bounce.
+ *   3. `redirectToHttps`      — bounce HTTP → HTTPS in production before
+ *                               we waste cycles on heavier middleware.
+ *   4. `securityHeaders`      — explicit Helmet / CSP / HSTS bundle.
+ *   5. `denyObsoleteMethods`  — kill TRACE / TRACK at the edge.
+ *   6. `cors`                 — CORS preflight cached 24h, exposes the
+ *                               request id so clients can echo it back.
+ *   7. body parsers           — capped at 10 KB.
+ *   8. `cookie-parser`        — refresh-token HttpOnly cookie reader.
+ *   9. mongo-sanitize         — body + params (Express 5 won't let us touch
+ *                               req.query).
+ *  10. `httpLogger`           — structured pino request log.
+ *  11. `apiLimiter`           — global rate-limit floor.
+ *  12. routes
+ *  13. notFound + errorHandler — last.
  *
  * EXPRESS 5 NOTE: `req.query` is a read-only getter, so the `express-mongo-
  * sanitize` middleware (which mutates req.query) crashes when used as
@@ -17,14 +35,18 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
-import helmet from 'helmet';
-import morgan from 'morgan';
 
 import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { apiLimiter } from './middleware/rateLimit.middleware.js';
+import { requestId } from './middleware/requestId.middleware.js';
+import {
+  denyObsoleteMethods,
+  redirectToHttps,
+  securityHeaders,
+} from './middleware/security.middleware.js';
 import adminRoutes from './routes/admin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import courseRoutes from './routes/course.routes.js';
@@ -37,16 +59,38 @@ import quizRoutes from './routes/quiz.routes.js';
 import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import userRoutes from './routes/user.routes.js';
+import { httpLogger } from './utils/logger.js';
 
 const app = express();
 
 // 1) Strip Express fingerprinting header.
 app.disable('x-powered-by');
 
-// 2) Security headers (CSP is tightened in a later hardening step).
-app.use(helmet());
+// 2) Trust the FIRST hop in front of us (Render's load balancer) so:
+//      - `req.secure` reflects the original client protocol.
+//      - `req.ip` is the real client IP (used by `express-rate-limit`).
+//    Setting more than 1 would let a client spoof its IP via X-Forwarded-For.
+if (env.isProd) {
+  app.set('trust proxy', 1);
+}
 
-// 3) CORS — allowlist driven by env (CLIENT_URL + optional CORS_ORIGINS).
+// 3) Per-request correlation id — must run before the logger and any
+//    middleware that might short-circuit (HTTPS redirect, rate limit).
+app.use(requestId);
+
+// 4) Force HTTPS in production. No-op in dev.
+app.use(redirectToHttps);
+
+// 5) Security headers — strict CSP, HSTS preload, frame-ancestors deny,
+//    CORP same-site. Replaces the bare `helmet()` default.
+app.use(securityHeaders);
+
+// 6) Block obsolete HTTP methods (TRACE/TRACK — XST attack surface).
+app.use(denyObsoleteMethods);
+
+// 7) CORS — allowlist driven by env (CLIENT_URL + optional CORS_ORIGINS).
+//    `maxAge` caches the preflight response for 24h to cut OPTIONS chatter.
+//    `exposedHeaders` lets browser callers read the `X-Request-ID` we set.
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -56,38 +100,39 @@ app.use(
       return callback(new Error(`Origin not allowed by CORS: ${origin}`));
     },
     credentials: true,
+    maxAge: 86_400,
+    exposedHeaders: ['X-Request-Id', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
   }),
 );
 
-// 4) Body parsers — capped at 10 KB to mitigate payload-DoS.
+// 8) Body parsers — capped at 10 KB to mitigate payload-DoS.
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// 4b) Cookie parser — required by STEP 46 so the refresh-token HttpOnly
-//     cookie can reach `req.cookies` in the auth controller. The cookie
-//     itself is never signed (the JWT inside is self-authenticating).
+// 9) Cookie parser — required so the refresh-token HttpOnly cookie can
+//    reach `req.cookies` in the auth controller. The cookie itself is
+//    never signed (the JWT inside is self-authenticating).
 app.use(cookieParser());
 
-// 5) Mongo-sanitize on body + params only (Express 5 safe — see file header).
+// 10) Mongo-sanitize on body + params only (Express 5 safe — see file header).
 app.use((req, _res, next) => {
   if (req.body) mongoSanitize.sanitize(req.body);
   if (req.params) mongoSanitize.sanitize(req.params);
   next();
 });
 
-// 6) Request logging (dev only — pino-http takes over in a later step).
-if (!env.isProd) {
-  app.use(morgan('dev'));
-}
+// 11) Structured request logging (pino-http). Every line carries `req.id`
+//     and authorization / cookie / password fields are pre-redacted.
+app.use(httpLogger);
 
-// 7) Global rate limiter — `apiLimiter` lives in the shared rate-limit
-//    module so the per-route limiters (auth, password, upload, quiz,
-//    admin, enroll) and this global cap stay in one place. The global
-//    bucket forms the outermost layer of defence; per-route limiters
-//    narrow specific endpoints further down the chain.
+// 12) Global rate limiter — `apiLimiter` lives in the shared rate-limit
+//     module so the per-route limiters (auth, password, upload, quiz,
+//     admin, enroll) and this global cap stay in one place. The global
+//     bucket forms the outermost layer of defence; per-route limiters
+//     narrow specific endpoints further down the chain.
 app.use(apiLimiter);
 
-// 8) Health check — used by uptime probes and load balancers.
+// 13) Health check — used by uptime probes and load balancers.
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
@@ -97,8 +142,8 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// 9) Feature route modules — mounted under /api/*. Additional groups
-//    (quizzes, enrollments, …) are added by later steps.
+// 14) Feature route modules — mounted under /api/*. Additional groups
+//     (quizzes, enrollments, …) are added by later steps.
 //
 //    Mount order notes:
 //    - The course-scoped sections sub-router
@@ -128,10 +173,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 
-// 10) 404 handler — must come after all real routes.
+// 15) 404 handler — must come after all real routes.
 app.use(notFound);
 
-// 11) Error handler — must be the last middleware. Express 5 forwards
+// 16) Error handler — must be the last middleware. Express 5 forwards
 //     thrown errors and rejected promises here automatically.
 app.use(errorHandler);
 

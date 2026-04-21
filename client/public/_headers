@@ -1,0 +1,27 @@
+# =====================================================================
+# Netlify edge security headers (STEP 47).
+# ---------------------------------------------------------------------
+# Helmet on the API protects /api/* responses; Netlify needs its own
+# header pass for the static SPA bundle. The CSP here mirrors the one
+# in `server/middleware/security.middleware.js` so the policy is
+# uniform across both surfaces.
+#
+# IMPORTANT: replace `https://your-api.onrender.com` below with the
+# real Render API URL before going to production. The same value also
+# belongs in the SPA's `VITE_API_BASE_URL` env var.
+# =====================================================================
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://your-api.onrender.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://player.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-site
+
+# Long-cache the hashed Vite assets — they are content-addressed so
+# bumping the SPA build naturally invalidates them.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

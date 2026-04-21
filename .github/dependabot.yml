@@ -1,0 +1,75 @@
+# =====================================================================
+# Dependabot configuration (STEP 47).
+# ---------------------------------------------------------------------
+# Watches the npm dependency trees of both workspaces and opens weekly
+# PRs for any non-major upgrades. Major bumps are still surfaced as PRs
+# but never auto-merged — review them by hand because they carry
+# breaking changes.
+#
+# Activation note: Dependabot only starts opening PRs after this file
+# is committed to the default branch on GitHub. The agent only creates
+# the file; the user commits + pushes it via GitHub Desktop.
+# =====================================================================
+
+version: 2
+updates:
+  # API server — Express, Mongoose, security middleware.
+  - package-ecosystem: "npm"
+    directory: "/server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Istanbul"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase"
+    labels:
+      - "dependencies"
+      - "server"
+    commit-message:
+      prefix: "chore(server)"
+      include: "scope"
+    groups:
+      # Group the noisy dev/test deps so we don't drown in PRs.
+      dev-deps:
+        dependency-type: "development"
+      # Keep security-critical packages on their own PRs for fast review.
+      security:
+        patterns:
+          - "helmet"
+          - "express-rate-limit"
+          - "express-mongo-sanitize"
+          - "jsonwebtoken"
+          - "bcryptjs"
+
+  # SPA — Vite, React, Tailwind.
+  - package-ecosystem: "npm"
+    directory: "/client"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Istanbul"
+    open-pull-requests-limit: 5
+    versioning-strategy: "increase"
+    labels:
+      - "dependencies"
+      - "client"
+    commit-message:
+      prefix: "chore(client)"
+      include: "scope"
+    groups:
+      dev-deps:
+        dependency-type: "development"
+
+  # GitHub Actions workflows themselves — keeps action versions current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"

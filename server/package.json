@@ -28,7 +28,6 @@
     "ioredis": "^5.10.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.4.1",
-    "morgan": "^1.10.1",
     "multer": "^2.1.1",
     "nanoid": "^5.1.9",
     "nodemailer": "^8.0.5",
@@ -39,6 +38,7 @@
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "pino-pretty": "^13.1.3"
   }
 }

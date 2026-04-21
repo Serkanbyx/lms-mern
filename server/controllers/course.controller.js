@@ -35,6 +35,7 @@
 
 import mongoose from 'mongoose';
 
+import { signedVideoUrl } from '../config/cloudinary.js';
 import {
   Course,
   COURSE_CATEGORIES,
@@ -562,6 +563,9 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
 
   const [sections, lessons] = await Promise.all([
     Section.find({ courseId: course._id }).sort({ order: 1 }).lean(),
+    // `videoPublicId` is needed to mint signed Cloudinary URLs (STEP 47) but
+    // is intentionally STRIPPED from the projected payload — clients must
+    // never see the raw publicId, only the short-lived signed URL we mint.
     Lesson.find({ courseId: course._id }).sort({ order: 1 }).lean(),
   ]);
 
@@ -596,9 +600,16 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
       viewerIsOwner || viewerIsAdmin || viewerIsEnrolled || lesson.isFreePreview === true;
     if (!canSeeContent) return base;
 
+    // STEP 47 — Cloudinary lesson videos are stored with `type: 'authenticated'`,
+    // so the persisted `videoUrl` is unplayable on its own. Re-sign it per
+    // request with a short TTL. Provider videos (YouTube/Vimeo) keep their
+    // original URL because the provider owns access control there.
+    const isCloudinary = lesson.videoProvider === 'cloudinary' && lesson.videoPublicId;
+    const videoUrl = isCloudinary ? signedVideoUrl(lesson.videoPublicId) : lesson.videoUrl;
+
     return {
       ...base,
-      videoUrl: lesson.videoUrl,
+      videoUrl,
       videoProvider: lesson.videoProvider,
       content: lesson.content,
     };
