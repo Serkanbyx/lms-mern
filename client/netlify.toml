@@ -27,18 +27,11 @@
   NPM_VERSION  = "10"
   # Vite keeps the build snappy without dev-server overhead.
   CI           = "true"
-
-# Per-context tweaks. Production gets the strict env; previews and
-# branch deploys can keep the dashboard's preview env vars (e.g.
-# pointing VITE_API_BASE_URL at a Render preview API).
-[context.production.environment]
-  NODE_ENV = "production"
-
-[context.deploy-preview.environment]
-  NODE_ENV = "production"
-
-[context.branch-deploy.environment]
-  NODE_ENV = "production"
+  # Force npm to install devDependencies even when Netlify infers
+  # NODE_ENV=production. Vite, Tailwind and the React plugin live
+  # under devDependencies and are required at build time — without
+  # this flag the build fails with `sh: 1: vite: not found`.
+  NPM_FLAGS    = "--include=dev"
 
 # ---------------------------------------------------------------------
 # SPA fallback. `client/public/_redirects` already ships the same rule;

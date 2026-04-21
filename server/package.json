@@ -16,6 +16,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed:admin": "node seeders/seedAdmin.js",
+    "seed:demo": "node seeders/seedAdmin.js --demo",
     "cron:cleanup-drafts": "node scripts/cleanupStaleDrafts.js",
     "cron:cleanup-tokens": "node scripts/cleanupExpiredTokens.js",
     "cron:certificate-reminder": "node scripts/certificateReminder.js"

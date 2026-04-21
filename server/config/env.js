@@ -136,8 +136,8 @@ const REDIS_URL = optionalVar(process.env.REDIS_URL);
 const ADMIN_EMAIL = optionalVar(process.env.ADMIN_EMAIL);
 const ADMIN_PASSWORD = optionalVar(process.env.ADMIN_PASSWORD);
 const ADMIN_NAME = optionalVar(process.env.ADMIN_NAME, 'Platform Admin');
-if (ADMIN_PASSWORD && ADMIN_PASSWORD.length < 12) {
-  errors.push('ADMIN_PASSWORD must be at least 12 characters when set.');
+if (ADMIN_PASSWORD && ADMIN_PASSWORD.length < 6) {
+  errors.push('ADMIN_PASSWORD must be at least 6 characters when set.');
 }
 
 // --- Hashing ---
