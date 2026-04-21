@@ -119,6 +119,29 @@ export function Footer() {
           </ul>
         </div>
       </div>
+
+      <div className="border-t border-border">
+        <p className="mx-auto max-w-7xl px-6 py-3 text-center text-xs text-text-subtle">
+          Created by{' '}
+          <a
+            href="https://serkanbayraktar.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-text-muted hover:text-primary transition-colors"
+          >
+            Serkanby
+          </a>
+          {' | '}
+          <a
+            href="https://github.com/Serkanbyx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-text-muted hover:text-primary transition-colors"
+          >
+            Github
+          </a>
+        </p>
+      </div>
     </footer>
   );
 }
