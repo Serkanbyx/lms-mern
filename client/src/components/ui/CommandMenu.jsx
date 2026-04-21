@@ -100,7 +100,11 @@ export function CommandMenu({ open, onClose, items = [] }) {
                 <div className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-text-subtle">
                   {groupName}
                 </div>
-                <ul role="listbox" aria-activedescendant={activeId ?? undefined}>
+                <ul
+                  role="listbox"
+                  tabIndex={-1}
+                  aria-activedescendant={activeId ?? undefined}
+                >
                   {groupItems.map((item) => (
                     <li key={item.id}>
                       <button

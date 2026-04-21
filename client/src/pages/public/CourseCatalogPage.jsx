@@ -206,7 +206,6 @@ export default function CourseCatalogPage() {
     // We deliberately depend on the URL value only — re-syncing the input
     // when the URL changes (e.g. browser back, chip removal) keeps the
     // input in lockstep without entering an infinite update loop.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.search]);
 
   const updateParams = useCallback(

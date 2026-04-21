@@ -317,6 +317,10 @@ export function Navbar() {
         title="Menu"
       >
         <div className="space-y-6">
+          {/* Mobile drawer auto-focuses the search input by request:
+              once the user has explicitly opened "Menu", typing-first is
+              the obvious next step. The lint exception is intentional. */}
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
           <SearchBox onSubmit={goToCatalog} autoFocus />
 
           <nav aria-label="Mobile" className="flex flex-col gap-1">

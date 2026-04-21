@@ -317,7 +317,6 @@ function CoursesTab({ state, onRetry, instructorName }) {
         aria-busy="true"
       >
         {Array.from({ length: COURSE_SKELETON_COUNT }).map((_, index) => (
-          // eslint-disable-next-line react/no-array-index-key
           <li key={index}>
             <CourseCardSkeleton />
           </li>
@@ -397,7 +396,6 @@ function ProfileSkeleton() {
       </div>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: COURSE_SKELETON_COUNT }).map((_, index) => (
-          // eslint-disable-next-line react/no-array-index-key
           <CourseCardSkeleton key={index} />
         ))}
       </div>

@@ -60,7 +60,12 @@ export const ChipInput = forwardRef(function ChipInput(
     }
   };
 
+  // The wrapper passes any tap-anywhere through to the real <input> so the
+  // chip area behaves like a single text field. The native <input> still
+  // owns focus + keyboard, so the wrapper's click handler is purely a
+  // hit-area expander — keyboard users never need it.
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div
       ref={ref}
       onClick={() => inputRef.current?.focus()}

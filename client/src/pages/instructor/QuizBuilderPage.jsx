@@ -940,6 +940,11 @@ function QuestionCard({
   };
 
   return (
+    // The native HTML5 drag handlers + the on-card Alt+Arrow keyboard
+    // shortcut together turn this <li> into an interactive card. We
+    // intentionally keep it as <li> for outline semantics; the focus
+    // is managed by the explicit move/drag buttons inside.
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <li
       {...dragHandlers}
       onKeyDown={handleCardKeyDown}

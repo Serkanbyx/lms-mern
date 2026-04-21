@@ -122,10 +122,7 @@ function InterestsStep({ interests, onToggle }) {
         </p>
       </header>
 
-      <ul
-        role="list"
-        className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3"
-      >
+      <ul className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {LEARNING_INTERESTS.map((interest) => {
           const selected = interests.includes(interest.value);
           return (
@@ -250,7 +247,6 @@ function FirstCourseStep({ interests, recommendation }) {
 function ProgressDots({ current, total }) {
   return (
     <ol
-      role="list"
       aria-label={`Step ${current} of ${total}`}
       className="flex items-center justify-center gap-2"
     >
@@ -258,7 +254,6 @@ function ProgressDots({ current, total }) {
         const stepIndex = index + 1;
         const reached = stepIndex <= current;
         return (
-          // eslint-disable-next-line react/no-array-index-key
           <li key={index}>
             <span
               aria-hidden="true"

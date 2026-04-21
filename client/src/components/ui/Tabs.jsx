@@ -64,6 +64,7 @@ export function Tabs({
     <div className={className}>
       <div
         role="tablist"
+        tabIndex={-1}
         aria-orientation="horizontal"
         onKeyDown={handleKeyDown}
         className={cn(

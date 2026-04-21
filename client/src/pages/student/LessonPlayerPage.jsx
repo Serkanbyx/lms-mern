@@ -23,6 +23,8 @@
  * Keyboard:
  *   - `Space` → play/pause (delegated to the underlying `<video>`).
  *   - `←` / `→` → previous / next lesson.
+ *   - `↑` / `↓` → previous / next lesson (alias — matches the
+ *     curriculum drawer's up/down focus order).
  *   - `c` → toggle complete on the current lesson.
  *   - `?` → opens the shortcut KBD modal.
  *   Editable elements (inputs / textareas / contenteditable) are
@@ -345,12 +347,16 @@ export default function LessonPlayerPage() {
         setShortcutsOpen(false);
         return;
       }
-      if (event.key === 'ArrowRight' && nextLesson) {
+      // ←/→ are the canonical "previous/next" keys for media navigation
+      // (matches YouTube, Coursera). We also accept ↑/↓ as aliases so
+      // keyboard users coming straight from the curriculum drawer's
+      // up/down focus model don't have to switch hands.
+      if ((event.key === 'ArrowRight' || event.key === 'ArrowDown') && nextLesson) {
         event.preventDefault();
         goToLesson(nextLesson);
         return;
       }
-      if (event.key === 'ArrowLeft' && prevLesson) {
+      if ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') && prevLesson) {
         event.preventDefault();
         goToLesson(prevLesson);
         return;
@@ -787,8 +793,8 @@ function NavCard({ direction, lesson, onClick }) {
 function ShortcutsModal({ open, onClose }) {
   const items = [
     { keys: ['Space'], label: 'Play / pause video' },
-    { keys: ['→'], label: 'Next lesson' },
-    { keys: ['←'], label: 'Previous lesson' },
+    { keys: ['→', '↓'], label: 'Next lesson' },
+    { keys: ['←', '↑'], label: 'Previous lesson' },
     { keys: ['C'], label: 'Toggle complete' },
     { keys: ['?'], label: 'Show this dialog' },
     { keys: ['Esc'], label: 'Close dialogs' },

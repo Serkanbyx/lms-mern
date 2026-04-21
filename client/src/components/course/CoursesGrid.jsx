@@ -38,7 +38,6 @@ export function CoursesGrid({
     return (
       <ul className={cn(GRID_CLASSES, className)} aria-busy="true">
         {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-          // eslint-disable-next-line react/no-array-index-key
           <li key={index}>
             <CourseCardSkeleton />
           </li>

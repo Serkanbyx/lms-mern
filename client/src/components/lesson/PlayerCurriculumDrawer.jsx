@@ -15,6 +15,13 @@
  * disabled affordance) when a server-projected lesson lacks
  * `videoUrl`/`content` — the curriculum endpoint is the source of
  * truth for what the viewer is allowed to play.
+ *
+ * Keyboard:
+ *   - Tab into the drawer focuses the first lesson row.
+ *   - Up / Down move focus between adjacent visible lesson buttons,
+ *     wrapping at the ends. Home / End jump to first / last.
+ *   - Enter / Space activate the focused row (delegated to the
+ *     button's native behavior — no custom handling required).
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -22,6 +29,47 @@ import { useEffect, useMemo, useState } from 'react';
 import { Icon, IconButton, Tooltip } from '../ui/index.js';
 import { formatDuration } from '../../utils/formatDuration.js';
 import { cn } from '../../utils/cn.js';
+
+// Roving keyboard navigation across the (visible) lesson list. Up/Down
+// moves focus between lesson buttons, Home/End jump to first/last,
+// Enter / Space activate (delegated to the button's native behavior).
+const handleListKeyDown = (event) => {
+  const { key } = event;
+  if (
+    key !== 'ArrowDown' &&
+    key !== 'ArrowUp' &&
+    key !== 'Home' &&
+    key !== 'End'
+  ) {
+    return;
+  }
+
+  const root = event.currentTarget;
+  const buttons = Array.from(
+    root.querySelectorAll('button[data-lesson-button]:not([disabled])'),
+  );
+  if (buttons.length === 0) return;
+
+  const currentIndex = buttons.indexOf(document.activeElement);
+  let nextIndex = currentIndex;
+
+  if (key === 'ArrowDown') {
+    nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % buttons.length;
+  } else if (key === 'ArrowUp') {
+    nextIndex =
+      currentIndex < 0
+        ? buttons.length - 1
+        : (currentIndex - 1 + buttons.length) % buttons.length;
+  } else if (key === 'Home') {
+    nextIndex = 0;
+  } else if (key === 'End') {
+    nextIndex = buttons.length - 1;
+  }
+
+  if (nextIndex === currentIndex) return;
+  event.preventDefault();
+  buttons[nextIndex]?.focus();
+};
 
 const LessonRow = ({ lesson, isActive, isCompleted, isLocked, onSelect }) => {
   const baseClasses =
@@ -37,6 +85,7 @@ const LessonRow = ({ lesson, isActive, isCompleted, isLocked, onSelect }) => {
     <li>
       <button
         type="button"
+        data-lesson-button
         onClick={() => !isLocked && onSelect(lesson)}
         disabled={isLocked}
         aria-current={isActive ? 'true' : undefined}
@@ -181,7 +230,15 @@ const CollapsedStrip = ({
       </IconButton>
     </div>
 
-    <ul className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
+    {/* The <ul> is purely a layout container; the only "interactive"
+        targets are the lesson <button>s inside. We delegate the
+        Up/Down/Home/End focus shortcuts here as a roving-tabindex
+        helper, which jsx-a11y can't recognise as essential. */}
+    {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+    <ul
+      onKeyDown={handleListKeyDown}
+      className="flex-1 space-y-1 overflow-y-auto px-2 py-3"
+    >
       {flatLessons.map((lesson) => {
         const isActive = String(lesson._id) === String(currentLessonId);
         const isCompleted = completedSet.has(String(lesson._id));
@@ -190,6 +247,7 @@ const CollapsedStrip = ({
             <Tooltip content={lesson.title} side="right">
               <button
                 type="button"
+                data-lesson-button
                 onClick={() => onSelect(lesson)}
                 aria-label={lesson.title}
                 aria-current={isActive ? 'true' : undefined}
@@ -283,7 +341,11 @@ export function PlayerCurriculumDrawer({
         </IconButton>
       </header>
 
-      <ul className="flex-1 overflow-y-auto">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <ul
+        onKeyDown={handleListKeyDown}
+        className="flex-1 overflow-y-auto"
+      >
         {sections.map((section, index) => (
           <SectionGroup
             key={section._id ?? `section-${index}`}

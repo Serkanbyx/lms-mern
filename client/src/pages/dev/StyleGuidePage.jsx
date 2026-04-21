@@ -173,9 +173,14 @@ export default function StyleGuidePage() {
         <StatusBadge status="published" />
         <StatusBadge status="pending" />
         <StatusBadge status="rejected" />
+        {/* `role` here is the React prop name on our `RoleBadge` component,
+            not a real ARIA role attribute. jsx-a11y can't distinguish the
+            two, so we silence it locally. */}
+        {/* eslint-disable jsx-a11y/aria-role */}
         <RoleBadge role="student" />
         <RoleBadge role="instructor" />
         <RoleBadge role="admin" />
+        {/* eslint-enable jsx-a11y/aria-role */}
         <Avatar name="Ada Lovelace" size="sm" />
         <Avatar name="Linus Torvalds" />
         <Avatar name="Grace Hopper" size="lg" ring />

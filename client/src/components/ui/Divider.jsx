@@ -24,7 +24,6 @@ export function Divider({
   if (!label) {
     return (
       <hr
-        role="separator"
         className={cn('border-0 border-t border-border my-4', className)}
       />
     );

@@ -31,7 +31,6 @@ import { HTTP_TIMEOUT_MS, ROUTES, STORAGE_KEYS } from '../utils/constants.js';
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 if (!baseURL && import.meta.env.DEV) {
-  // eslint-disable-next-line no-console
   console.warn(
     '[api] VITE_API_BASE_URL is not set — copy client/.env.example to client/.env',
   );

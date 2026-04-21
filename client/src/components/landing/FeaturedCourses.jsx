@@ -222,7 +222,6 @@ const FeaturedSkeleton = () => (
   <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {Array.from({ length: LIMIT }).map((_, index) => (
       <li
-        // eslint-disable-next-line react/no-array-index-key
         key={index}
         className="overflow-hidden rounded-2xl border border-border bg-bg"
       >
