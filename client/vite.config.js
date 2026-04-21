@@ -114,7 +114,16 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/auth\//, /\/sw\.js$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: false,
+        // Skip the "waiting" phase so each new deploy's SW activates on
+        // the very next pageload instead of waiting for every tab to
+        // close. Without this, users with a tab open during a deploy
+        // keep getting served the old precache (old `index.html`, old
+        // chunk hashes) and either see blank routes after navigation
+        // or hit `lazyWithReload`'s reload path on every click. The
+        // remaining risk — a chunk that disappears from the build mid-
+        // session — is already covered by `lazyWithReload`, so the net
+        // UX is strictly better with this flag on.
+        skipWaiting: true,
         // True-offline fallback. When a navigation request reaches the
         // network and fails (and the SPA shell is not yet in cache),
         // serve the branded offline page instead of the browser's
