@@ -30,6 +30,48 @@ export const COURSE_STATUS = Object.freeze({
   archived: 'archived',
 });
 
+/**
+ * Course taxonomy enums — mirrored from `server/models/Course.model.js`.
+ *
+ * Authoring forms (create/edit) and any read-side UI that decorates a
+ * course (catalog filter chips, dashboards) consume these labels so we
+ * never ship a hand-typed "Programming" string that would drift out of
+ * sync with the server-side enum.
+ */
+export const COURSE_CATEGORIES = Object.freeze([
+  { value: 'programming', label: 'Programming' },
+  { value: 'design', label: 'Design' },
+  { value: 'business', label: 'Business' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'data-science', label: 'Data Science' },
+  { value: 'language', label: 'Language' },
+  { value: 'other', label: 'Other' },
+]);
+
+export const COURSE_LEVELS = Object.freeze([
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+]);
+
+/**
+ * Curated language list. The server accepts any lowercase string, but
+ * narrowing the UI to a curated set keeps catalog filters meaningful
+ * and discourages typos that would fragment the catalog.
+ */
+export const COURSE_LANGUAGES = Object.freeze([
+  { value: 'en', label: 'English' },
+  { value: 'tr', label: 'Türkçe' },
+  { value: 'es', label: 'Español' },
+  { value: 'fr', label: 'Français' },
+  { value: 'de', label: 'Deutsch' },
+  { value: 'pt', label: 'Português' },
+  { value: 'it', label: 'Italiano' },
+  { value: 'ar', label: 'العربية' },
+  { value: 'zh', label: '中文' },
+  { value: 'ja', label: '日本語' },
+]);
+
 export const ENROLLMENT_FILTERS = Object.freeze({
   all: 'all',
   inProgress: 'in-progress',

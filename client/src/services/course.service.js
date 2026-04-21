@@ -24,8 +24,8 @@ export const getCurriculum = async (slug) => {
   return data;
 };
 
-export const getMyCourses = async () => {
-  const { data } = await api.get('/courses/mine');
+export const getMyCourses = async (params = {}) => {
+  const { data } = await api.get('/courses/mine', { params });
   return data;
 };
 
