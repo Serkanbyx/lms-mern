@@ -18,8 +18,30 @@ export const getQuiz = async (id) => {
   return data;
 };
 
-export const submitQuiz = async (id, answers) => {
-  const { data } = await api.post(`/quizzes/${id}/submit`, { answers });
+/**
+ * Submit a quiz attempt.
+ *
+ * Accepts either:
+ *   - the legacy positional `answers` array (kept for backward compat), or
+ *   - a full payload `{ answers, timeSpentSeconds }` so the player page
+ *     can report wall-clock time. The server clamps `timeSpentSeconds`
+ *     to the quiz's own `timeLimitSeconds + 5s` grace window, so a bogus
+ *     value cannot under-report a slow run.
+ *
+ * Server response shape:
+ *   { success, attemptId, score, correctCount, totalQuestions,
+ *     passed, timeSpentSeconds, perQuestion }
+ */
+export const submitQuiz = async (id, payload) => {
+  const body = Array.isArray(payload)
+    ? { answers: payload }
+    : {
+        answers: payload?.answers ?? [],
+        ...(Number.isInteger(payload?.timeSpentSeconds) && {
+          timeSpentSeconds: payload.timeSpentSeconds,
+        }),
+      };
+  const { data } = await api.post(`/quizzes/${id}/submit`, body);
   return data;
 };
 

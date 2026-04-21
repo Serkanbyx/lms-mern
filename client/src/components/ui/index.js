@@ -18,6 +18,7 @@ export { Card } from './Card.jsx';
 export { Checkbox } from './Checkbox.jsx';
 export { ChipInput } from './ChipInput.jsx';
 export { CommandMenu } from './CommandMenu.jsx';
+export { ConfettiBurst } from './ConfettiBurst.jsx';
 export { ConfirmModal } from './ConfirmModal.jsx';
 export { Divider } from './Divider.jsx';
 export { Drawer } from './Drawer.jsx';

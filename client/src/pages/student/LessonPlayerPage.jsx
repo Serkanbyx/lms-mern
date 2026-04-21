@@ -63,6 +63,7 @@ import {
 import { PlayerCurriculumDrawer } from '../../components/lesson/PlayerCurriculumDrawer.jsx';
 import {
   Button,
+  ConfettiBurst,
   EmptyState,
   Icon,
   IconButton,
@@ -820,59 +821,3 @@ function ShortcutsModal({ open, onClose }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// One-shot CSS confetti. Pure CSS keyframes (declared in `index.css`),
-// generates ~28 colored chips that fall from above the viewport.
-// ---------------------------------------------------------------------------
-
-const CONFETTI_COLORS = [
-  'var(--color-primary)',
-  'var(--color-success)',
-  'var(--color-warning)',
-  'var(--color-info)',
-  'var(--color-danger)',
-];
-
-function ConfettiBurst({ onDone }) {
-  const pieces = useMemo(
-    () =>
-      Array.from({ length: 28 }, (_, index) => ({
-        id: index,
-        left: Math.random() * 100,
-        x: `${Math.round((Math.random() - 0.5) * 200)}px`,
-        rot: `${Math.round(360 + Math.random() * 720)}deg`,
-        delay: `${Math.random() * 0.4}s`,
-        color: CONFETTI_COLORS[index % CONFETTI_COLORS.length],
-        size: 6 + Math.random() * 6,
-      })),
-    [],
-  );
-
-  useEffect(() => {
-    const id = setTimeout(() => onDone?.(), 3000);
-    return () => clearTimeout(id);
-  }, [onDone]);
-
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-120 overflow-hidden"
-    >
-      {pieces.map((piece) => (
-        <span
-          key={piece.id}
-          className="absolute top-0 block animate-confetti rounded-sm"
-          style={{
-            left: `${piece.left}%`,
-            width: piece.size,
-            height: piece.size * 1.5,
-            background: piece.color,
-            animationDelay: piece.delay,
-            '--confetti-x': piece.x,
-            '--confetti-rot': piece.rot,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
