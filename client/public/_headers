@@ -15,15 +15,16 @@
 # The Render URL also lives in the SPA's `VITE_API_BASE_URL`
 # Netlify env var.
 #
-# `script-src` keeps the strict `'self'` baseline and explicitly
-# whitelists the theme/font-size bootstrap inline script in
-# `index.html` via its SHA-256 hash. Whenever that <script> body
-# changes (even whitespace), regenerate the hash, e.g.:
-#   printf '%s' "<script body>" | openssl dgst -sha256 -binary | base64
+# `script-src` is locked to `'self'` with NO inline allowance. The
+# theme/font-size bootstrap that used to be an inline <script> in
+# `index.html` now lives in `public/theme-bootstrap.js`, so we never
+# have to maintain a SHA-256 hash here. If you ever need to add a new
+# inline block, prefer extracting it to /public/*.js over whitelisting
+# a hash — every whitespace edit otherwise breaks CSP in production.
 # =====================================================================
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-M4sPx2ZKxLOlpGb+jNYHEZ+gomDvyGqG0c7PVN0mQTQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://lms-mern-jby8.onrender.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://player.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://lms-mern-jby8.onrender.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://player.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

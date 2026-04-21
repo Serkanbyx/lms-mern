@@ -31,17 +31,11 @@
 
     <title>Lumen LMS</title>
 
-    <script>
-      (function () {
-        var t = localStorage.getItem('theme') || 'system';
-        var dark =
-          t === 'dark' ||
-          (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
-        if (dark) document.documentElement.classList.add('dark');
-        var fs = localStorage.getItem('fontSize') || 'medium';
-        document.documentElement.classList.add('font-' + fs);
-      })();
-    </script>
+    <!-- Render-blocking on purpose: applies the persisted theme +
+         font-size to <html> before first paint to avoid a dark-mode
+         flash. Lives in `public/theme-bootstrap.js` (NOT inline) so
+         CSP can stay at `script-src 'self'` with no hash maintenance. -->
+    <script src="/theme-bootstrap.js"></script>
   </head>
   <body>
     <div id="root"></div>
