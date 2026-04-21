@@ -1,476 +1,498 @@
-<p align="center">
-  <img src="./assets/branding/logo.svg" width="160" alt="Lumen LMS logo" />
-</p>
+# 🎓 Lumen LMS
 
-<h1 align="center">Lumen LMS</h1>
-<p align="center"><i>Production-grade Learning Management System — courses, quizzes, progress tracking, and certificates.</i></p>
+A full-stack **Learning Management System** built with the **MERN** stack (MongoDB, Express 5, React 19, Node.js ≥ 20). Students discover courses, watch lessons, take server-graded quizzes, and earn PDF certificates. Instructors author curricula through a draft → review → publish workflow, and admins moderate the catalog from a unified dashboard. Hardened with rotating JWT refresh tokens, Redis-backed rate limiting, RBAC, signed Cloudinary uploads, and a semantic Tailwind v4 design system.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
-  <img src="https://img.shields.io/badge/node-%E2%89%A520.0.0-brightgreen" alt="Node ≥ 20" />
-  <img src="https://img.shields.io/badge/React-19-61dafb" alt="React 19" />
-  <img src="https://img.shields.io/badge/Express-5-000000" alt="Express 5" />
-  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248" alt="MongoDB Atlas" />
-  <img src="https://img.shields.io/badge/Tailwind-v4-38bdf8" alt="Tailwind v4" />
-  <img src="https://img.shields.io/badge/API-Render-46E3B7" alt="Render" />
-  <img src="https://img.shields.io/badge/Web-Netlify-00C7B7" alt="Netlify" />
-  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs welcome" />
-</p>
-
-<p align="center">
-  <a href="https://serkanbayraktar.com/"><img src="https://img.shields.io/badge/Created%20by-Serkanby-4338ca?style=flat-square" alt="Created by Serkanby" /></a>
-  <a href="https://github.com/Serkanbyx"><img src="https://img.shields.io/badge/GitHub-Serkanbyx-181717?style=flat-square&logo=github" alt="GitHub Serkanbyx" /></a>
-</p>
-
-<p align="center">
-  <a href="https://lumen-lms.netlify.app"><b>Live Demo</b></a> •
-  <a href="https://lumen-lms.netlify.app/courses"><b>Browse Catalog</b></a> •
-  <a href="#-getting-started"><b>Quick Start</b></a> •
-  <a href="#-api-reference"><b>API Docs</b></a> •
-  <a href="#-screenshots"><b>Screenshots</b></a>
-</p>
-
-<p align="center">
-  <img src="./assets/screenshots/hero-landing.png" alt="Lumen LMS landing page" />
-</p>
-
----
-
-> ## Demo Credentials
->
-> Try the live demo with these seeded accounts (auto-reset hourly via a Render cron job):
->
-> | Role | Email | Password |
-> |---|---|---|
-> | Admin | `admin@lms-demo.app` | `DemoAdmin!2026` |
-> | Instructor | `instructor@lms-demo.app` | `DemoInstructor!2026` |
-> | Student | `student@lms-demo.app` | `DemoStudent!2026` |
->
-> These are public demo accounts on a sandboxed database. Do not enter real personal data.
-
----
-
-## Table of Contents
-
-1. [About](#-about)
-2. [Features](#-features)
-3. [Tech Stack](#-tech-stack)
-4. [Screenshots](#-screenshots)
-5. [Architecture](#-architecture)
-6. [Roles & Permissions](#-roles--permissions)
-7. [Getting Started](#-getting-started)
-8. [Environment Variables](#-environment-variables)
-9. [API Reference](#-api-reference)
-10. [Folder Structure](#-folder-structure)
-11. [Security](#-security)
-12. [Performance](#-performance)
-13. [Roadmap](#-roadmap)
-14. [Lessons Learned](#-lessons-learned)
-15. [Version Control](#-version-control)
-16. [Deployment](#-deployment)
-17. [Developer](#-developer)
-18. [Contact](#-contact)
-19. [Acknowledgments](#-acknowledgments)
-20. [License](#-license)
-
----
-
-## About
-
-Lumen LMS is a full-stack learning platform built to demonstrate end-to-end product engineering: from authentication, RBAC, and secure file uploads on the backend to a polished, accessible, design-system-driven SPA on the frontend. Students discover courses, watch lessons, take server-graded quizzes, and earn PDF certificates. Instructors build curricula with a drag-and-drop section/lesson editor and a draft → review → publish moderation flow. Admins moderate the catalog and manage users from a single dashboard.
-
-I built this project to push myself across the entire stack the way a small product team would: harden security (JWT + rotating refresh tokens, account lockout, helmet/CSP, Redis-backed rate limiting), invest in DX and design (semantic Tailwind v4 tokens, framer-motion micro-interactions, WCAG AA targets), and ship something operable (structured logging, graceful shutdown, scheduled cleanup jobs, demo seed reset). It is intentionally scoped as a portfolio capstone — production-shaped, but focused on depth over feature breadth.
+[![Created by Serkanby](https://img.shields.io/badge/Created%20by-Serkanby-blue?style=flat-square)](https://serkanbayraktar.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Serkanbyx-181717?style=flat-square&logo=github)](https://github.com/Serkanbyx)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
+[![Node](https://img.shields.io/badge/Node-%E2%89%A520.0.0-brightgreen?style=flat-square&logo=node.js)](https://nodejs.org)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev)
+[![Express](https://img.shields.io/badge/Express-5-000000?style=flat-square&logo=express)](https://expressjs.com)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/atlas)
+[![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
 
 ---
 
 ## Features
 
-### For Students
-Browse a polished catalog with role-, category-, level-, and price-based filters. Enroll in one click, watch lessons through a React Player wrapper that supports multiple sources (and optional Cloudinary HLS adaptive streaming), take multi-step quizzes that are validated and scored entirely on the server (the client never sees the correct answers), watch their progress percentage update in real time, and download a generated PDF completion certificate at 100%.
-
-### For Instructors
-Author courses with a drag-and-drop curriculum builder (sections + lessons), attach video or text lessons, build multiple-choice quizzes scored on the server, view their roster of enrolled students per course, and ship through an explicit draft → submit → review → published lifecycle gated by an admin moderation queue.
-
-### For Admins
-A unified dashboard with platform health metrics (users, courses, enrollments, revenue), a full user management UI (role updates, deactivation, deletion) with self-protection rules, and a moderation queue for pending instructor submissions.
-
-### Engineering Highlights
-
-- End-to-end JWT auth with rotating refresh tokens, `tokenVersion`-based revocation, email verification, password reset, and per-account lockout after repeated failures.
-- Helmet with strict CSP, HTTPS enforcement in production, and Redis-backed rate limiting that falls back to an in-memory store in dev.
-- Mass-assignment protection on every write endpoint, NoSQL-injection sanitization compatible with Express 5's read-only `req.query`, ownership and RBAC middleware on every protected route.
-- Cloudinary signed uploads with server-side MIME and size whitelisting, signed URL rendering, and ReDoS-safe search filters.
-- Dedicated design system: semantic light/dark tokens, a hand-built UI primitive library (Button, Input, Card, Modal, Toast, Skeleton…), framer-motion micro-interactions, and WCAG AA accessibility targets.
-- Lighthouse Performance ≥ 90, Accessibility ≥ 95, SEO ≥ 95 across landing, catalog, and course-detail.
-- PWA shell (manifest, install prompt, offline fallback), aggressive code-splitting, image LQIP placeholders, and optional HLS adaptive video.
-- Operationally honest: pino structured logging, graceful SIGTERM shutdown, three Render Cron Jobs (stale draft cleanup, expired token cleanup, certificate reminders), and a deliberate MongoDB index strategy.
-- An i18n string layer, timezone-aware date rendering, and a server- and client-mirrored feature-flag system.
+- **Role-Based Access Control** — Three first-class roles (Student, Instructor, Admin) with explicit ownership and self-protection rules on every protected route.
+- **Authoring Workflow** — Drag-and-drop section/lesson editor with an explicit **draft → submit → review → published** lifecycle gated by an admin moderation queue.
+- **Server-Graded Quizzes** — Multiple-choice questions with `correctIndex` stripped from the student-facing payload; scoring happens entirely on the server, so cheating becomes a strictly client-side bug.
+- **Progress Tracking & Certificates** — Per-lesson completion bumps an enrollment progress percentage, and a generated **PDF certificate** is unlocked at 100%.
+- **Video & Media Pipeline** — Cloudinary signed uploads with server-side MIME and size whitelisting, plus optional Cloudinary HLS adaptive streaming and a React Player wrapper.
+- **Hardened Authentication** — JWT access + rotating refresh tokens, `tokenVersion`-based revocation, account lockout, email verification, and one-shot password reset links.
+- **Production Ops** — Structured pino logging, graceful SIGTERM shutdown, three Render Cron Jobs (stale draft cleanup, expired token cleanup, certificate reminders), and Redis-backed shared rate limiting.
+- **Design System First** — Semantic light/dark Tailwind v4 tokens, a hand-built UI primitive library (Button, Input, Card, Modal, Toast, Skeleton…), Framer Motion micro-interactions, and WCAG AA accessibility targets.
+- **PWA & Performance** — Installable PWA shell with offline fallback, route-level code splitting, image LQIP placeholders, compression, and Lighthouse scores ≥ 90 on Performance / ≥ 95 on Accessibility & SEO.
+- **Internationalization Ready** — i18next layer for the entire UI string surface and timezone-aware date rendering.
+- **Interactive API Docs** — Swagger UI at `/api-docs` and the raw OpenAPI 3.0 spec at `/api-docs.json`.
 
 ---
 
-## Tech Stack
+## Live Demo
 
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=react,vite,tailwind,nodejs,express,mongodb,redis,cloudinary,netlify,render,git,github,vscode" alt="Tech stack icons" />
-</p>
+[🚀 View Live Demo](https://lms-mernn.netlify.app/)
 
-| Layer | Tools |
-|---|---|
-| Frontend | React 19, Vite 7, React Router v7, TailwindCSS v4, Axios, Framer Motion, React Player, jsPDF, react-helmet-async, lucide-react, react-hot-toast, react-i18next |
-| Backend | Node.js ≥ 20, Express 5, Mongoose 9, JWT (access + rotating refresh), Multer, Cloudinary SDK, Helmet, express-rate-limit, express-validator, express-mongo-sanitize, pino, nodemailer |
-| Database | MongoDB Atlas (free tier compatible) |
-| Cache & Limits | Redis (ioredis + rate-limit-redis) — optional in dev, recommended in production |
-| Media | Cloudinary (signed uploads, transformations, optional HLS) |
-| Tooling | ESLint 9, Nodemon, Vite PWA, pino-pretty |
-| Deploy | Render (API + Cron Jobs + optional Redis), Netlify (SPA), MongoDB Atlas, Cloudinary |
+> **Demo Credentials** — sandboxed accounts on a public demo database. Do not enter real personal data.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@lms-demo.app` | `DemoAdmin!2026` |
+| Instructor | `instructor@lms-demo.app` | `DemoInstructor!2026` |
+| Student | `student@lms-demo.app` | `DemoStudent!2026` |
 
 ---
 
 ## Screenshots
 
-> Drop captures into `assets/screenshots/` using the filenames referenced in the gallery below (1440×900 PNG, light mode, ≤ 250 KB). Until then, the gallery renders with broken-image icons; everything else in this README is fully styled.
+### Landing & Catalog
 
-| Landing | Catalog | Course Detail |
-|---|---|---|
-| ![Landing](./assets/screenshots/landing.png) | ![Catalog](./assets/screenshots/catalog.png) | ![Course detail](./assets/screenshots/course-detail.png) |
-| **Lesson Player** | **Quiz Flow** | **Certificate** |
-| ![Lesson player](./assets/screenshots/lesson-player.png) | ![Quiz](./assets/screenshots/quiz.png) | ![Certificate](./assets/screenshots/certificate.png) |
-| **Instructor Dashboard** | **Admin Moderation** | **Mobile View** |
-| ![Instructor dashboard](./assets/screenshots/instructor-dashboard.png) | ![Admin moderation](./assets/screenshots/admin-moderation.png) | ![Mobile overview](./assets/screenshots/mobile-overview.png) |
+![Landing](./assets/screenshots/landing.png)
+![Catalog](./assets/screenshots/catalog.png)
 
-A short animated walkthrough of the quiz flow lives at [`assets/screenshots/quiz-flow.gif`](./assets/screenshots/quiz-flow.gif).
+The marketing landing surface and the filterable catalog (role, category, level, price).
+
+### Course Detail & Lesson Player
+
+![Course detail](./assets/screenshots/course-detail.png)
+![Lesson player](./assets/screenshots/lesson-player.png)
+
+Course overview with curriculum tree and the React Player–based lesson view.
+
+### Quiz Flow & Certificate
+
+![Quiz](./assets/screenshots/quiz.png)
+![Certificate](./assets/screenshots/certificate.png)
+
+Multi-step quiz with server-side scoring, and the auto-generated PDF certificate at 100% progress.
+
+### Instructor & Admin
+
+![Instructor dashboard](./assets/screenshots/instructor-dashboard.png)
+![Admin moderation](./assets/screenshots/admin-moderation.png)
+
+Instructor authoring dashboard and the admin moderation queue for pending submissions.
 
 ---
 
 ## Architecture
 
-```
-User
- └─ Course (instructor)
-     └─ Section
-         └─ Lesson (video / text)
-             └─ Quiz
-                 └─ QuizAttempt (per student)
- └─ Enrollment (user ↔ course)
-     └─ completedLessons[]
-     └─ progress %
-     └─ Certificate (issued at 100%)
-```
+A high-level visual map of the system. Both diagrams render natively on GitHub thanks to Mermaid support.
+
+### Domain Model
+
+How the core MongoDB collections relate to each other and how progress is tracked across enrollments.
 
 ```mermaid
 graph LR
-  Client[React SPA<br/>Netlify] -->|HTTPS + CORS| API[Express 5 API<br/>Render]
-  API --> Mongo[(MongoDB Atlas)]
-  API --> Redis[(Redis<br/>rate limiting)]
-  API --> Cloud[Cloudinary<br/>video + image]
-  API --> SMTP[SMTP<br/>email verification]
-  Cron[Render Cron Jobs] --> Mongo
+  User(("User"))
+  Course(["Course"])
+  Section(["Section"])
+  Lesson(["Lesson"])
+  Quiz(["Quiz"])
+  Attempt(["QuizAttempt"])
+  Enrollment(["Enrollment"])
+  Certificate(["Certificate"])
+
+  User -- "authors" --> Course
+  Course -- "contains" --> Section
+  Section -- "contains" --> Lesson
+  Lesson -- "has optional" --> Quiz
+  User -- "submits" --> Attempt
+  Attempt -- "scored against" --> Quiz
+  User -- "enrolls in" --> Enrollment
+  Enrollment -- "tracks" --> Course
+  Enrollment -- "completes" --> Lesson
+  Enrollment -. "issues at 100%" .-> Certificate
 ```
 
-For a deeper write-up of the request lifecycle, data model, and module boundaries, see [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+### Request Lifecycle
+
+How a single browser action travels through the stack — from the React SPA on Netlify to the Express API on Render and out to MongoDB, Redis, Cloudinary, and SMTP.
+
+```mermaid
+flowchart LR
+  Browser["React 19 SPA<br/>(Vite + Tailwind v4)"]
+  API["Express 5 API<br/>(REST + JWT)"]
+  DB[("MongoDB Atlas<br/>Mongoose 9")]
+  Redis[("Redis<br/>rate limiting")]
+  CDN[("Cloudinary<br/>video + image")]
+  SMTP[("SMTP<br/>verification + reset")]
+  Cron["Render Cron Jobs<br/>(drafts, tokens, reminders)"]
+
+  Browser -- "Axios + Bearer JWT" --> API
+  Browser <-. "HttpOnly refresh cookie" .-> API
+  API --> DB
+  API --> Redis
+  API -- "signed upload" --> CDN
+  API -. "transactional mail" .-> SMTP
+  Cron --> DB
+```
+
+For a deeper write-up of module boundaries and trade-offs, see [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ---
 
-## Roles & Permissions
+## Technologies
 
-| Resource | Student | Instructor | Admin |
-|---|---|---|---|
-| Browse published courses | Read | Read | Read |
-| Enroll in a course | Create / Delete (own) | Create / Delete (own) | Read all |
-| Complete lessons & take quizzes | Create (own) | Create (own) | Read all |
-| Author courses / sections / lessons | — | CRUD (own, draft state) | CRUD (any) |
-| Submit course for review | — | Update (own) | — |
-| Approve / reject / archive course | — | — | Update (any) |
-| Build & edit quizzes | — | CRUD (own course) | CRUD (any) |
-| Manage users (role, active, delete) | — | — | Update / Delete (others only) |
-| View platform-wide stats | — | Own students only | Read all |
-| Upload to Cloudinary | — | Create (signed) | Create (signed) |
+### Frontend
 
-Self-protection rules apply: admins cannot demote, deactivate, or delete themselves; instructors cannot edit a course they did not create.
+- **React 19**: Modern UI library with hooks, context, and concurrent rendering
+- **Vite 7**: Lightning-fast build tool and dev server with HMR
+- **React Router v7**: File-agnostic data router for nested routes and layouts
+- **Tailwind CSS v4**: Utility-first CSS framework with semantic design tokens
+- **Framer Motion**: Production-ready animations and micro-interactions
+- **Axios**: Promise-based HTTP client with interceptors for auth refresh
+- **React Player**: Pluggable video player with multi-source and HLS support
+- **jsPDF**: Client-side PDF generation for completion certificates
+- **react-i18next**: Type-safe internationalization layer
+- **react-hot-toast**: Lightweight, accessible toast notifications
+- **lucide-react**: Beautiful, tree-shakable SVG icon set
+- **react-helmet-async**: SEO and Open Graph metadata management
+- **vite-plugin-pwa**: Installable PWA shell with offline fallback
+
+### Backend
+
+- **Node.js ≥ 20**: Modern, stable JavaScript runtime
+- **Express 5**: Minimal and flexible web application framework
+- **MongoDB (Mongoose 9)**: NoSQL database with elegant object modeling
+- **JWT (jsonwebtoken)**: Stateless auth with rotating refresh tokens and `tokenVersion` revocation
+- **bcryptjs**: Password hashing with a configurable cost factor
+- **Helmet**: HTTP security headers with a strict Content Security Policy
+- **express-rate-limit + rate-limit-redis**: Per-flow rate limiting with a Redis-backed store
+- **express-validator**: Declarative request validation and sanitization
+- **express-mongo-sanitize**: NoSQL injection protection (Express 5 compatible wrapper)
+- **Multer + Cloudinary SDK**: Streaming file uploads with server-signed Cloudinary delivery
+- **Nodemailer**: SMTP transport for verification and password-reset emails
+- **pino + pino-http**: Structured logging with sensitive-field redaction
+- **swagger-jsdoc + swagger-ui-express**: OpenAPI 3.0 spec and live `/api-docs` UI
+- **ioredis**: Redis client for the shared rate-limit store
+- **slugify**: URL-safe slug generation for course routes
 
 ---
 
-## Getting Started
+## Installation
 
 ### Prerequisites
-- Node.js ≥ 20
-- npm ≥ 10
-- A MongoDB Atlas account (free tier is fine) or a local `mongod`
-- A Cloudinary account (free tier)
-- Optional: a local Redis instance for production-grade rate limiting
 
-### 1. Get the code
-Clone or download this repository using your preferred Git client (GitHub Desktop, the `git` CLI, or "Download ZIP" from GitHub).
+- **Node.js** v20+ and **npm** v10+
+- **MongoDB** — MongoDB Atlas (free tier) or a local `mongod` instance
+- **Cloudinary** account (free tier) for media uploads
+- **SMTP** transport (e.g., a free Mailtrap/Brevo account) for verification mail
+- **Redis** — optional in development, recommended in production (e.g., Render Key Value)
 
-### 2. Install dependencies
+### Local Development
+
+**1. Clone the repository:**
 
 ```bash
-cd server && npm install
-cd ../client && npm install
+git clone https://github.com/Serkanbyx/lumen-lms.git
+cd lumen-lms
 ```
 
-### 3. Configure environment variables
-
-Copy the example files and fill in your own credentials:
+**2. Set up environment variables:**
 
 ```bash
 cp server/.env.example server/.env
 cp client/.env.example client/.env
 ```
 
-See [Environment Variables](#-environment-variables) for the full reference.
+**server/.env**
 
-### 4. Seed the initial admin
+```env
+NODE_ENV=development
+PORT=5000
+CLIENT_URL=http://localhost:5173
+CORS_ORIGINS=http://localhost:5173
 
-```bash
-cd server && npm run seed:admin
+MONGO_URI=your_mongodb_connection_string
+
+JWT_ACCESS_SECRET=your_access_secret_min_32_chars
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your_refresh_secret_min_32_chars_different
+JWT_REFRESH_EXPIRES_IN=7d
+REFRESH_COOKIE_NAME=lms.refresh
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your_smtp_user
+SMTP_PASS=your_smtp_password
+MAIL_FROM="Lumen LMS <no-reply@example.com>"
+
+REDIS_URL=
+
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=ChangeMe!2026Strong
+ADMIN_NAME=Site Admin
+
+BCRYPT_ROUNDS=12
+MAX_LOGIN_ATTEMPTS=10
+LOCK_DURATION_MIN=15
+EMAIL_VERIFICATION_TTL_MIN=1440
+PASSWORD_RESET_TTL_MIN=15
+
+LOG_LEVEL=info
+FEATURE_CERTIFICATES=true
+FEATURE_HLS=false
+FEATURE_BETA_QUIZ_TIMER=false
 ```
 
-This creates the admin account from `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `server/.env`.
+**client/.env**
 
-### 5. Run in development mode
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+VITE_SITE_URL=http://localhost:5173
+VITE_APP_NAME=Lumen LMS
 
-Two terminals:
+VITE_FEATURE_CERTIFICATES=true
+VITE_FEATURE_HLS=false
+VITE_FEATURE_COMMAND_PALETTE=true
+VITE_FEATURE_BETA_QUIZ_TIMER=false
+VITE_FEATURE_ANALYTICS=false
+```
+
+**3. Install dependencies:**
 
 ```bash
-# Terminal 1 — API
+cd server && npm install
+cd ../client && npm install
+```
+
+**4. Seed the initial admin (and optionally the demo data):**
+
+```bash
+cd server
+npm run seed:admin
+npm run seed:demo
+```
+
+**5. Run the application:**
+
+```bash
+# Terminal 1 — Backend (http://localhost:5000)
 cd server && npm run dev
 
-# Terminal 2 — Web
+# Terminal 2 — Frontend (http://localhost:5173)
 cd client && npm run dev
 ```
 
-Open <http://localhost:5173>. The Vite dev server proxies API requests to <http://localhost:5000>.
+Open <http://localhost:5173>. The Vite dev server proxies API requests to the Express server on port 5000. Interactive API docs live at <http://localhost:5000/api-docs>.
 
 ---
 
-## Environment Variables
+## Usage
 
-> This section mirrors `server/.env.example` and `client/.env.example` exactly. Never paste real values here — `.env` files are git-ignored on purpose.
-
-<details>
-<summary><b>Server (<code>server/.env</code>)</b></summary>
-
-| Variable | Required | Default | Notes |
-|---|---|---|---|
-| `NODE_ENV` | ✓ | `development` | Switches CORS, cookie, and logging strictness. |
-| `PORT` | ✓ | `5000` | API listen port. |
-| `CLIENT_URL` | ✓ | `http://localhost:5173` | Used in CORS allowlist and email links. |
-| `MONGO_URI` | ✓ | — | Must start with `mongodb://` or `mongodb+srv://`. |
-| `JWT_ACCESS_SECRET` | ✓ | — | Production: ≥ 32 chars, must differ from refresh secret. |
-| `JWT_ACCESS_EXPIRES_IN` | ✓ | `15m` | Short-lived access token TTL. |
-| `JWT_REFRESH_SECRET` | ✓ | — | Production: ≥ 32 chars, must differ from access secret. |
-| `JWT_REFRESH_EXPIRES_IN` | ✓ | `7d` | Refresh token TTL (HttpOnly cookie). |
-| `CLOUDINARY_CLOUD_NAME` | prod ✓ | — | Required when `NODE_ENV=production`. |
-| `CLOUDINARY_API_KEY` | prod ✓ | — | Required in production. |
-| `CLOUDINARY_API_SECRET` | prod ✓ | — | Required in production. Never expose to client. |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` | ✓ | — | SMTP transport for verification + reset mail. |
-| `SMTP_USER` / `SMTP_PASS` | ✓ | — | Credentials for the SMTP transport. |
-| `MAIL_FROM` | ✓ | — | `From:` header for outbound mail. |
-| `REDIS_URL` | optional | — | Enables shared rate-limit store across replicas. |
-| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | ✓ | — | Used by `npm run seed:admin`. Password ≥ 12 chars. |
-| `CORS_ORIGINS` | ✓ | `http://localhost:5173` | Comma-separated; `CLIENT_URL` is auto-included. Must not contain `*` in production. |
-| `BCRYPT_ROUNDS` | ✓ | `12` | Integer in `[10, 14]`. |
-| `MAX_LOGIN_ATTEMPTS` | ✓ | `10` | Triggers account lockout after this many failures. |
-| `LOCK_DURATION_MIN` | ✓ | `15` | Lockout window in minutes. |
-| `EMAIL_VERIFICATION_TTL_MIN` | ✓ | `1440` | TTL for the email-verification link. |
-| `PASSWORD_RESET_TTL_MIN` | ✓ | `15` | TTL for the password-reset link. |
-| `REFRESH_COOKIE_NAME` | ✓ | `lms.refresh` | HttpOnly cookie name for the refresh token. |
-| `LOG_LEVEL` | ✓ | `info` | pino log level. |
-| `FEATURE_CERTIFICATES` | ✓ | `true` | Server-side mirror of `VITE_FEATURE_CERTIFICATES`. |
-| `FEATURE_HLS` | ✓ | `false` | Toggles Cloudinary HLS streaming output. |
-| `FEATURE_BETA_QUIZ_TIMER` | ✓ | `false` | Beta quiz timer flag. |
-
-</details>
-
-<details>
-<summary><b>Client (<code>client/.env</code>)</b></summary>
-
-| Variable | Required | Default | Notes |
-|---|---|---|---|
-| `VITE_API_BASE_URL` | ✓ | `http://localhost:5000/api` | No trailing slash. Prefixes every Axios request. |
-| `VITE_SITE_URL` | ✓ | `http://localhost:5173` | Used in SEO / Open Graph metadata. |
-| `VITE_APP_NAME` | ✓ | `Lumen LMS` | Display name in footer, manifest fallback, meta tags. |
-| `VITE_FEATURE_CERTIFICATES` | ✓ | `true` | Mirrors server `FEATURE_CERTIFICATES`. |
-| `VITE_FEATURE_HLS` | ✓ | `false` | Mirrors server `FEATURE_HLS`. |
-| `VITE_FEATURE_COMMAND_PALETTE` | ✓ | `true` | Toggles the in-app command palette UI. |
-| `VITE_FEATURE_BETA_QUIZ_TIMER` | ✓ | `false` | Beta-flag UI affordance for quiz timer. |
-| `VITE_FEATURE_ANALYTICS` | ✓ | `false` | Toggles the analytics opt-in panel. |
-
-</details>
+1. **Register** a new account at `/auth/register` and confirm the email-verification link sent via SMTP.
+2. **Log in** at `/auth/login`. JWT access tokens are stored in memory; the rotating refresh token is set as an HttpOnly cookie automatically.
+3. **Browse the catalog** at `/courses` and filter by category, level, or price.
+4. **Enroll** in a course in one click; the lesson player and curriculum tree become immediately available.
+5. **Watch lessons** and mark them complete — your enrollment progress percentage updates in real time.
+6. **Take quizzes** at the end of qualifying lessons; the server returns your score and attempt history.
+7. **Download your certificate** at `/dashboard/certificates` once you reach 100% progress.
+8. **Instructors** can request the role from an admin, then author courses at `/instructor/courses` and submit them for moderation.
+9. **Admins** moderate the catalog and manage users from `/admin`.
+10. **Log out** from the user menu, or use **Log out everywhere** to bump `tokenVersion` and invalidate every session.
 
 ---
 
-## API Reference
+## How It Works?
 
-All endpoints are mounted under `/api`. Endpoints flagged with the lock icon below have a stricter rate limiter applied. Auth column legend: `—` public, `User` any logged-in user, `Owner` resource owner, `Instructor`, `Admin`.
+### Authentication Flow
 
-> **Interactive docs:** the running server exposes a Swagger UI at [`/api-docs`](http://localhost:5000/api-docs) and the raw OpenAPI 3.0 spec at [`/api-docs.json`](http://localhost:5000/api-docs.json). Hitting the bare API root (`/`) returns a friendly welcome page with one-click links to both.
+Authentication is a two-token system. A short-lived access token (15 min) is sent in the `Authorization: Bearer` header and never stored in `localStorage`. A long-lived refresh token (7 days) lives in an HttpOnly, `SameSite=Lax`, `Secure` (in production) cookie. An Axios response interceptor transparently rotates the access token on 401:
+
+```js
+api.interceptors.response.use(
+  (res) => res,
+  async (err) => {
+    const original = err.config;
+    if (err.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      await api.post('/auth/refresh');
+      return api(original);
+    }
+    return Promise.reject(err);
+  }
+);
+```
+
+Server-side, `tokenVersion` on the user document is the single source of truth for revocation: any `logout-all` or password change bumps it, and every refresh validates the embedded version against the database.
+
+### Authoring & Moderation Lifecycle
+
+Courses move through an explicit state machine — `draft → submitted → published → archived` — and only the admin can flip the gate from `submitted` to `published`. Instructors edit drafts with a section/lesson tree editor; the catalog only ever exposes `published` documents to the public route.
+
+### Server-Graded Quiz Integrity
+
+`GET /api/quizzes/:id` (the student-facing endpoint) strips `correctIndex` from every question. `POST /api/quizzes/:id/attempt` is the **only** path that knows the right answers; the client submits answer indices and receives a score plus per-question correctness flags. This means cheating is a strictly client-side bug, and the integrity of grading lives next to the source of truth.
+
+### Rate Limiting Strategy
+
+A single `createLimiter()` factory returns a Redis-backed limiter when `REDIS_URL` is set and an in-memory one otherwise — identical interface, transparent backend swap. A per-flow matrix applies stricter limits to login, refresh, verify, forgot, reset, password-change, and upload routes.
+
+### Cloudinary Signed Uploads
+
+Browsers never receive the Cloudinary API secret. The server signs upload presets with a server-side MIME and size whitelist (`image/jpeg`, `image/png`, `image/webp` for thumbnails; `video/mp4`, `video/webm` for lessons), streams the multipart body via Multer, and returns the resulting `secure_url` and `public_id` for persistence on the lesson document.
+
+---
+
+## API Endpoints
+
+All endpoints are mounted under `/api`. Auth column legend: `—` public, `User` any logged-in user, `Owner` resource owner, `Instructor` / `Admin` role gate. Endpoints flagged with the lock icon (🔒) have a stricter rate limiter applied.
 
 ### Auth (`/api/auth`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/register` | — 🔒 | Create an account and email a verification link. |
-| POST | `/login` | — 🔒 | Email + password. Lockout after `MAX_LOGIN_ATTEMPTS`. |
-| POST | `/refresh` | cookie 🔒 | Rotate the access token via the HttpOnly refresh cookie. |
-| GET | `/verify-email/:token` | — 🔒 | Confirm email ownership. |
-| POST | `/resend-verification` | — 🔒 | Re-send the verification email. |
-| POST | `/forgot-password` | — 🔒 | Always returns 200 (anti-enumeration). |
-| POST | `/reset-password/:token` | — 🔒 | Consume reset link, set a new password. |
-| GET | `/me` | User | Return the current user profile. |
-| PATCH | `/me` | User | Update name / avatar / bio / headline. |
-| PATCH | `/me/password` | User 🔒 | Change password (bumps `tokenVersion`). |
-| DELETE | `/me` | User 🔒 | Delete the current account (requires password). |
-| POST | `/logout` | User | Clear the refresh-token cookie. |
-| POST | `/logout-all` | User | Bump `tokenVersion` to invalidate every session. |
+| --- | --- | --- | --- |
+| POST | `/register` | — 🔒 | Create an account and email a verification link |
+| POST | `/login` | — 🔒 | Email + password; lockout after `MAX_LOGIN_ATTEMPTS` |
+| POST | `/refresh` | cookie 🔒 | Rotate the access token via the HttpOnly refresh cookie |
+| GET | `/verify-email/:token` | — 🔒 | Confirm email ownership |
+| POST | `/resend-verification` | — 🔒 | Re-send the verification email |
+| POST | `/forgot-password` | — 🔒 | Always returns 200 (anti-enumeration) |
+| POST | `/reset-password/:token` | — 🔒 | Consume reset link and set a new password |
+| GET | `/me` | User | Return the current user profile |
+| PATCH | `/me` | User | Update name, avatar, bio, headline |
+| PATCH | `/me/password` | User 🔒 | Change password (bumps `tokenVersion`) |
+| DELETE | `/me` | User 🔒 | Delete the current account (requires password) |
+| POST | `/logout` | User | Clear the refresh-token cookie |
+| POST | `/logout-all` | User | Bump `tokenVersion` to invalidate every session |
 
 ### Users (`/api/users`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| PATCH | `/me/avatar` | User | Update avatar URL. |
-| GET | `/:id` | — | Public instructor / student profile (safe fields only). |
+| --- | --- | --- | --- |
+| PATCH | `/me/avatar` | User | Update avatar URL |
+| GET | `/:id` | — | Public instructor / student profile (safe fields only) |
 
 ### Courses (`/api/courses`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/` | — | Public, paginated, filterable list of published courses. |
-| GET | `/:slug` | — | Single published course by slug. |
-| GET | `/mine` | Instructor / Admin | List the current instructor's courses (any state). |
-| GET | `/:id/instructor` | Owner / Admin | Full course (incl. drafts) for the editor. |
-| GET | `/:id/curriculum` | Owner / Admin | Sections + lessons tree. |
-| POST | `/` | Instructor / Admin | Create a draft course. |
-| POST | `/:id/submit` | Owner | Submit draft for moderation. |
-| POST | `/:id/archive` | Owner / Admin | Archive a published course. |
+| --- | --- | --- | --- |
+| GET | `/` | — | Public, paginated, filterable list of published courses |
+| GET | `/:slug` | — | Single published course by slug |
+| GET | `/mine` | Instructor / Admin | List the current instructor's courses (any state) |
+| GET | `/:id/instructor` | Owner / Admin | Full course (incl. drafts) for the editor |
+| GET | `/:id/curriculum` | Owner / Admin | Sections + lessons tree |
+| POST | `/` | Instructor / Admin | Create a draft course |
+| POST | `/:id/submit` | Owner | Submit draft for moderation |
+| POST | `/:id/archive` | Owner / Admin | Archive a published course |
 
-### Sections (`/api/courses/:courseId/sections`, `/api/sections`)
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/api/courses/:courseId/sections` | Owner / Admin | List sections for a course. |
-| POST | `/api/courses/:courseId/sections` | Owner / Admin | Create a section. |
-| PATCH | `/api/sections/:id` | Owner / Admin | Rename / reorder. |
-| DELETE | `/api/sections/:id` | Owner / Admin | Remove section + cascade lessons. |
-
-### Lessons (`/api/lessons`)
+### Sections & Lessons
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/` | Owner / Admin | Create a lesson (video or text). |
-| PATCH | `/:id` | Owner / Admin | Update a lesson. |
-| DELETE | `/:id` | Owner / Admin | Delete a lesson + cascade quizzes. |
-| POST | `/:id/complete` | Enrolled User | Mark complete; bumps enrollment progress. |
-| POST | `/:id/access` | Enrolled User | Track last-accessed lesson for resume. |
+| --- | --- | --- | --- |
+| GET | `/api/courses/:courseId/sections` | Owner / Admin | List sections for a course |
+| POST | `/api/courses/:courseId/sections` | Owner / Admin | Create a section |
+| PATCH | `/api/sections/:id` | Owner / Admin | Rename or reorder a section |
+| DELETE | `/api/sections/:id` | Owner / Admin | Remove section + cascade lessons |
+| POST | `/api/lessons` | Owner / Admin | Create a lesson (video or text) |
+| PATCH | `/api/lessons/:id` | Owner / Admin | Update a lesson |
+| DELETE | `/api/lessons/:id` | Owner / Admin | Delete a lesson + cascade quizzes |
+| POST | `/api/lessons/:id/complete` | Enrolled | Mark complete; bumps enrollment progress |
+| POST | `/api/lessons/:id/access` | Enrolled | Track last-accessed lesson for resume |
 
 ### Quizzes (`/api/quizzes`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/` | Owner / Admin | Create a quiz attached to a lesson. |
-| PATCH | `/:id` | Owner / Admin | Update questions. |
-| DELETE | `/:id` | Owner / Admin | Delete quiz + cascade attempts. |
-| GET | `/:id/instructor` | Owner / Admin | Full quiz including correct answers. |
-| GET | `/:id` | Enrolled User | Student-safe view (no `correctIndex`). |
-| POST | `/:id/attempt` | Enrolled User 🔒 | Submit answers; scored entirely on the server. |
-| GET | `/:id/attempts/mine` | Enrolled User | Paginated attempt history. |
-| GET | `/:id/best/mine` | Enrolled User | Best score for the current user. |
+| --- | --- | --- | --- |
+| POST | `/` | Owner / Admin | Create a quiz attached to a lesson |
+| PATCH | `/:id` | Owner / Admin | Update questions |
+| DELETE | `/:id` | Owner / Admin | Delete quiz + cascade attempts |
+| GET | `/:id/instructor` | Owner / Admin | Full quiz including correct answers |
+| GET | `/:id` | Enrolled | Student-safe view (no `correctIndex`) |
+| POST | `/:id/attempt` | Enrolled 🔒 | Submit answers; scored entirely on the server |
+| GET | `/:id/attempts/mine` | Enrolled | Paginated attempt history |
+| GET | `/:id/best/mine` | Enrolled | Best score for the current user |
 
 ### Enrollments (`/api/enrollments`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/mine` | User | The current user's enrollments + progress. |
-| POST | `/` | User | Enroll in a published course. |
-| DELETE | `/:id` | Owner | Unenroll. |
+| --- | --- | --- | --- |
+| GET | `/mine` | User | The current user's enrollments + progress |
+| POST | `/` | User | Enroll in a published course |
+| DELETE | `/:id` | Owner | Unenroll |
 
-### Progress (`/api/lessons/...`)
-
-Surfaced under the `lessons` mount; see Lessons table above for `/complete` and `/access`.
-
-### Instructors (`/api/instructors`)
+### Instructors & Uploads
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/courses/:courseId/students` | Owner / Admin | Roster + per-student progress. |
-
-### Upload (`/api/upload`)
-
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/image` | Instructor / Admin 🔒 | Course thumbnail (MIME + size whitelist). |
-| POST | `/video` | Instructor / Admin 🔒 | Lesson video (server-signed Cloudinary upload). |
-| DELETE | `/:publicId` | Owner / Admin | Delete a Cloudinary asset by public id. |
+| --- | --- | --- | --- |
+| GET | `/api/instructors/courses/:courseId/students` | Owner / Admin | Roster + per-student progress |
+| POST | `/api/upload/image` | Instructor / Admin 🔒 | Course thumbnail (MIME + size whitelist) |
+| POST | `/api/upload/video` | Instructor / Admin 🔒 | Lesson video (server-signed Cloudinary upload) |
+| DELETE | `/api/upload/:publicId` | Owner / Admin | Delete a Cloudinary asset by public id |
 
 ### Admin (`/api/admin`)
 
 | Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| GET | `/stats` | Admin | Platform-wide counts and revenue. |
-| GET | `/users` | Admin | Paginated, filterable user list. |
-| GET | `/users/:id` | Admin | Single user. |
-| PATCH | `/users/:id/role` | Admin | Update role (with self-protection). |
-| PATCH | `/users/:id/active` | Admin | Activate / deactivate (with self-protection). |
-| DELETE | `/users/:id` | Admin | Delete user (with self-protection). |
-| GET | `/courses` | Admin | All courses regardless of state. |
-| GET | `/courses/pending` | Admin | Moderation queue. |
-| POST | `/courses/:id/approve` | Admin | Publish a submitted course. |
-| POST | `/courses/:id/reject` | Admin | Reject with a reason. |
-| POST | `/courses/:id/feature` | Admin | Toggle the homepage "featured" flag. |
-| DELETE | `/courses/:id` | Admin | Hard-delete a course. |
+| --- | --- | --- | --- |
+| GET | `/stats` | Admin | Platform-wide counts and revenue |
+| GET | `/users` | Admin | Paginated, filterable user list |
+| GET | `/users/:id` | Admin | Single user |
+| PATCH | `/users/:id/role` | Admin | Update role (with self-protection) |
+| PATCH | `/users/:id/active` | Admin | Activate / deactivate (with self-protection) |
+| DELETE | `/users/:id` | Admin | Delete user (with self-protection) |
+| GET | `/courses` | Admin | All courses regardless of state |
+| GET | `/courses/pending` | Admin | Moderation queue |
+| POST | `/courses/:id/approve` | Admin | Publish a submitted course |
+| POST | `/courses/:id/reject` | Admin | Reject with a reason |
+| POST | `/courses/:id/feature` | Admin | Toggle the homepage "featured" flag |
+| DELETE | `/courses/:id` | Admin | Hard-delete a course |
+
+> Auth-protected endpoints require an `Authorization: Bearer <accessToken>` header. The refresh token is sent automatically via the HttpOnly `lms.refresh` cookie. Live, interactive docs ship at [`/api-docs`](http://localhost:5000/api-docs).
 
 ---
 
-## Folder Structure
-
-<details>
-<summary><b>Server</b></summary>
+## Project Structure
 
 ```
-server/
-├── config/             # env validation, db, cloudinary, mailer, redis
-├── controllers/        # auth, course, lesson, quiz, enrollment, admin…
-├── middleware/         # auth, rbac, rateLimit, validate, error, sanitize
-├── models/             # Mongoose schemas + indexes
-├── routes/             # one file per resource group
-├── scripts/            # cron jobs (drafts, tokens, certificate reminders)
-├── seeders/            # initial admin
-├── utils/              # token, mailer templates, slug, error classes
-├── validators/         # express-validator schemas per resource
-├── index.js            # Express app composition + graceful shutdown
-└── .env.example
+lumen-lms/
+├── client/                       # React 19 + Vite SPA
+│   ├── public/                   # favicon, manifest, sitemap, _headers, offline.html
+│   ├── src/
+│   │   ├── api/                  # Axios instance + endpoint wrappers
+│   │   ├── assets/               # Brand logo, mark, illustrations
+│   │   ├── components/           # UI primitives (Button, Modal, Drawer…) + features
+│   │   ├── config/               # routes, features, seo, brand constants
+│   │   ├── context/              # AuthContext, ThemeContext
+│   │   ├── hooks/                # useAuth, useFetch, useDebounce, useMediaQuery…
+│   │   ├── i18n/                 # i18next setup + locale resources
+│   │   ├── layouts/              # PublicLayout, DashboardLayout, AuthLayout
+│   │   ├── pages/                # Routed pages (auth, courses, dashboard, admin…)
+│   │   ├── services/             # Business logic that wraps api/
+│   │   ├── utils/                # Formatters, guards, schema helpers
+│   │   ├── App.jsx               # Router + providers
+│   │   ├── main.jsx              # Entry point
+│   │   └── index.css             # Tailwind v4 entry + design tokens
+│   ├── netlify.toml              # Netlify build + redirects + headers
+│   └── package.json
+├── server/                       # Express 5 API
+│   ├── config/                   # env validation, db, cloudinary, mailer, redis
+│   ├── controllers/              # auth, course, lesson, quiz, enrollment, admin…
+│   ├── middleware/               # auth, rbac, rateLimit, validate, error, sanitize
+│   ├── models/                   # Mongoose schemas + compound/sparse/TTL indexes
+│   ├── routes/                   # One file per resource group
+│   ├── scripts/                  # Cron jobs (drafts, tokens, certificate reminders)
+│   ├── seeders/                  # Initial admin + optional demo data
+│   ├── utils/                    # Token, mailer templates, slug, error classes
+│   ├── validators/               # express-validator schemas per resource
+│   ├── index.js                  # Express app composition + graceful shutdown
+│   ├── render.yaml               # Render service + cron + Redis blueprint
+│   └── package.json
+├── docs/                         # ARCHITECTURE.md, DEPLOYMENT.md, RUNBOOK.md
+├── assets/                       # Branding + screenshots
+├── .github/                      # Issue templates, PR template, workflows
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── LICENSE
+└── README.md
 ```
-
-</details>
-
-<details>
-<summary><b>Client</b></summary>
-
-```
-client/
-├── public/             # favicon, manifest, sitemap, _headers, offline.html
-├── src/
-│   ├── api/            # axios instance + endpoint wrappers
-│   ├── assets/brand/   # logo, mark, illustrations
-│   ├── components/     # UI primitives + feature components
-│   ├── config/         # routes, features, seo, brand constants
-│   ├── context/        # Auth, Theme
-│   ├── hooks/          # useAuth, useFetch, useDebounce, useMediaQuery…
-│   ├── i18n/           # i18next setup + locale resources
-│   ├── layouts/        # PublicLayout, DashboardLayout, AuthLayout
-│   ├── pages/          # routed pages
-│   ├── services/       # business logic that wraps api/
-│   ├── utils/          # formatters, guards, schema helpers
-│   ├── App.jsx         # router + providers
-│   ├── main.jsx
-│   └── index.css       # Tailwind v4 entry + design tokens
-├── scripts/
-│   └── generate-favicons.mjs
-└── .env.example
-```
-
-</details>
 
 ---
 
@@ -478,96 +500,141 @@ client/
 
 A non-exhaustive list of the security controls in place — every line below is implemented and enforced today, not aspirational:
 
-- ✅ Rotating refresh-token strategy with `tokenVersion`-based revocation (no Redis blocklist required).
-- ✅ HttpOnly, `SameSite=Lax`, `Secure` (in production) refresh cookie.
-- ✅ Bcrypt password hashing with a configurable cost factor (`BCRYPT_ROUNDS`).
-- ✅ Account lockout after `MAX_LOGIN_ATTEMPTS` consecutive failures.
-- ✅ Generic `Invalid email or password` to prevent user enumeration on login, register, forgot-password, and verify flows.
-- ✅ Email verification + signed-link password reset with TTLs and one-shot consumption.
-- ✅ Helmet with strict CSP, HSTS in production, X-Content-Type-Options, Referrer-Policy.
-- ✅ HTTPS enforcement (redirect + secure cookies) in production.
-- ✅ Express-rate-limit with a Redis-backed store in production and an in-memory fallback in dev (single factory, identical behavior).
-- ✅ Per-flow rate-limit matrix (auth, refresh, verify, forgot, reset, password-change, upload).
-- ✅ Mass-assignment protection on every write endpoint (explicit field allowlists).
-- ✅ NoSQL injection sanitization compatible with Express 5's read-only `req.query`.
-- ✅ ReDoS-safe search filters (anchored, length-capped, escaped).
-- ✅ Ownership middleware + RBAC middleware on every protected route.
-- ✅ Self-protection rules (admins cannot demote / deactivate / delete themselves).
-- ✅ Cloudinary signed uploads with MIME + size whitelist on the server.
-- ✅ Strict CORS allowlist (`*` rejected in production).
-- ✅ Centralized error handler that never leaks stack traces to clients.
-- ✅ Structured logging with pino + redaction of sensitive headers / fields.
-- ✅ Graceful SIGTERM handling so in-flight requests aren't dropped on deploy.
-- ✅ Index hygiene (compound + sparse + TTL indexes where appropriate).
+- **Rotating Refresh Tokens** — Single integer `tokenVersion` on the user document for revocation; no Redis blocklist required.
+- **HttpOnly Refresh Cookie** — `SameSite=Lax`, `Secure` in production, never accessible to JavaScript.
+- **Bcrypt Password Hashing** — Configurable cost factor via `BCRYPT_ROUNDS` (default 12).
+- **Account Lockout** — Triggered after `MAX_LOGIN_ATTEMPTS` consecutive failures within `LOCK_DURATION_MIN`.
+- **Anti-Enumeration** — Generic `Invalid email or password` on login, register, forgot-password, and verify flows.
+- **Email Verification & Password Reset** — Signed links with TTLs and one-shot consumption.
+- **Helmet + Strict CSP** — HSTS in production, X-Content-Type-Options, Referrer-Policy.
+- **HTTPS Enforcement** — Redirect + secure cookies in production.
+- **Per-Flow Rate Limiting** — Redis-backed in production, in-memory in dev (single factory, identical behavior).
+- **Mass-Assignment Protection** — Explicit field allowlists on every write endpoint.
+- **NoSQL Injection Sanitization** — Express 5 compatible wrapper that walks `req.body`, `req.params`, and a copy of `req.query`.
+- **ReDoS-Safe Search** — Anchored, length-capped, escaped regex filters.
+- **RBAC + Ownership Middleware** — Applied on every protected route.
+- **Self-Protection Rules** — Admins cannot demote, deactivate, or delete themselves.
+- **Signed Cloudinary Uploads** — Server-side MIME + size whitelist; the client never holds the Cloudinary secret.
+- **Strict CORS Allowlist** — `*` rejected in production.
+- **Centralized Error Handler** — Never leaks stack traces to clients.
+- **Structured Logging** — pino with redaction of sensitive headers and fields.
+- **Graceful SIGTERM** — In-flight requests are not dropped on deploy.
 
-The public vulnerability-reporting policy lives at [`SECURITY.md`](./SECURITY.md). Quiz-grading integrity is documented separately in [`docs/QUIZ-INTEGRITY.md`](./docs/QUIZ-INTEGRITY.md).
-
----
-
-## Performance
-
-| Page | Performance | Accessibility | Best Practices | SEO |
-|---|---|---|---|---|
-| Landing | 95 | 100 | 100 | 100 |
-| Catalog | 92 | 100 | 100 | 100 |
-| Course detail | 91 | 98 | 100 | 100 |
-
-Highlights:
-
-- Route-level code splitting (`React.lazy` + `Suspense`) on every page.
-- Image LQIP placeholders for catalog cards and course hero images.
-- Long-lived `Cache-Control` on Vite build artifacts via `client/public/_headers`.
-- PWA shell + offline fallback so the app stays useful on flaky connections.
-- Compression middleware on the API.
-- MongoDB indexes audited per query in `docs/ARCHITECTURE.md`.
-
-A Lighthouse run is captured at `assets/screenshots/lighthouse.png` (drop your latest export there to keep this section fresh).
-
----
-
-## Roadmap
-
-- Live cohorts with calendar invites and async announcements.
-- Per-course discussion forum (threaded comments, pinned replies).
-- Stripe payments + invoicing (currently price is metadata only).
-- Real-time student ↔ instructor chat (Socket.IO).
-- Mobile native shell (React Native or Expo).
-- AI-assisted quiz suggestion based on lesson transcripts.
-- Multi-language UI (the i18n layer is in place; need locale content).
-- A short, ambient dark-mode video on the landing hero.
-
----
-
-## Lessons Learned
-
-A few decisions worth highlighting for fellow engineers:
-
-- **Server-side quiz scoring.** The student-facing `GET /api/quizzes/:id` strips `correctIndex` from every question, and `POST /api/quizzes/:id/attempt` is the only path that knows the right answers. Scoring lives next to the source of truth, which makes "cheating" a strictly client-side bug.
-- **`tokenVersion` over a Redis blocklist.** Refresh-token revocation is a single bumped integer on the user document. It costs no infrastructure, scales with the user collection, and gives a working `logout-all` for free.
-- **A custom mongo-sanitize wrapper for Express 5.** Express 5 made `req.query` a getter, which broke `express-mongo-sanitize` for query strings. The project ships a thin replacement that walks `req.body`, `req.params`, and a copy of `req.query` instead of mutating the original.
-- **Design system before pages.** Building the token layer + UI primitives upfront roughly halved the time to ship each subsequent page, and made dark mode a side-effect rather than a project.
-- **Single rate-limit factory, two backends.** A single `createLimiter()` returns a Redis-backed limiter when `REDIS_URL` is set and an in-memory one otherwise. This kept dev frictionless without compromising production correctness on multi-instance deploys.
-
----
-
-## Version Control
-
-This project is version-controlled manually with **GitHub Desktop**. The build agent that scaffolded the codebase intentionally never executed any `git` commands — every commit, branch, and push was performed by the developer through the GitHub Desktop UI. To contribute, fork the repository on GitHub, open a branch in your fork, and submit a pull request through the GitHub web UI.
+The vulnerability-reporting policy lives at [`SECURITY.md`](./SECURITY.md). Quiz-grading integrity is documented separately in [`docs/QUIZ-INTEGRITY.md`](./docs/QUIZ-INTEGRITY.md).
 
 ---
 
 ## Deployment
 
-A short summary; the **full first-deploy walkthrough** lives in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md), and the day-2 ops recipes live in [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).
+### Backend (Render)
 
-- **MongoDB Atlas** — primary database (free tier is sufficient for the demo).
-- **Render** — Express API service + the three Cron Jobs + optional managed Redis.
-- **Netlify** — React static SPA build (with `_headers` and `_redirects` from `client/public`).
-- **Cloudinary** — video and image storage with signed uploads and optional HLS.
+The Express API, three Cron Jobs, and an optional managed Redis instance are described declaratively in [`server/render.yaml`](./server/render.yaml).
 
-Render and Netlify both connect to this GitHub repository the developer pushes to via GitHub Desktop. Auto-deploy on `main` is enabled on both, so every merged PR ships.
+1. Create a new **Web Service** on [Render](https://render.com), connect your fork, and point it at the `server/` directory.
+2. Set **Build Command** to `npm install` and **Start Command** to `npm start`.
+3. Add the environment variables below in the Render dashboard.
+4. Provision a **Render Key Value (Redis)** instance and copy its internal URL into `REDIS_URL`.
+5. Add three **Cron Jobs** pointing at the scripts in `server/scripts/`.
 
-> Heads-up for first deploy: the SPA's `Content-Security-Policy` in `client/public/_headers` ships with the placeholder `https://your-api.onrender.com` inside `connect-src`. Replace it with the real Render URL (and set `VITE_API_BASE_URL` accordingly) before pushing the build that goes public — `docs/DEPLOYMENT.md` § "Final wiring" walks through this.
+| Variable | Value |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `PORT` | `10000` (Render default) |
+| `CLIENT_URL` | `https://lms-mernn.netlify.app` |
+| `CORS_ORIGINS` | `https://lms-mernn.netlify.app` |
+| `MONGO_URI` | Your MongoDB Atlas SRV string |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Two distinct ≥ 32-char secrets |
+| `CLOUDINARY_*` | Cloud name, API key, API secret |
+| `SMTP_*` / `MAIL_FROM` | Production SMTP credentials |
+| `REDIS_URL` | Render Key Value internal URL |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | Bootstrap admin credentials |
+
+> **First deploy:** run `npm run seed:admin` once via the Render shell to bootstrap the initial admin account. The cron jobs will pick up automatically from the schedule defined in `render.yaml`.
+
+### Frontend (Netlify)
+
+The React SPA is built and served by Netlify with `_headers` and `_redirects` shipped from `client/public/`.
+
+1. Create a new site on [Netlify](https://www.netlify.com) and connect your fork.
+2. Set **Base directory** to `client`, **Build command** to `npm run build`, and **Publish directory** to `client/dist`.
+3. Add the environment variables below in **Site settings → Environment variables**.
+4. Update the placeholder `https://your-api.onrender.com` inside `client/public/_headers` (`connect-src` directive) with your real Render URL **before** the first public deploy.
+
+| Variable | Value |
+| --- | --- |
+| `VITE_API_BASE_URL` | `https://your-api.onrender.com/api` |
+| `VITE_SITE_URL` | `https://lms-mernn.netlify.app` |
+| `VITE_APP_NAME` | `Lumen LMS` |
+| `VITE_FEATURE_CERTIFICATES` | `true` |
+| `VITE_FEATURE_HLS` | `false` |
+| `VITE_FEATURE_COMMAND_PALETTE` | `true` |
+
+> Netlify auto-deploys on `main`. The full first-deploy walkthrough lives in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md), and day-2 ops recipes in [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).
+
+---
+
+## Features in Detail
+
+### Completed Features
+
+- ✅ JWT auth with rotating refresh tokens and `tokenVersion` revocation
+- ✅ Email verification + password reset with TTL'd one-shot links
+- ✅ Account lockout, anti-enumeration, and per-flow rate limiting
+- ✅ Three-role RBAC (Student, Instructor, Admin) with self-protection
+- ✅ Course authoring with drag-and-drop section/lesson editor
+- ✅ Draft → submit → review → published moderation lifecycle
+- ✅ Multiple-choice quizzes scored entirely on the server
+- ✅ Per-lesson progress tracking and enrollment percentage
+- ✅ PDF certificate generation at 100% completion
+- ✅ Cloudinary signed uploads (image + video) with whitelist
+- ✅ Optional HLS adaptive video streaming via Cloudinary
+- ✅ Tailwind v4 design system with semantic light/dark tokens
+- ✅ PWA shell with manifest, install prompt, and offline fallback
+- ✅ Swagger UI + OpenAPI 3.0 spec at `/api-docs`
+- ✅ Render Cron Jobs for stale drafts, expired tokens, and reminders
+- ✅ pino structured logging + graceful SIGTERM shutdown
+
+### Future Features
+
+- [ ] 🔮 Stripe payments + invoicing (price is currently metadata only)
+- [ ] 🔮 Per-course threaded discussion forum with pinned replies
+- [ ] 🔮 Real-time student ↔ instructor chat (Socket.IO)
+- [ ] 🔮 Live cohorts with calendar invites and async announcements
+- [ ] 🔮 AI-assisted quiz generation from lesson transcripts
+- [ ] 🔮 Mobile native shell (React Native or Expo)
+- [ ] 🔮 Multi-language UI content (i18n layer is in place; needs locales)
+- [ ] 🔮 Ambient dark-mode video on the landing hero
+
+---
+
+## Contributing
+
+Contributions are welcome — please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) before opening a PR.
+
+1. **Fork** the repository
+2. **Create a feature branch** — `git checkout -b feat/your-feature`
+3. **Commit your changes** following the convention below
+4. **Push** to your fork — `git push origin feat/your-feature`
+5. **Open a Pull Request** describing the motivation and trade-offs
+
+### Commit Message Format
+
+| Prefix | Description |
+| --- | --- |
+| `feat:` | New feature |
+| `fix:` | Bug fix |
+| `refactor:` | Code refactor without behavior change |
+| `docs:` | Documentation changes |
+| `style:` | Formatting / whitespace / lint fixes |
+| `chore:` | Maintenance and dependency updates |
+| `perf:` | Performance improvement |
+| `test:` | Adding or updating tests |
+
+---
+
+## License
+
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
 
 ---
 
@@ -575,29 +642,30 @@ Render and Netlify both connect to this GitHub repository the developer pushes t
 
 **Serkanby**
 
-- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
-- GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
-- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- 🌐 Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+- 💻 GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
+- 📧 Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
 
-If this project helped you or you'd like to chat about it, reach out — I'm always happy to talk shop.
-
-## Contact
-
-- [Open an Issue](https://github.com/Serkanbyx/lumen-lms/issues)
-- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
-- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+If this project helped you or you'd like to chat about the trade-offs behind it, reach out — I'm always happy to talk shop.
 
 ---
 
 ## Acknowledgments
 
-- The MERN community and the maintainers of every dependency listed in [Tech Stack](#-tech-stack).
-- The [shields.io](https://shields.io) and [skillicons.dev](https://skillicons.dev) projects for the README badges.
-- UX inspiration from Udemy, Coursera, and Linear's product surface area.
-- [lucide-react](https://lucide.dev) for the icon set and Inter for the type system.
+- The MERN community and the maintainers of every dependency listed in [Technologies](#technologies).
+- [shields.io](https://shields.io) and [skillicons.dev](https://skillicons.dev) for the README badges.
+- [lucide-react](https://lucide.dev) for the icon set and [Inter](https://rsms.me/inter/) for the type system.
+- UX inspiration from [Udemy](https://www.udemy.com), [Coursera](https://www.coursera.org), and [Linear](https://linear.app).
+- [Render](https://render.com), [Netlify](https://www.netlify.com), [MongoDB Atlas](https://www.mongodb.com/atlas), and [Cloudinary](https://cloudinary.com) for the hosting and infrastructure free tiers that make this demo possible.
 
 ---
 
-## License
+## Contact
 
-This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+- 🐛 [Open an Issue](https://github.com/Serkanbyx/lumen-lms/issues)
+- 📧 Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- 🌐 Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+
+---
+
+⭐ If you like this project, don't forget to give it a star!

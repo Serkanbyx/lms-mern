@@ -61,10 +61,18 @@ const refreshCookieMaxAgeMs = () => {
 
 const buildRefreshCookieOptions = () => ({
   httpOnly: true,
+  // Cross-site SPA → API setups (Netlify front-end + Render API) live on
+  // different eTLD+1 origins, so the refresh cookie MUST be `SameSite=None`
+  // for the browser to attach it to `/auth/refresh`. `None` requires
+  // `Secure`, which Render terminates TLS for in production. Locally we
+  // stay on `lax` over plain HTTP so dev keeps working unchanged.
   secure: env.isProd,
-  sameSite: env.isProd ? 'strict' : 'lax',
+  sameSite: env.isProd ? 'none' : 'lax',
   // Restrict to the auth path so the browser only ships the refresh
-  // token where it is actually consumed (cuts CSRF blast radius).
+  // token where it is actually consumed (cuts CSRF blast radius — and
+  // since SameSite=None disables the implicit cross-site CSRF guard, the
+  // path scoping plus a `X-Requested-With` requirement on the API are
+  // what's left between us and a CSRF reflector).
   path: '/api/auth',
   maxAge: refreshCookieMaxAgeMs(),
 });
@@ -74,8 +82,11 @@ const setRefreshCookie = (res, token) => {
 };
 
 const clearRefreshCookie = (res) => {
-  // Express requires the same path option for `clearCookie` to actually clear it.
-  res.clearCookie(env.REFRESH_COOKIE_NAME, { path: '/api/auth' });
+  // `clearCookie` only deletes the cookie when path/secure/sameSite match
+  // the values used at set time — otherwise the browser treats it as a
+  // different cookie and the original lingers until expiry.
+  const { maxAge: _ignored, ...attrs } = buildRefreshCookieOptions();
+  res.clearCookie(env.REFRESH_COOKIE_NAME, attrs);
 };
 
 const issueAuthResponse = (res, status, user, { message } = {}) => {
