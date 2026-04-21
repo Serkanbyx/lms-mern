@@ -12,8 +12,9 @@
  */
 
 import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
+import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
   Footer,
   Navbar,
@@ -23,6 +24,8 @@ import {
 } from '../components/layout/index.js';
 
 export function MainLayout() {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
       <a
@@ -41,9 +44,14 @@ export function MainLayout() {
         className="flex-1 min-h-[calc(100vh-64px)]"
       >
         <PageTransition>
-          <Suspense fallback={<RouteSkeleton />}>
-            <Outlet />
-          </Suspense>
+          {/* Per-route ErrorBoundary keyed on pathname so a single page
+              crash never replaces the global chrome and the boundary
+              auto-resets when the user navigates elsewhere. */}
+          <ErrorBoundary key={location.pathname} variant="inline">
+            <Suspense fallback={<RouteSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </PageTransition>
       </main>
 

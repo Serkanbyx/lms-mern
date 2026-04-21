@@ -11,9 +11,10 @@
  * the admin app.
  */
 
-import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Suspense, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
+import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
   Footer,
   Navbar,
@@ -25,7 +26,6 @@ import { Seo } from '../components/seo/index.js';
 import { Drawer, Icon, IconButton } from '../components/ui/index.js';
 import { ROUTES } from '../utils/constants.js';
 import { cn } from '../utils/cn.js';
-import { Suspense } from 'react';
 
 const NAV_ITEMS = [
   { to: ROUTES.admin, label: 'Dashboard', icon: 'LayoutDashboard', end: true },
@@ -66,6 +66,7 @@ const SidebarNav = ({ onItemClick }) => (
 
 export function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
@@ -99,9 +100,11 @@ export function AdminLayout() {
           </div>
 
           <PageTransition>
-            <Suspense fallback={<RouteSkeleton />}>
-              <Outlet />
-            </Suspense>
+            <ErrorBoundary key={location.pathname} variant="inline">
+              <Suspense fallback={<RouteSkeleton />}>
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
           </PageTransition>
         </main>
       </div>

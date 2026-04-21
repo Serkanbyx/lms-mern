@@ -26,6 +26,7 @@
 
 import axios from 'axios';
 
+import { toast } from '../components/ui/toast.js';
 import { HTTP_TIMEOUT_MS, ROUTES, STORAGE_KEYS } from '../utils/constants.js';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -78,13 +79,44 @@ const normaliseError = (err) => {
 
 let isRedirectingToLogin = false;
 
+/**
+ * Debounce toast firings per error category so a burst of failed requests
+ * (e.g. parallel dashboard fetches dying on the same offline blip) only
+ * surfaces ONE toast — otherwise the user gets a stack of duplicates.
+ */
+const TOAST_THROTTLE_MS = 4000;
+const lastToastAt = new Map();
+
+const maybeToast = (category, fn) => {
+  const now = Date.now();
+  const previous = lastToastAt.get(category) ?? 0;
+  if (now - previous < TOAST_THROTTLE_MS) return;
+  lastToastAt.set(category, now);
+  try {
+    fn();
+  } catch {
+    // Toast lib failures must never re-enter the interceptor.
+  }
+};
+
+const formatRetryHint = (retryAfter) => {
+  const seconds = Number(retryAfter);
+  if (!Number.isFinite(seconds) || seconds <= 0) return '';
+  if (seconds < 60) return ` Try again in ${Math.ceil(seconds)}s.`;
+  return ` Try again in about ${Math.ceil(seconds / 60)} min.`;
+};
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const normalised = normaliseError(error);
+    const { status, code } = normalised;
+    const silent = error?.config?.silent === true;
 
+    // 401 — invalid / expired token. Redirect once, no toast (the login
+    // screen explains itself).
     if (
-      normalised.status === 401 &&
+      status === 401 &&
       typeof window !== 'undefined' &&
       !isRedirectingToLogin
     ) {
@@ -102,6 +134,45 @@ api.interceptors.response.use(
           // Storage may be disabled (private mode) — degrade gracefully.
         }
         window.location.assign(ROUTES.login);
+      }
+      return Promise.reject(normalised);
+    }
+
+    if (silent) {
+      return Promise.reject(normalised);
+    }
+
+    // Network failure (no response, CORS block, DNS, offline). Cancellations
+    // are explicit user / cleanup actions — never surface them as errors.
+    if (code !== 'CANCELLED' && (status === 0 || code === 'ERR_NETWORK')) {
+      maybeToast('network', () =>
+        toast.error('Network error — please check your connection.'),
+      );
+    }
+
+    // Rate limited. The server SHOULD send a Retry-After header (seconds).
+    if (status === 429) {
+      const retryAfter = error?.response?.headers?.['retry-after'];
+      maybeToast('rate-limit', () =>
+        toast.error(
+          `You're going too fast — please wait a moment.${formatRetryHint(retryAfter)}`,
+        ),
+      );
+    }
+
+    // Server-side failure. Surfaced as a single toast; the calling code is
+    // still expected to render its own inline error UI for context.
+    if (status === 500 || status === 502 || status === 503 || status === 504) {
+      maybeToast('server', () =>
+        toast.error('Server error — please try again in a moment.'),
+      );
+      if (import.meta.env.DEV) {
+        console.error(
+          '[api] server error',
+          status,
+          error?.config?.method?.toUpperCase(),
+          error?.config?.url,
+        );
       }
     }
 

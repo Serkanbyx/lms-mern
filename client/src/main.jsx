@@ -25,6 +25,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { PreferencesProvider } from './context/PreferencesContext.jsx';
 import { MotionProvider } from './components/layout/MotionProvider.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 import './index.css';
 
@@ -32,29 +33,31 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <AuthProvider>
-          <PreferencesProvider>
-            <MotionProvider>
-              <App />
-              <Toaster
-                position="top-right"
-                gutter={8}
-                toastOptions={{
-                  // The `toast` wrapper in `components/ui/toast.js` already
-                  // sets per-call styles; this default keeps any third-party
-                  // calls visually consistent.
-                  style: {
-                    background: 'var(--color-bg-subtle)',
-                    color: 'var(--color-text)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'var(--shadow-md)',
-                  },
-                }}
-              />
-            </MotionProvider>
-          </PreferencesProvider>
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <PreferencesProvider>
+              <MotionProvider>
+                <App />
+                <Toaster
+                  position="top-right"
+                  gutter={8}
+                  toastOptions={{
+                    // The `toast` wrapper in `components/ui/toast.js` already
+                    // sets per-call styles; this default keeps any third-party
+                    // calls visually consistent.
+                    style: {
+                      background: 'var(--color-bg-subtle)',
+                      color: 'var(--color-text)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow-md)',
+                    },
+                  }}
+                />
+              </MotionProvider>
+            </PreferencesProvider>
+          </AuthProvider>
+        </ErrorBoundary>
       </BrowserRouter>
     </HelmetProvider>
   </StrictMode>,

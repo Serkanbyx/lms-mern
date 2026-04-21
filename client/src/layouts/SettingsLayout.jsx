@@ -10,6 +10,7 @@
 import { Suspense } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
+import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
   Footer,
   Navbar,
@@ -81,6 +82,8 @@ const MobileSelect = () => {
 };
 
 export function SettingsLayout() {
+  const location = useLocation();
+
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
       {/* Settings is private to the signed-in user — robots stay out. */}
@@ -115,9 +118,11 @@ export function SettingsLayout() {
 
           <main id="main" tabIndex={-1} className="min-w-0">
             <PageTransition>
-              <Suspense fallback={<RouteSkeleton />}>
-                <Outlet />
-              </Suspense>
+              <ErrorBoundary key={location.pathname} variant="inline">
+                <Suspense fallback={<RouteSkeleton />}>
+                  <Outlet />
+                </Suspense>
+              </ErrorBoundary>
             </PageTransition>
           </main>
         </div>

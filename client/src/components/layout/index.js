@@ -11,4 +11,5 @@ export { Reveal } from './Reveal.jsx';
 export { Navbar } from './Navbar.jsx';
 export { Footer } from './Footer.jsx';
 export { OfflineBanner } from './OfflineBanner.jsx';
+export { OfflineGate } from './OfflineGate.jsx';
 export { RouteSkeleton } from './RouteSkeleton.jsx';

@@ -16,8 +16,9 @@
  */
 
 import { Suspense } from 'react';
-import { Link, Outlet, useParams } from 'react-router-dom';
+import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 
+import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
   OfflineBanner,
   PageTransition,
@@ -31,6 +32,7 @@ import { ROUTES } from '../utils/constants.js';
 export function LearnLayout() {
   const { slug } = useParams();
   const { user } = useAuth();
+  const location = useLocation();
 
   return (
     <div className="dark min-h-screen flex flex-col bg-bg text-text">
@@ -79,9 +81,11 @@ export function LearnLayout() {
         className="flex-1 min-w-0 overflow-hidden"
       >
         <PageTransition>
-          <Suspense fallback={<RouteSkeleton />}>
-            <Outlet />
-          </Suspense>
+          <ErrorBoundary key={location.pathname} variant="inline">
+            <Suspense fallback={<RouteSkeleton />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </PageTransition>
       </main>
     </div>
