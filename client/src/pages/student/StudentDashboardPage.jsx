@@ -204,28 +204,6 @@ function ContinueLearningCard({ enrollment }) {
   );
 }
 
-function ContinueLearningRailSkeleton() {
-  return (
-    <div className="flex gap-4 overflow-hidden">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div
-          key={index}
-          className="w-72 shrink-0 overflow-hidden rounded-2xl border border-border bg-bg
-            shadow-xs sm:w-80"
-        >
-          <Skeleton className="aspect-video w-full rounded-none" />
-          <div className="space-y-3 p-4">
-            <Skeleton variant="text" className="w-4/5" />
-            <Skeleton variant="text" className="w-2/5" />
-            <Skeleton variant="text" className="w-3/5" />
-            <Skeleton className="h-10 w-full rounded-lg" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function CompletedCourseCard({ enrollment, onDownload, downloading }) {
   const course = enrollment.courseId ?? {};
   const thumbnailUrl =
@@ -719,9 +697,24 @@ export default function StudentDashboardPage() {
     const total = enrollments.length;
     const completedCount = completed.length;
     const inProgressCount = inProgress.length;
-    const completionRate = total === 0 ? 0 : Math.round((completedCount / total) * 100);
+    // We surface the AVERAGE per-enrollment progress, not the share of
+    // fully-finished courses. The latter felt wrong in testing — a
+    // learner who had finished 1/5 lessons of their only course saw
+    // "0% completion" because no course was 100% done yet, even though
+    // their actual progress was 20%. Averaging `progressPercent` (which
+    // the backend already maintains as 0–100 per enrollment) makes the
+    // metric move on every lesson tick and matches the inline progress
+    // bars rendered next to each course on the same page.
+    const completionRate = total === 0
+      ? 0
+      : Math.round(
+          enrollments.reduce(
+            (sum, entry) => sum + (Number(entry?.progressPercent) || 0),
+            0,
+          ) / total,
+        );
     return { total, completedCount, inProgressCount, completionRate };
-  }, [enrollments.length, completed.length, inProgress.length]);
+  }, [enrollments, completed.length, inProgress.length]);
 
   /* --------------------------------- actions ------------------------------ */
 
@@ -910,7 +903,14 @@ export default function StudentDashboardPage() {
       )}
 
       {/* Continue learning -------------------------------------------------- */}
-      {!hasNoEnrollments && (
+      {/* Only render once we know the user actually has enrollments. The
+          previous version rendered three skeleton cards during the
+          initial fetch, which then collapsed into the "you haven't
+          enrolled" empty state once the empty list arrived — a jarring
+          flash that promised content the user never had. Gating on
+          `enrollmentsStatus === 'ready' && !hasNoEnrollments` shows the
+          section only when there is genuine progress to resume. */}
+      {enrollmentsStatus === 'ready' && !hasNoEnrollments && (
         <section aria-labelledby="continue-learning-heading" className="space-y-4">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -926,9 +926,7 @@ export default function StudentDashboardPage() {
             </div>
           </div>
 
-          {isInitialLoading ? (
-            <ContinueLearningRailSkeleton />
-          ) : inProgress.length === 0 ? (
+          {inProgress.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-bg-subtle">
               <EmptyState
                 size="sm"

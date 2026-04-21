@@ -6,6 +6,15 @@
  * we actually see, reacting to `peer-checked` / `peer-focus-visible` /
  * `peer-disabled` from the input.
  *
+ * IMPORTANT — label association: the wrapping `<label>` does NOT carry a
+ * `htmlFor` attribute even though the input has an `id`. The input is
+ * already a descendant of the label (implicit association), so adding
+ * `htmlFor` would create a duplicate explicit + implicit binding. Some
+ * browsers (notably when an external `<label htmlFor={id}>` also exists,
+ * as on the register page's terms copy) end up firing two `click` events
+ * on the input, which toggles the checkbox twice and nets to no change —
+ * the user clicks but nothing happens. Implicit-only avoids that race.
+ *
  * Indeterminate state is set imperatively (the only way the DOM exposes it)
  * via a ref-effect, then visually rendered with a dash icon.
  */
@@ -35,7 +44,6 @@ export const Checkbox = forwardRef(function Checkbox(
 
   return (
     <label
-      htmlFor={id}
       className={cn(
         'inline-flex items-start gap-2.5 cursor-pointer select-none',
         disabled && 'opacity-60 cursor-not-allowed',

@@ -221,7 +221,25 @@ export default function RegisterPage() {
       confirmPassword: true,
       terms: true,
     });
-    if (Object.keys(nextErrors).length > 0) return;
+    if (Object.keys(nextErrors).length > 0) {
+      // Move keyboard focus AND viewport to the first invalid field so
+      // sighted users see the inline error immediately and assistive
+      // tech reads it via the now-focused input's `aria-invalid` /
+      // `aria-describedby`. Without this, the browser's auto-scroll
+      // sometimes lands on the last error (terms checkbox at the
+      // bottom) and the "Full name" message goes unnoticed at the top.
+      const fieldOrder = ['name', 'email', 'password', 'confirmPassword'];
+      const firstInvalid = fieldOrder.find((field) => nextErrors[field]);
+      if (firstInvalid === 'name') {
+        nameRef.current?.focus({ preventScroll: false });
+        nameRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (firstInvalid) {
+        const node = document.querySelector(`[aria-invalid="true"]`);
+        node?.focus?.({ preventScroll: false });
+        node?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
 
     setSubmitting(true);
     setFormError(null);

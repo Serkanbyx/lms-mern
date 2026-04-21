@@ -33,11 +33,18 @@ export function FormField({
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [helperId, errorId].filter(Boolean).join(' ') || undefined;
 
+  // We expose `required` BOTH as the native HTML attribute and as
+  // `aria-required` so screen readers and the browser's built-in
+  // constraint validation API agree with the visual asterisk in the
+  // label. Without the native attribute, automated test tooling and
+  // assistive tech see the field as optional even though the UI says
+  // otherwise.
   const controlProps = {
     id,
     'aria-describedby': describedBy,
     'aria-invalid': error ? true : undefined,
     'aria-required': required || undefined,
+    required: required || undefined,
   };
 
   return (

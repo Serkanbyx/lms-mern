@@ -87,12 +87,17 @@ export default function NotFoundPage() {
 
         <p className="mt-10 text-xs text-text-subtle">
           Think this is a mistake?{' '}
-          <Link
-            to={ROUTES.home}
+          {/* Plain `<a>` (not <Link>) on purpose: this resolves to a
+              `mailto:` URL and `react-router-dom` would log a noisy
+              relative-path warning if it tried to treat it as an
+              in-app route. The same address is exposed in the footer's
+              "Contact" link so the support inbox stays consistent. */}
+          <a
+            href="mailto:hello@lumen.lms?subject=Broken%20link%20on%20Lumen%20LMS"
             className="font-medium text-primary hover:underline underline-offset-4"
           >
             Let us know
-          </Link>
+          </a>
           .
         </p>
       </div>

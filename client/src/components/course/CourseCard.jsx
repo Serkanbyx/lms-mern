@@ -53,6 +53,66 @@ const LEVEL_LABEL = {
   advanced: 'Advanced',
 };
 
+/**
+ * Category-specific fallback art for cards without a thumbnail.
+ *
+ * The catalog ships with seed courses that don't always have a real
+ * Cloudinary image attached. Showing the same generic graduation-cap
+ * icon on every card flattens the catalog visually — categories become
+ * indistinguishable at a glance. Instead we hash the category to one of
+ * a handful of branded gradient + icon combinations so cards stay
+ * visually varied even before instructors upload imagery.
+ *
+ * `default` covers any unknown category string from older seed data.
+ */
+const CATEGORY_FALLBACK = {
+  'Web Development': {
+    icon: 'Code2',
+    gradient: 'from-info/30 via-primary/15 to-bg-muted',
+    iconColor: 'text-info/70',
+  },
+  'Mobile Development': {
+    icon: 'Smartphone',
+    gradient: 'from-success/30 via-info/15 to-bg-muted',
+    iconColor: 'text-success/70',
+  },
+  Design: {
+    icon: 'Palette',
+    gradient: 'from-warning/30 via-primary/15 to-bg-muted',
+    iconColor: 'text-warning/70',
+  },
+  'Data Science': {
+    icon: 'LineChart',
+    gradient: 'from-primary/30 via-info/15 to-bg-muted',
+    iconColor: 'text-primary/70',
+  },
+  Business: {
+    icon: 'Briefcase',
+    gradient: 'from-info/25 via-success/15 to-bg-muted',
+    iconColor: 'text-info/70',
+  },
+  Marketing: {
+    icon: 'Megaphone',
+    gradient: 'from-danger/25 via-warning/15 to-bg-muted',
+    iconColor: 'text-danger/70',
+  },
+  Photography: {
+    icon: 'Camera',
+    gradient: 'from-text/20 via-primary/10 to-bg-muted',
+    iconColor: 'text-text/60',
+  },
+  Music: {
+    icon: 'Music2',
+    gradient: 'from-warning/25 via-danger/15 to-bg-muted',
+    iconColor: 'text-warning/70',
+  },
+  default: {
+    icon: 'GraduationCap',
+    gradient: 'from-primary/25 via-info/15 to-bg-muted',
+    iconColor: 'text-primary/60',
+  },
+};
+
 const formatPrice = (price) => {
   if (price === null || price === undefined || Number(price) === 0) return null;
   return new Intl.NumberFormat('en-US', {
@@ -141,13 +201,22 @@ function CourseCardComponent({ course, className }) {
             )}
           />
         ) : (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-linear-to-br
-              from-primary/25 via-info/15 to-bg-muted text-primary/60"
-          >
-            <Icon name="GraduationCap" size={36} />
-          </div>
+          (() => {
+            const fallback =
+              CATEGORY_FALLBACK[course.category] ?? CATEGORY_FALLBACK.default;
+            return (
+              <div
+                aria-hidden="true"
+                className={cn(
+                  'absolute inset-0 flex items-center justify-center bg-linear-to-br',
+                  fallback.gradient,
+                  fallback.iconColor,
+                )}
+              >
+                <Icon name={fallback.icon} size={36} />
+              </div>
+            );
+          })()
         )}
 
         {course.level && (
