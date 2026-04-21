@@ -1,5 +1,11 @@
+import { Seo } from '../../components/seo/index.js';
 import PlaceholderPage from '../_PlaceholderPage.jsx';
 
 export default function ForgotPasswordPage() {
-  return <PlaceholderPage name="Forgot password" step={46} />;
+  return (
+    <>
+      <Seo title="Forgot password" noIndex />
+      <PlaceholderPage name="Forgot password" step={46} />
+    </>
+  );
 }

@@ -48,6 +48,7 @@ import {
   CurriculumOutline,
   EnrollmentCard,
 } from '../../components/course/index.js';
+import { JsonLd, Seo } from '../../components/seo/index.js';
 import {
   Alert,
   Avatar,
@@ -226,6 +227,35 @@ export default function CourseDetailPage() {
     [sections],
   );
 
+  /**
+   * Schema.org `Course` payload — emitted as JSON-LD so search engines
+   * can surface the course in rich results. We deliberately keep it
+   * server-data driven (no hard-coded provider URL) so it stays in sync
+   * with whatever the catalog ships.
+   */
+  const courseJsonLd = useMemo(() => {
+    if (!course) return null;
+    const instructorName =
+      typeof course.instructor === 'object' ? course.instructor?.name : null;
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: course.title,
+      description: course.shortDescription || course.description,
+      provider: {
+        '@type': 'Organization',
+        name: import.meta.env.VITE_APP_NAME || 'Lumen LMS',
+        sameAs:
+          typeof window !== 'undefined' ? window.location.origin : undefined,
+      },
+      ...(instructorName && {
+        instructor: { '@type': 'Person', name: instructorName },
+      }),
+      ...(course.thumbnail?.url && { image: course.thumbnail.url }),
+      ...(course.language && { inLanguage: course.language }),
+    };
+  }, [course]);
+
   const handleEnroll = useCallback(async () => {
     if (!course?._id) return;
     setEnrolling(true);
@@ -296,6 +326,15 @@ export default function CourseDetailPage() {
 
   return (
     <div className="pb-24 lg:pb-12">
+      <Seo
+        title={course.title}
+        description={course.shortDescription || course.description?.slice(0, 200)}
+        image={course.thumbnail?.url}
+        url={`/courses/${course.slug}`}
+        type="article"
+      />
+      <JsonLd data={courseJsonLd} />
+
       <CourseHero course={course} />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">

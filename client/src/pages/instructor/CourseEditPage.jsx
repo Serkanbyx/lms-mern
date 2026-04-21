@@ -17,6 +17,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import { Seo } from '../../components/seo/index.js';
 import {
   Alert,
   Button,
@@ -134,6 +135,11 @@ export default function CourseEditPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12 space-y-6">
+      <Seo
+        title={course?.title ? `Edit · ${course.title}` : 'Edit course'}
+        noIndex
+      />
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <Link

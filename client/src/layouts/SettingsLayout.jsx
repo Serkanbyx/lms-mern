@@ -17,6 +17,7 @@ import {
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
+import { Seo } from '../components/seo/index.js';
 import { Icon, Select } from '../components/ui/index.js';
 import { ROUTES } from '../utils/constants.js';
 import { cn } from '../utils/cn.js';
@@ -82,6 +83,9 @@ const MobileSelect = () => {
 export function SettingsLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
+      {/* Settings is private to the signed-in user — robots stay out. */}
+      <Seo noIndex />
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:px-3 focus:py-2 focus:rounded-md focus:bg-primary focus:text-primary-fg focus:shadow-lg"

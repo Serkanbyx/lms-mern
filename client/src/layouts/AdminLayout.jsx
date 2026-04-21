@@ -21,6 +21,7 @@ import {
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
+import { Seo } from '../components/seo/index.js';
 import { Drawer, Icon, IconButton } from '../components/ui/index.js';
 import { ROUTES } from '../utils/constants.js';
 import { cn } from '../utils/cn.js';
@@ -68,6 +69,10 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
+      {/* Admin pages must never be indexed; child Seo can still set the
+          per-route title and inherits this robots policy by default. */}
+      <Seo noIndex />
+
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:px-3 focus:py-2 focus:rounded-md focus:bg-primary focus:text-primary-fg focus:shadow-lg"

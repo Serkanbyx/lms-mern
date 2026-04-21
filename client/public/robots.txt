@@ -1,0 +1,22 @@
+# Lumen LMS — robots policy
+# Public marketing surfaces are open; authenticated app shells are closed.
+
+User-agent: *
+Allow: /
+Allow: /courses
+Allow: /courses/
+Allow: /u/
+Allow: /about
+Allow: /teach
+Allow: /terms
+Allow: /privacy
+
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /instructor
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+
+Sitemap: /sitemap.xml

@@ -44,11 +44,54 @@ import {
   countActiveFilters,
   findDurationBucket,
 } from '../../components/course/index.js';
+import { Seo } from '../../components/seo/index.js';
 import { Button, Icon, Pagination, Select, Sheet } from '../../components/ui/index.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import { useMediaQuery } from '../../hooks/useMediaQuery.js';
 import { listCourses } from '../../services/course.service.js';
+
+/**
+ * Build a friendly SEO title and description for the catalog from the
+ * current filter selection — turns share links like
+ * `/courses?category=programming,design&level=beginner` into a tab
+ * title that actually describes the result set instead of a generic
+ * "Browse courses".
+ */
+const buildCatalogSeo = ({ filters, total }) => {
+  const parts = [];
+  if (filters.categories?.length) {
+    const labels = filters.categories.map(
+      (slug) => slug.charAt(0).toUpperCase() + slug.slice(1),
+    );
+    parts.push(labels.join(' & '));
+  }
+  if (filters.levels?.length) {
+    const labels = filters.levels.map(
+      (level) => level.charAt(0).toUpperCase() + level.slice(1),
+    );
+    parts.push(labels.join('/'));
+  }
+  if (filters.priceMode === 'free') parts.push('free');
+  if (filters.search?.trim()) parts.push(`"${filters.search.trim()}"`);
+
+  const title = parts.length > 0 ? `${parts.join(' · ')} courses` : 'Courses';
+
+  const descriptionBits = [];
+  if (parts.length > 0) {
+    descriptionBits.push(`${parts.join(' · ')} courses`);
+  } else {
+    descriptionBits.push('Browse our full catalog of courses');
+  }
+  if (typeof total === 'number' && total > 0) {
+    descriptionBits.push(`${total.toLocaleString()} results`);
+  }
+  descriptionBits.push(
+    'taught by working professionals — filter by topic, level, price or length to find the right path.',
+  );
+
+  return { title, description: descriptionBits.join(' · ') };
+};
 
 const PAGE_SIZE = 12;
 const SEARCH_DEBOUNCE_MS = 400;
@@ -259,8 +302,19 @@ export default function CourseCatalogPage() {
   const showingFrom = data.total === 0 ? 0 : (filters.page - 1) * PAGE_SIZE + 1;
   const showingTo = Math.min(filters.page * PAGE_SIZE, data.total);
 
+  const seo = useMemo(
+    () =>
+      buildCatalogSeo({
+        filters,
+        total: data.status === 'ready' ? data.total : undefined,
+      }),
+    [filters, data.status, data.total],
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12">
+      <Seo title={seo.title} description={seo.description} url="/courses" />
+
       <header className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-text">
           Browse courses

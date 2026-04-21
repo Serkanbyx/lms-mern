@@ -33,6 +33,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import { Seo } from '../../components/seo/index.js';
 import {
   Alert,
   Button,
@@ -505,6 +506,13 @@ export default function CurriculumBuilderPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-10">
+      <Seo
+        title={
+          course?.title ? `Curriculum · ${course.title}` : 'Curriculum builder'
+        }
+        noIndex
+      />
+
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <Link

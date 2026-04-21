@@ -68,6 +68,7 @@ import {
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { Seo } from '../../components/seo/index.js';
 import {
   Alert,
   Badge,
@@ -619,6 +620,11 @@ export default function QuizBuilderPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 py-8 lg:py-10 pb-32">
+      <Seo
+        title={lesson?.title ? `Quiz · ${lesson.title}` : 'Quiz builder'}
+        noIndex
+      />
+
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <Link

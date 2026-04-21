@@ -36,6 +36,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { Seo } from '../../components/seo/index.js';
 import {
   Avatar,
   Badge,
@@ -630,6 +631,8 @@ export default function InstructorDashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12 space-y-10">
+      <Seo title="Instructor Dashboard" noIndex />
+
       {/* Header strip ------------------------------------------------------- */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-4">

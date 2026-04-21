@@ -47,6 +47,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CourseCard, CourseCardSkeleton } from '../../components/course/index.js';
+import { Seo } from '../../components/seo/index.js';
 import {
   Avatar,
   Badge,
@@ -811,6 +812,8 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12 space-y-12">
+      <Seo title="My Learning" noIndex />
+
       {/* Welcome strip ------------------------------------------------------- */}
       <header className="flex flex-col gap-6">
         <div className="flex flex-wrap items-end justify-between gap-4">

@@ -9,6 +9,7 @@
 
 import { Link, useNavigate } from 'react-router-dom';
 
+import { Seo } from '../../components/seo/index.js';
 import { Button, Icon } from '../../components/ui/index.js';
 import { CourseForm } from '../../components/instructor/index.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
@@ -26,6 +27,8 @@ export default function CourseCreatePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 lg:py-12 space-y-6">
+      <Seo title="Create course" noIndex />
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <Link

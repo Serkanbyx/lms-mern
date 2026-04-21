@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 import { Logo } from '../../components/brand/index.js';
+import { Seo } from '../../components/seo/index.js';
 import { Icon } from '../../components/ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
 import { durations, ease, fadeUp } from '../../utils/motion.js';
@@ -53,6 +54,11 @@ export function AuthShell({
 }) {
   return (
     <div className="min-h-[calc(100vh-64px)] grid lg:grid-cols-[1fr_1fr]">
+      {/* Auth forms must never appear in search results — the per-page
+          Seo (login/register/forgot) only sets the title; this shell-
+          level Seo owns the noindex policy. */}
+      <Seo noIndex />
+
       {/* Form column */}
       <motion.section
         {...fadeUp}

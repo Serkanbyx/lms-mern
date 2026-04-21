@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { CourseCard, CourseCardSkeleton } from '../../components/course/index.js';
+import { Seo } from '../../components/seo/index.js';
 import {
   Alert,
   Avatar,
@@ -199,8 +200,22 @@ export default function PublicProfilePage() {
   const isOwnProfile =
     viewer && profile && String(viewer._id ?? viewer.id) === String(profile._id);
 
+  const seoDescription =
+    profile.headline ||
+    (isInstructor
+      ? `Public instructor profile of ${profile.name} on Lumen LMS.`
+      : `Public learner profile of ${profile.name} on Lumen LMS.`);
+
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
+      <Seo
+        title={profile.name}
+        description={seoDescription}
+        image={profile.avatar}
+        url={`/u/${profile._id ?? userId}`}
+        type="profile"
+      />
+
       <ProfileHeader profile={profile} isOwnProfile={isOwnProfile} />
 
       {tabs.length > 0 ? (
