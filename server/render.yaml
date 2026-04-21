@@ -122,7 +122,12 @@ services:
     rootDir: server
     branch: main
     autoDeploy: true
-    buildCommand: npm install
+    # `seed:admin` is idempotent — it ensures the bootstrap admin user
+    # exists on every deploy. Safe to run on every build; it no-ops when
+    # the user is already present. Fails the deploy (and therefore the
+    # rollout) if MONGO_URI / ADMIN_EMAIL / ADMIN_PASSWORD are missing
+    # or wrong, which is exactly the guardrail we want.
+    buildCommand: npm install && npm run seed:admin
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
