@@ -11,6 +11,8 @@
  *  - Caps Lock detection on the password field surfaces a `Tooltip`
  *    warning so users don't fail silently.
  *  - "Remember me" is UI only — the JWT TTL is decided by the server.
+ *    Defaults to OFF so a stranger walking up to a shared / public
+ *    machine doesn't inherit a persistent session by accident.
  *  - Submit shows `loading` state, disables the button, and surfaces
  *    server-side validation in both inline (`error`) and form-level
  *    (`Alert`) form.
@@ -59,7 +61,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [capsOn, setCapsOn] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
 

@@ -15,3 +15,4 @@ export { OfflineBanner } from './OfflineBanner.jsx';
 export { OfflineGate } from './OfflineGate.jsx';
 export { EmailVerificationBanner } from './EmailVerificationBanner.jsx';
 export { RouteSkeleton } from './RouteSkeleton.jsx';
+export { ScrollToTop } from './ScrollToTop.jsx';

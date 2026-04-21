@@ -100,15 +100,26 @@ export default defineConfig({
         // pre-cache. We bump the limit so the SW serves it from the
         // network on first visit and caches it for repeat loads.
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        // Catastrophic offline navigations land on the branded fallback
-        // page bundled in `public/offline.html`. Workbox copies it into
-        // the precache via `additionalManifestEntries` so it survives
-        // even when the network drops mid-navigation.
-        navigateFallback: '/offline.html',
+        // SPA navigation fallback: every deep link (`/courses/:slug`,
+        // `/dashboard`, etc.) must hand the browser the precached
+        // `index.html` so React Router can take over and render the
+        // matching route. Pointing this at `offline.html` (as it used
+        // to) caused EVERY direct URL load + hard navigation to render
+        // the offline shell, because the requested path is never in
+        // the precache by definition. The branded `offline.html` is
+        // still bundled via `includeAssets` and is served by the
+        // explicit catch-all handler below when a navigation truly
+        // fails on the network.
+        navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/auth\//, /\/sw\.js$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: false,
+        // True-offline fallback. When a navigation request reaches the
+        // network and fails (and the SPA shell is not yet in cache),
+        // serve the branded offline page instead of the browser's
+        // generic "no internet" screen.
+        offlineGoogleAnalytics: false,
         runtimeCaching: [
           {
             // Auth endpoints are NEVER cached — a stale "logged in"
