@@ -6,8 +6,10 @@
  *                 GET /:id/best/mine.
  *   - Instructor: PATCH /:id, DELETE /:id, GET /:id/instructor.
  *
- * Quiz CREATION sits on the lesson router (one quiz per lesson):
- *   POST /api/lessons/:lessonId/quiz
+ * Quiz CREATION + lesson-scoped lookup sit on the lesson router (one
+ * quiz per lesson):
+ *   GET  /api/lessons/:lessonId/quiz   → existing quiz or `null`
+ *   POST /api/lessons/:lessonId/quiz   → create the (single) quiz
  */
 
 import api from '../api/axios.js';
@@ -65,6 +67,18 @@ export const getQuizForInstructor = async (id) => {
   return data;
 };
 
+/**
+ * Look up the quiz attached to a given lesson (instructor surface).
+ *
+ * Resolves to `{ quiz: null, lesson }` when the lesson exists but has
+ * no quiz yet — the builder uses that signal to render an empty draft
+ * and route the first save through `createQuiz`.
+ */
+export const getQuizByLesson = async (lessonId) => {
+  const { data } = await api.get(`/lessons/${lessonId}/quiz`);
+  return data;
+};
+
 export const createQuiz = async (lessonId, payload) => {
   const { data } = await api.post(`/lessons/${lessonId}/quiz`, payload);
   return data;
@@ -86,6 +100,7 @@ export default {
   getMyAttempts,
   getBestScore,
   getQuizForInstructor,
+  getQuizByLesson,
   createQuiz,
   updateQuiz,
   deleteQuiz,

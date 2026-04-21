@@ -8,6 +8,9 @@
  * lesson by id, plus the nested quiz-create endpoint that flows
  * through `/api/lessons/:lessonId/quiz`:
  *
+ *   GET    /:lessonId/quiz  — load the quiz attached to this lesson
+ *                             (returns `quiz: null` if not yet created
+ *                             so the authoring UI bootstraps cleanly)
  *   POST   /:lessonId/quiz  — create the (single) quiz for this lesson
  *                             (409 if one already exists)
  *   GET    /:id             — instructor detail (full document, incl.
@@ -35,7 +38,10 @@ import {
   getLessonForInstructor,
   updateLesson,
 } from '../controllers/lesson.controller.js';
-import { createQuiz } from '../controllers/quiz.controller.js';
+import {
+  createQuiz,
+  getQuizByLessonForInstructor,
+} from '../controllers/quiz.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { instructorOrAdmin } from '../middleware/role.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
@@ -43,15 +49,23 @@ import {
   lessonIdParamValidator,
   updateLessonValidator,
 } from '../validators/lesson.validator.js';
-import { createQuizValidator } from '../validators/quiz.validator.js';
+import {
+  createQuizValidator,
+  lessonQuizParamValidator,
+} from '../validators/quiz.validator.js';
 
 const router = Router();
 
 router.use(protect, instructorOrAdmin);
 
-// Nested quiz-create endpoint — declared BEFORE the generic `/:id`
-// matcher so `quiz` isn't swallowed as a lesson id.
-router.post('/:lessonId/quiz', validate(createQuizValidator), createQuiz);
+// Nested quiz endpoints — declared BEFORE the generic `/:id` matcher so
+// `quiz` isn't swallowed as a lesson id. The GET form returns
+// `{ quiz: null }` for lessons that don't have a quiz yet, so the
+// authoring UI can bootstrap from a single round-trip.
+router
+  .route('/:lessonId/quiz')
+  .get(validate(lessonQuizParamValidator), getQuizByLessonForInstructor)
+  .post(validate(createQuizValidator), createQuiz);
 
 router
   .route('/:id')

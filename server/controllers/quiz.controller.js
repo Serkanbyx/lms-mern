@@ -197,6 +197,30 @@ export const getQuizForInstructor = asyncHandler(async (req, res) => {
   res.json({ success: true, quiz });
 });
 
+/**
+ * GET /api/lessons/:lessonId/quiz
+ *
+ * Authoring lookup of the (single) quiz attached to a lesson.
+ *
+ * The quiz builder UI is addressed by lesson id (a lesson has at most
+ * one quiz) but the rest of the quiz API is keyed by the quiz's own
+ * `_id`. Without this helper the builder would have to scan the whole
+ * curriculum to discover the quiz id every time it loaded — an O(N)
+ * round-trip just to bootstrap a single screen.
+ *
+ * Returns `{ quiz: null }` (200) when the lesson exists and is owned
+ * by the requester but has no quiz yet; the builder then renders an
+ * empty draft and a save will hit `POST /api/lessons/:lessonId/quiz`.
+ *
+ * Like every other instructor mutation, ownership failures collapse to
+ * 404 (never 403) so the lesson id space cannot be probed.
+ */
+export const getQuizByLessonForInstructor = asyncHandler(async (req, res) => {
+  const { lesson } = await findOwnedLessonOr404(req.params.lessonId, req.user);
+  const quiz = await Quiz.findOne({ lessonId: lesson._id });
+  res.json({ success: true, quiz: quiz ?? null, lesson });
+});
+
 // ---------------------------------------------------------------------------
 // STUDENT SURFACE
 // ---------------------------------------------------------------------------
@@ -399,6 +423,7 @@ export default {
   updateQuiz,
   deleteQuiz,
   getQuizForInstructor,
+  getQuizByLessonForInstructor,
   getQuizForStudent,
   submitQuiz,
   getMyAttempts,

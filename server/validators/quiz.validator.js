@@ -203,6 +203,8 @@ export const updateQuizValidator = [
 
 export const quizIdParamValidator = [mongoIdParam('id')];
 
+export const lessonQuizParamValidator = [mongoIdParam('lessonId')];
+
 // ---------------------------------------------------------------------------
 // STUDENT-FACING VALIDATORS
 // ---------------------------------------------------------------------------
@@ -286,6 +288,7 @@ export default {
   createQuizValidator,
   updateQuizValidator,
   quizIdParamValidator,
+  lessonQuizParamValidator,
   submitQuizValidator,
   myAttemptsValidator,
   QUIZ_ATTEMPTS_PAGINATION_DEFAULTS,
