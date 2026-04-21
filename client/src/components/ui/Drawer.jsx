@@ -60,12 +60,19 @@ export function Drawer({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
         >
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-label="Close drawer"
+          {/*
+            Backdrop is rendered as a presentational <div> (not a <button>)
+            on purpose. A second "Close drawer" button on top of the X in
+            the header doubled the AT entry list and made the panel read
+            as having two close affordances. Closing on overlay click is
+            still supported via the click handler — keyboard / screen
+            reader users get the same behaviour through Esc + the visible
+            X button inside the focus trap.
+          */}
+          <div
+            aria-hidden="true"
             onClick={closeOnOverlayClick ? onClose : undefined}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm cursor-default"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           />
           <motion.aside
             ref={panelRef}

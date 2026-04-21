@@ -130,7 +130,7 @@ export function CategoryGrid() {
         whileInView="animate"
         viewport={{ once: true, margin: '-80px' }}
         className="
-          flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory
+          flex gap-4 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory no-scrollbar
           sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:mx-0 sm:px-0
           lg:grid-cols-3 xl:grid-cols-6
         "

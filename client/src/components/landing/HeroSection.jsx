@@ -146,12 +146,19 @@ export function HeroSection() {
           {/* Honest stats row — only renders the figures we can back up
               with live data. We hide the section entirely when the
               catalog is still empty (fresh deploy / dev) instead of
-              shipping a row of zeros. */}
+              shipping a row of zeros.
+
+              Layout: a 3-column grid at every breakpoint so we never
+              orphan a single stat onto its own row on mobile (which
+              read as a layout glitch when only one of the three stats
+              landed alone in the second row). The text scale steps up
+              from `text-xl` → `text-2xl` so the figures stay legible
+              on narrow viewports without overflowing the column. */}
           {stats && stats.totalCourses > 0 && (
-            <dl className="mt-10 grid grid-cols-2 gap-6 max-w-md sm:grid-cols-3">
+            <dl className="mt-10 grid grid-cols-3 gap-4 max-w-md sm:gap-6">
               {courseCountLabel && (
                 <div>
-                  <dt className="text-2xl font-semibold text-text">
+                  <dt className="text-xl sm:text-2xl font-semibold text-text">
                     {courseCountLabel}
                   </dt>
                   <dd className="text-xs text-text-subtle mt-1">
@@ -161,7 +168,7 @@ export function HeroSection() {
               )}
               {categoryCountLabel && stats.liveCategories > 0 && (
                 <div>
-                  <dt className="text-2xl font-semibold text-text">
+                  <dt className="text-xl sm:text-2xl font-semibold text-text">
                     {categoryCountLabel}
                   </dt>
                   <dd className="text-xs text-text-subtle mt-1">
@@ -170,7 +177,9 @@ export function HeroSection() {
                 </div>
               )}
               <div>
-                <dt className="text-2xl font-semibold text-text">100%</dt>
+                <dt className="text-xl sm:text-2xl font-semibold text-text">
+                  100%
+                </dt>
                 <dd className="text-xs text-text-subtle mt-1">
                   project-based
                 </dd>

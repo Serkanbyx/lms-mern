@@ -18,7 +18,7 @@ const STEPS = [
   {
     title: 'Pick a course',
     description:
-      'Browse 800+ courses across programming, design, data and more — filter by level, length and price.',
+      'Browse the catalog across programming, design, data and more — filter by level, length and price.',
     icon: 'Search',
   },
   {
