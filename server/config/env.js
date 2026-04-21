@@ -185,6 +185,16 @@ const REFRESH_COOKIE_NAME = optionalVar(process.env.REFRESH_COOKIE_NAME, 'lms.re
 // --- Logging ---
 const LOG_LEVEL = optionalVar(process.env.LOG_LEVEL, isProd ? 'info' : 'debug');
 
+// --- Feature flags (STEP 49) ---
+// Server-side mirror of `client/src/config/features.js`. Each flag MUST
+// default to the same value on both sides — diverging defaults cause
+// "the button is there but the API 404s" bugs that are extremely painful
+// to debug under real traffic. Server-side flags are the security-critical
+// ones (they gate routes); client-side flags are cosmetic.
+const FEATURE_CERTIFICATES = parseBool(process.env.FEATURE_CERTIFICATES, true);
+const FEATURE_HLS = parseBool(process.env.FEATURE_HLS, false);
+const FEATURE_BETA_QUIZ_TIMER = parseBool(process.env.FEATURE_BETA_QUIZ_TIMER, false);
+
 // --- Final check: explode early on any validation error ---
 if (errors.length > 0) {
   const message = [
@@ -233,6 +243,9 @@ export const env = Object.freeze({
   PASSWORD_RESET_TTL_MIN,
   REFRESH_COOKIE_NAME,
   LOG_LEVEL,
+  FEATURE_CERTIFICATES,
+  FEATURE_HLS,
+  FEATURE_BETA_QUIZ_TIMER,
 });
 
 export default env;

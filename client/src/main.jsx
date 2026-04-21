@@ -27,6 +27,11 @@ import { PreferencesProvider } from './context/PreferencesContext.jsx';
 import { MotionProvider } from './components/layout/MotionProvider.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
+// STEP 49 — initialise i18next (side-effect import). Must run before
+// any component that calls `useTranslation()` mounts, hence the import
+// near the top of the entry module.
+import './i18n/index.js';
+
 import './index.css';
 
 createRoot(document.getElementById('root')).render(

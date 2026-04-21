@@ -120,6 +120,23 @@ const quizAttemptSchema = new Schema(
         message: 'Time spent must be an integer number of seconds.',
       },
     },
+    // STEP 49 — Lightweight quiz integrity signal.
+    // Number of times the player tab lost focus (tab switch / minimise /
+    // app switch on mobile) during the attempt. Reported by the client
+    // via `document.visibilitychange`. NOT a hard gate — proctored
+    // exams require a separate service. We surface it on the attempt
+    // record so instructors can correlate suspicious score swings with
+    // unusual tab-switch counts when grading manually.
+    tabSwitches: {
+      type: Number,
+      default: 0,
+      min: [0, 'Tab switch count cannot be negative'],
+      max: [9999, 'Tab switch count looks bogus (> 9999) — likely a forged payload.'],
+      validate: {
+        validator: (value) => Number.isInteger(value),
+        message: 'Tab switch count must be an integer.',
+      },
+    },
     attemptedAt: {
       type: Date,
       default: Date.now,

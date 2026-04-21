@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search"
+  },
+  "nav": {
+    "courses": "Courses",
+    "myLearning": "My Learning",
+    "teach": "Teach",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "logout": "Log out"
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "forgotPassword": "Forgot password?",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full name",
+    "verifyEmailPending": "Check your inbox to verify your email."
+  },
+  "catalog": {
+    "title": "Browse courses",
+    "empty": "No courses match your filters",
+    "reset": "Reset filters",
+    "filterCategory": "Category",
+    "filterLevel": "Level",
+    "filterLanguage": "Language"
+  },
+  "course": {
+    "enroll": "Enroll",
+    "continueLearning": "Continue learning",
+    "lessonsCount": "{{count}} lesson",
+    "lessonsCount_plural": "{{count}} lessons",
+    "duration": "{{minutes}} min",
+    "level": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    }
+  },
+  "quiz": {
+    "start": "Start quiz",
+    "submit": "Submit",
+    "retake": "Retake quiz",
+    "passed": "Passed!",
+    "notYet": "Not yet",
+    "timeLeft": "Time left",
+    "tabSwitchWarning": "Tab change detected — focus may be required to keep your attempt valid."
+  },
+  "footer": {
+    "about": "About",
+    "terms": "Terms",
+    "privacy": "Privacy"
+  }
+}

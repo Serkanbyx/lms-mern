@@ -20,6 +20,7 @@
  * any route handler.
  */
 
+import pino from 'pino';
 import pinoHttp from 'pino-http';
 
 import { env } from '../config/env.js';
@@ -35,6 +36,23 @@ const transport = env.isProd
         ignore: 'pid,hostname',
       },
     };
+
+/**
+ * STEP 49 — Base structured logger.
+ *
+ * Use this for non-request lifecycle events (server bootstrap, graceful
+ * shutdown, cron jobs, background workers) so they share the same JSON
+ * shape and log level as the per-request lines emitted by `httpLogger`.
+ *
+ * Avoid `console.log` outside of `seeders/` and one-shot CLI scripts —
+ * `pino`'s structured output is the only thing the production log
+ * aggregator can index reliably.
+ */
+export const logger = pino({
+  level: env.LOG_LEVEL,
+  transport,
+  base: { service: 'lms-api', env: env.NODE_ENV },
+});
 
 export const httpLogger = pinoHttp({
   level: env.LOG_LEVEL,

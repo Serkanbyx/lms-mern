@@ -100,7 +100,18 @@ const initialMachine = {
   startedAt: 0,
   timeLeft: undefined,
   result: null,
+  // STEP 49 — Lightweight integrity counter. Incremented every time
+  // the page goes hidden (tab switch / minimised / mobile app switch).
+  // Submitted alongside the answers and persisted on `QuizAttempt`.
+  tabSwitches: 0,
 };
+
+/**
+ * STEP 49 — Anti-cheat: how often we toast the user about a tab
+ * switch. We don't want to spam them once per ms when they're flipping
+ * back and forth, so the toast respects a 4-second cooldown.
+ */
+const TAB_SWITCH_TOAST_COOLDOWN_MS = 4_000;
 
 // ---------------------------------------------------------------------------
 // Page
@@ -213,6 +224,11 @@ export default function QuizPage() {
         const resp = await quizService.submitQuiz(quizId, {
           answers,
           timeSpentSeconds,
+          // STEP 49 — Forward the integrity signal so the server can
+          // persist it on `QuizAttempt`. The server clamps to a sane
+          // range, so a forged DevTools call cannot poison aggregate
+          // analytics.
+          tabSwitches: machineRef.current.tabSwitches ?? 0,
         });
 
         const result = {
@@ -290,6 +306,48 @@ export default function QuizPage() {
     };
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
+  }, [machine.step]);
+
+  // -------------------------------------------------------------------------
+  // STEP 49 — Tab-switch detection (lightweight quiz anti-cheat).
+  //
+  // Honor system, but raise the bar. When the page goes hidden during
+  // an active attempt we:
+  //   - bump a counter that travels with the submission payload, and
+  //   - show a single, throttled toast so the learner knows the
+  //     attempt is being watched (the implicit "we noticed" deterrent
+  //     is doing most of the work here).
+  //
+  // We deliberately do NOT auto-submit on hide — accidental tab
+  // switches (notification clicks, IDE hotkeys, mobile app switcher)
+  // would punish honest users far more than they catch cheaters.
+  // Determined cheating is impossible to prevent without proctoring;
+  // see `docs/QUIZ-INTEGRITY.md` for the policy boundaries.
+  // -------------------------------------------------------------------------
+  const lastTabSwitchToastRef = useRef(0);
+  useEffect(() => {
+    if (machine.step !== 'taking') return undefined;
+    if (typeof document === 'undefined') return undefined;
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== 'hidden') return;
+      setMachine((prev) =>
+        prev.step === 'taking'
+          ? { ...prev, tabSwitches: (prev.tabSwitches ?? 0) + 1 }
+          : prev,
+      );
+      const now = Date.now();
+      if (now - lastTabSwitchToastRef.current > TAB_SWITCH_TOAST_COOLDOWN_MS) {
+        lastTabSwitchToastRef.current = now;
+        toast.info(
+          'Tab change detected — focus may be required to keep your attempt valid.',
+        );
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', onVisibilityChange);
   }, [machine.step]);
 
   // -------------------------------------------------------------------------
@@ -439,7 +497,7 @@ export default function QuizPage() {
   const quiz = data.quiz;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="quiz-page flex h-full min-h-0 flex-col">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-8 sm:py-10">
           <AnimatePresence mode="wait">
@@ -687,8 +745,21 @@ function QuestionCard({
   onSelect,
   radioName,
 }) {
+  // STEP 49 — Lightweight anti-cheat: block copy + right-click on the
+  // question card so casual "highlight + paste into ChatGPT" attempts
+  // require obvious effort. Determined cheating is impossible to
+  // prevent client-side; this is a deterrent layered on top of the
+  // server-authoritative grading. See `docs/QUIZ-INTEGRITY.md`.
+  const blockClipboard = (event) => event.preventDefault();
+
   return (
-    <Card padding="lg">
+    <Card
+      padding="lg"
+      className="quiz-question"
+      onCopy={blockClipboard}
+      onCut={blockClipboard}
+      onContextMenu={blockClipboard}
+    >
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
         Question {questionNumber}
       </p>

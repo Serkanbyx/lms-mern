@@ -311,12 +311,21 @@ export const submitQuiz = asyncHandler(async (req, res) => {
       ? Math.max(0, Math.min(reportedSeconds, quiz.timeLimitSeconds + TIME_LIMIT_GRACE_SECONDS))
       : Math.max(0, reportedSeconds);
 
+  // STEP 49 — Anti-cheat signal: tab switches reported by the client.
+  // Clamped to a reasonable [0, 9999] range so a forged payload can't
+  // poison aggregate "average tab switches per attempt" analytics.
+  const reportedTabSwitches = Number.isInteger(req.body.tabSwitches)
+    ? req.body.tabSwitches
+    : 0;
+  const clampedTabSwitches = Math.max(0, Math.min(reportedTabSwitches, 9999));
+
   const attempt = await QuizAttempt.create({
     userId: req.user._id,
     quizId: quiz._id,
     courseId: quiz.courseId,
     answers,
     timeSpentSeconds: clampedSeconds,
+    tabSwitches: clampedTabSwitches,
   });
 
   // Per-question feedback is response-only — it is intentionally NOT

@@ -39,9 +39,11 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
+import mongoose from 'mongoose';
 
 import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
+import { redis } from './config/redis.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { apiLimiter } from './middleware/rateLimit.middleware.js';
@@ -63,7 +65,7 @@ import quizRoutes from './routes/quiz.routes.js';
 import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import userRoutes from './routes/user.routes.js';
-import { httpLogger } from './utils/logger.js';
+import { httpLogger, logger } from './utils/logger.js';
 
 const app = express();
 
@@ -213,28 +215,88 @@ app.use(notFound);
 //     thrown errors and rejected promises here automatically.
 app.use(errorHandler);
 
+// STEP 49 — Graceful shutdown.
+//
+// Without this hook a deploy (or `kill` from your shell) drops every
+// in-flight request and leaves the database / Redis connections half-
+// closed. Render fires SIGTERM with a 30 s grace window before SIGKILL;
+// this handler stops accepting new connections, drains the existing
+// ones, then closes Mongo + Redis cleanly. The 10 s fallback exit
+// guarantees we never hang the deploy if a long-poll refuses to drain.
+const FORCE_EXIT_TIMEOUT_MS = 10_000;
+
 const start = async () => {
   await connectDB();
   const server = app.listen(env.PORT, () => {
-    // eslint-disable-next-line no-console
-    console.log(`[server] LMS API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
+    logger.info(
+      { port: env.PORT, env: env.NODE_ENV },
+      `LMS API listening on http://localhost:${env.PORT}`,
+    );
   });
 
-  const shutdown = (signal) => {
-    // eslint-disable-next-line no-console
-    console.log(`[server] ${signal} received — shutting down gracefully.`);
-    server.close(() => process.exit(0));
-    // Force-exit if connections hang for too long.
-    setTimeout(() => process.exit(1), 10_000).unref();
+  let shuttingDown = false;
+  const shutdown = async (signal) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    logger.info({ signal }, 'Shutdown signal received — draining connections.');
+
+    // Stop accepting new connections and wait for in-flight requests to finish.
+    const httpClosed = new Promise((resolve) => {
+      server.close((err) => {
+        if (err) logger.error({ err }, 'HTTP server close errored.');
+        else logger.info('HTTP server closed.');
+        resolve();
+      });
+    });
+
+    // Hard cap so a stuck keep-alive connection cannot deadlock the deploy.
+    const forceExit = setTimeout(() => {
+      logger.warn(
+        { timeoutMs: FORCE_EXIT_TIMEOUT_MS },
+        'Forced exit — graceful shutdown took too long.',
+      );
+      process.exit(1);
+    }, FORCE_EXIT_TIMEOUT_MS);
+    forceExit.unref();
+
+    try {
+      await httpClosed;
+      await mongoose.connection.close();
+      logger.info('MongoDB connection closed.');
+      if (redis) {
+        await redis.quit().catch(() => redis.disconnect());
+        logger.info('Redis connection closed.');
+      }
+    } catch (err) {
+      logger.error({ err }, 'Error during graceful shutdown.');
+      process.exit(1);
+      return;
+    }
+
+    clearTimeout(forceExit);
+    process.exit(0);
   };
 
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+  // Last-line-of-defence handlers: fatal errors that escape a request
+  // handler MUST tear the process down and let the orchestrator restart
+  // it. Continuing to serve traffic with corrupted state is worse than
+  // a brief 503.
+  process.on('unhandledRejection', (reason) => {
+    logger.fatal({ err: reason }, 'unhandledRejection — initiating shutdown.');
+    shutdown('unhandledRejection');
+  });
+  process.on('uncaughtException', (err) => {
+    logger.fatal({ err }, 'uncaughtException — initiating shutdown.');
+    shutdown('uncaughtException');
+  });
 };
 
 start().catch((err) => {
-  // eslint-disable-next-line no-console
-  console.error('[server] Fatal startup error:', err);
+  logger.fatal({ err }, 'Fatal startup error.');
   process.exit(1);
 });
 

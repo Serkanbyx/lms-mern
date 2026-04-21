@@ -184,3 +184,35 @@ body {
   background: color-mix(in oklab, var(--color-primary) 30%, transparent);
   color: var(--color-text);
 }
+
+/*
+ * STEP 49 — Lightweight quiz anti-cheat surface.
+ *
+ * `.quiz-question` flags the in-flight question card so we can disable
+ * text selection on the question + options. This is a deterrent, not
+ * a hard gate — JS can still re-enable selection from devtools — but
+ * it stops the casual "highlight the question, paste into ChatGPT"
+ * flow without any extra component plumbing.
+ *
+ * The companion `oncopy`/`oncontextmenu` handlers live on the React
+ * card itself (`pages/student/QuizPage.jsx`) so reduced-motion +
+ * touch-input quirks stay confined to component code.
+ */
+.quiz-question {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/*
+ * Print styles — hide the player entirely so a learner can't dump the
+ * question stack to a PDF / paper copy. The `display: none` cascade
+ * also strips the surrounding chrome, which keeps the printed page
+ * blank rather than half-rendered.
+ */
+@media print {
+  .quiz-page,
+  .quiz-page * {
+    display: none !important;
+  }
+}
