@@ -6,13 +6,17 @@
  * isn't an admin the API returns 403 and the response interceptor
  * surfaces a normalised error.
  *
- * `forceDeleteCourse` requires `{ confirm: true }` in the body — the
- * server uses this as the last-line guard against accidental cascades,
- * so the helper hard-codes it instead of trusting callers to remember.
+ * Param naming mirrors the server validators verbatim (`search`, not the
+ * shorter `q`) so a typo here can never silently fall back to "no
+ * filter". `forceDeleteCourse` requires `{ confirm: true }` in the body —
+ * the server uses this as the last-line guard against accidental
+ * cascades, so the helper hard-codes it instead of trusting callers to
+ * remember.
  */
 
 import api from '../api/axios.js';
-import { PAGINATION_DEFAULTS } from '../utils/constants.js';
+
+const ADMIN_DEFAULT_LIMIT = 20;
 
 export const getStats = async () => {
   const { data } = await api.get('/admin/stats');
@@ -20,14 +24,15 @@ export const getStats = async () => {
 };
 
 export const listUsers = async ({
-  q,
+  search,
   role,
   isActive,
-  page = PAGINATION_DEFAULTS.page,
-  limit = PAGINATION_DEFAULTS.limit,
+  sort,
+  page = 1,
+  limit = ADMIN_DEFAULT_LIMIT,
 } = {}) => {
   const { data } = await api.get('/admin/users', {
-    params: { q, role, isActive, page, limit },
+    params: { search, role, isActive, sort, page, limit },
   });
   return data;
 };
@@ -53,19 +58,25 @@ export const deleteUser = async (id) => {
 };
 
 export const listCoursesAdmin = async ({
-  q,
+  search,
   status,
-  page = PAGINATION_DEFAULTS.page,
-  limit = PAGINATION_DEFAULTS.limit,
+  sort,
+  page = 1,
+  limit = ADMIN_DEFAULT_LIMIT,
 } = {}) => {
   const { data } = await api.get('/admin/courses', {
-    params: { q, status, page, limit },
+    params: { search, status, sort, page, limit },
   });
   return data;
 };
 
-export const getPendingCourses = async () => {
-  const { data } = await api.get('/admin/courses/pending');
+export const getPendingCourses = async ({
+  page = 1,
+  limit = ADMIN_DEFAULT_LIMIT,
+} = {}) => {
+  const { data } = await api.get('/admin/courses/pending', {
+    params: { page, limit },
+  });
   return data;
 };
 
