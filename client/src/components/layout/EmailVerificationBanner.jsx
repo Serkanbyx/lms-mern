@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Banner, Button, Icon, toast } from '../ui/index.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import * as authService from '../../services/auth.service.js';
 
 const RESEND_COOLDOWN_S = 60;

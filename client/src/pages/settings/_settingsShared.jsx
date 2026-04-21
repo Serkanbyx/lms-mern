@@ -2,48 +2,18 @@
  * Shared building blocks for the auto-saving settings pages
  * (Appearance, Privacy, Notifications, Playback).
  *
- *  - `useAutoSaveIndicator()` + `<AutoSaveIndicator />` give every
- *    page a consistent "Saving… → Saved" badge synced to the
- *    ~600 ms debounce window of `PreferencesContext`.
+ *  - `<AutoSaveIndicator />` (driven by `useAutoSaveIndicator`, see
+ *    `./useAutoSaveIndicator.js`) gives every page a consistent
+ *    "Saving… → Saved" badge synced to the ~600 ms debounce window of
+ *    `PreferencesContext`.
  *  - `<SettingsRow />` is the canonical label-on-the-left,
  *    control-on-the-right layout used by every preference toggle.
  */
 
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useId } from 'react';
 
 import { Icon } from '../../components/ui/index.js';
 import { cn } from '../../utils/cn.js';
-
-const SAVING_DELAY_MS = 600;
-const SAVED_VISIBLE_MS = 2000;
-
-export const useAutoSaveIndicator = () => {
-  const [status, setStatus] = useState('idle');
-  const savingTimerRef = useRef(null);
-  const savedTimerRef = useRef(null);
-
-  const clearTimers = () => {
-    if (savingTimerRef.current) clearTimeout(savingTimerRef.current);
-    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
-    savingTimerRef.current = null;
-    savedTimerRef.current = null;
-  };
-
-  const markChanged = useCallback(() => {
-    clearTimers();
-    setStatus('saving');
-    savingTimerRef.current = setTimeout(() => {
-      setStatus('saved');
-      savedTimerRef.current = setTimeout(() => {
-        setStatus('idle');
-      }, SAVED_VISIBLE_MS);
-    }, SAVING_DELAY_MS);
-  }, []);
-
-  useEffect(() => clearTimers, []);
-
-  return { status, markChanged };
-};
 
 export function AutoSaveIndicator({ status, className }) {
   if (status === 'idle') {

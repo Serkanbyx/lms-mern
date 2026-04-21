@@ -54,7 +54,7 @@ export function Footer() {
     >
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+        className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/60 to-transparent"
       />
 
       <div className="mx-auto max-w-7xl px-6 py-12 grid gap-10 md:grid-cols-4">

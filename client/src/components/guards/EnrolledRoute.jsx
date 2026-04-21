@@ -24,7 +24,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useParams } from 'react-router-dom';
 
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import * as courseService from '../../services/course.service.js';
 import * as enrollmentService from '../../services/enrollment.service.js';
 import { ROUTES } from '../../utils/constants.js';

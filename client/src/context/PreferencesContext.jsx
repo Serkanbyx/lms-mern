@@ -26,14 +26,13 @@
 import {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 
-import { useAuth } from './AuthContext.jsx';
+import { useAuth } from './useAuth.js';
 import * as userService from '../services/user.service.js';
 import { STORAGE_KEYS } from '../utils/constants.js';
 
@@ -280,14 +279,6 @@ export const PreferencesProvider = ({ children }) => {
       {children}
     </PreferencesContext.Provider>
   );
-};
-
-export const usePreferences = () => {
-  const ctx = useContext(PreferencesContext);
-  if (!ctx) {
-    throw new Error('usePreferences must be used inside <PreferencesProvider>.');
-  }
-  return ctx;
 };
 
 export { DEFAULT_PREFERENCES };

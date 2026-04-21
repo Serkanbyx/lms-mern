@@ -19,8 +19,8 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from '../../context/AuthContext.jsx';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
+import { usePreferences } from '../../context/usePreferences.js';
 import { ROUTES } from '../../utils/constants.js';
 
 const CommandMenu = lazy(() =>

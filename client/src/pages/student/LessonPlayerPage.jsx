@@ -75,7 +75,7 @@ import {
   Spinner,
   toast,
 } from '../../components/ui/index.js';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { usePreferences } from '../../context/usePreferences.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import * as courseService from '../../services/course.service.js';
 import * as progressService from '../../services/progress.service.js';

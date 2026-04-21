@@ -46,7 +46,7 @@ import {
   Modal,
   toast,
 } from '../ui/index.js';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { usePreferences } from '../../context/usePreferences.js';
 import { listCourses } from '../../services/course.service.js';
 import { LEARNING_INTERESTS, ROUTES } from '../../utils/constants.js';
 import { cn } from '../../utils/cn.js';
@@ -65,7 +65,7 @@ function WelcomeStep({ firstName }) {
       <div
         aria-hidden="true"
         className="relative mb-6 inline-flex h-24 w-24 items-center justify-center rounded-3xl
-          bg-gradient-to-br from-primary/20 via-info/15 to-bg-muted"
+          bg-linear-to-br from-primary/20 via-info/15 to-bg-muted"
       >
         <Logo variant="mark" size={56} className="text-primary" decorative />
         <span

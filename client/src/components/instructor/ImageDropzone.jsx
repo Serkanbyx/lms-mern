@@ -166,7 +166,7 @@ export function ImageDropzone({
               className="h-full w-full object-cover"
               loading="lazy"
             />
-            <div className="absolute inset-0 flex items-end justify-end p-3 bg-gradient-to-t from-black/60 via-black/0 to-transparent">
+            <div className="absolute inset-0 flex items-end justify-end p-3 bg-linear-to-t from-black/60 via-black/0 to-transparent">
               <div className="flex items-center gap-2">
                 <Button
                   variant="secondary"
@@ -195,7 +195,7 @@ export function ImageDropzone({
             disabled={uploading}
             className={cn(
               'flex h-full w-full flex-col items-center justify-center gap-2 p-6 text-center',
-              'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary',
+              'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary',
             )}
           >
             <span

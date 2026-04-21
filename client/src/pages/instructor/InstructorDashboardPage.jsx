@@ -52,7 +52,7 @@ import {
   StatusBadge,
   toast,
 } from '../../components/ui/index.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import {
   archiveCourse,

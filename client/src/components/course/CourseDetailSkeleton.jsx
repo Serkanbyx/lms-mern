@@ -41,7 +41,7 @@ export function CourseDetailSkeleton() {
 
             <div className="hidden lg:block">
               <div className="rounded-2xl border border-border bg-bg shadow-sm overflow-hidden">
-                <Skeleton className="aspect-[16/9] w-full rounded-none" />
+                <Skeleton className="aspect-video w-full rounded-none" />
                 <div className="p-5 space-y-4">
                   <Skeleton className="h-7 w-1/2" />
                   <Skeleton className="h-11 w-full rounded-lg" />

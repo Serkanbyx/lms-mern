@@ -22,7 +22,7 @@ export function FinalCta() {
     >
       <Reveal>
         <div className="relative overflow-hidden rounded-3xl
-          bg-gradient-to-br from-primary via-primary to-info
+          bg-linear-to-br from-primary via-primary to-info
           px-8 py-14 sm:px-14 sm:py-16 text-primary-fg shadow-lg">
 
           <div

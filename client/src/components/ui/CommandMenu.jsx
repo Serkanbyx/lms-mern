@@ -75,7 +75,7 @@ export function CommandMenu({ open, onClose, items = [] }) {
       onClose={onClose}
       size="lg"
       showCloseButton={false}
-      className="!bg-bg-subtle"
+      className="bg-bg-subtle!"
     >
       <div className="-mx-6 -my-4">
         <div className="px-4 py-3 border-b border-border">

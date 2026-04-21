@@ -31,7 +31,7 @@ export function Skeleton({
       className={cn(
         'block relative overflow-hidden bg-bg-muted',
         'bg-[linear-gradient(90deg,transparent_0%,color-mix(in_oklab,var(--color-text)_8%,transparent)_50%,transparent_100%)]',
-        'bg-no-repeat [background-size:200%_100%] animate-shimmer',
+        'bg-no-repeat bg-size-[200%_100%] animate-shimmer',
         VARIANT_CLASSES[variant],
         className,
       )}

@@ -119,7 +119,7 @@ export function CategoryGrid() {
             >
               <div
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-xl
-                  bg-gradient-to-br ${category.accent}`}
+                  bg-linear-to-br ${category.accent}`}
               >
                 <Icon name={category.icon} size={22} />
               </div>

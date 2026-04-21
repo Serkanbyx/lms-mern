@@ -132,10 +132,10 @@ const HeroDecoration = () => (
       style={{ animationDelay: '-4s' }}
     />
 
-    <div className="relative w-full max-w-md aspect-[4/5] animate-float">
+    <div className="relative w-full max-w-md aspect-4/5 animate-float">
       <div className="absolute inset-0 rounded-3xl border border-border bg-bg-subtle/80
         backdrop-blur-sm shadow-lg overflow-hidden">
-        <div className="h-1.5 bg-gradient-to-r from-primary via-info to-primary" />
+        <div className="h-1.5 bg-linear-to-r from-primary via-info to-primary" />
 
         <div className="p-6 space-y-5">
           <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ const HeroDecoration = () => (
               <span className="font-medium text-text">68%</span>
             </div>
             <div className="h-2 rounded-full bg-bg-muted overflow-hidden">
-              <div className="h-full w-[68%] rounded-full bg-gradient-to-r from-primary to-info" />
+              <div className="h-full w-[68%] rounded-full bg-linear-to-r from-primary to-info" />
             </div>
           </div>
 

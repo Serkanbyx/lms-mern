@@ -24,8 +24,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 
-import { useAuth } from '../../context/AuthContext.jsx';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
+import { usePreferences } from '../../context/usePreferences.js';
 import {
   Avatar,
   Drawer,

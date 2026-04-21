@@ -107,7 +107,7 @@ function CourseCardComponent({ course, className }) {
       )}
     >
       <div
-        className="relative aspect-[16/9] overflow-hidden bg-bg-muted bg-cover bg-center"
+        className="relative aspect-video overflow-hidden bg-bg-muted bg-cover bg-center"
         // Inline LQIP background. Cloudinary returns a ~500 B
         // blurred preview; the browser paints it instantly so the card
         // never shows an empty grey rectangle while the high-res asset
@@ -143,7 +143,7 @@ function CourseCardComponent({ course, className }) {
         ) : (
           <div
             aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-gradient-to-br
+            className="absolute inset-0 flex items-center justify-center bg-linear-to-br
               from-primary/25 via-info/15 to-bg-muted text-primary/60"
           >
             <Icon name="GraduationCap" size={36} />

@@ -11,13 +11,13 @@
  */
 
 import { Toggle } from '../../components/ui/index.js';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { usePreferences } from '../../context/usePreferences.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import {
   AutoSaveIndicator,
   SettingsRow,
-  useAutoSaveIndicator,
 } from './_settingsShared.jsx';
+import { useAutoSaveIndicator } from './useAutoSaveIndicator.js';
 
 export default function SettingsPrivacyPage() {
   useDocumentTitle('Privacy settings');

@@ -14,7 +14,8 @@ export { CourseDetailSkeleton } from './CourseDetailSkeleton.jsx';
 export { EnrollmentCard } from './EnrollmentCard.jsx';
 export { CurriculumOutline } from './CurriculumOutline.jsx';
 export { FiltersSidebar, ActiveFiltersBadge } from './FiltersSidebar.jsx';
-export { ActiveFilterChips, countActiveFilters } from './ActiveFilterChips.jsx';
+export { ActiveFilterChips } from './ActiveFilterChips.jsx';
+export { countActiveFilters } from './filterUtils.js';
 export {
   CATEGORIES,
   LEVELS,

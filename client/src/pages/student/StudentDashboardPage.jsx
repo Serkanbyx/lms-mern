@@ -62,7 +62,7 @@ import {
   Stat,
   toast,
 } from '../../components/ui/index.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import { useDebounce } from '../../hooks/useDebounce.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import { listCourses } from '../../services/course.service.js';
@@ -146,7 +146,7 @@ function ContinueLearningCard({ enrollment }) {
         border border-border bg-bg shadow-xs transition-all duration-200 ease-out
         hover:-translate-y-0.5 hover:shadow-md hover:border-border-strong sm:w-80"
     >
-      <div className="relative aspect-[16/9] overflow-hidden bg-bg-muted">
+      <div className="relative aspect-video overflow-hidden bg-bg-muted">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -159,7 +159,7 @@ function ContinueLearningCard({ enrollment }) {
         ) : (
           <div
             aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-gradient-to-br
+            className="absolute inset-0 flex items-center justify-center bg-linear-to-br
               from-primary/30 via-info/15 to-bg-muted text-primary/70"
           >
             <Icon name="GraduationCap" size={36} />
@@ -213,7 +213,7 @@ function ContinueLearningRailSkeleton() {
           className="w-72 shrink-0 overflow-hidden rounded-2xl border border-border bg-bg
             shadow-xs sm:w-80"
         >
-          <Skeleton className="aspect-[16/9] w-full rounded-none" />
+          <Skeleton className="aspect-video w-full rounded-none" />
           <div className="space-y-3 p-4">
             <Skeleton variant="text" className="w-4/5" />
             <Skeleton variant="text" className="w-2/5" />
@@ -236,7 +236,7 @@ function CompletedCourseCard({ enrollment, onDownload, downloading }) {
       className="flex h-full flex-col overflow-hidden rounded-2xl border border-border
         bg-bg shadow-xs"
     >
-      <div className="relative aspect-[16/9] overflow-hidden bg-bg-muted">
+      <div className="relative aspect-video overflow-hidden bg-bg-muted">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -248,7 +248,7 @@ function CompletedCourseCard({ enrollment, onDownload, downloading }) {
         ) : (
           <div
             aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-gradient-to-br
+            className="absolute inset-0 flex items-center justify-center bg-linear-to-br
               from-success/25 via-primary/15 to-bg-muted text-success/80"
           >
             <Icon name="GraduationCap" size={36} />

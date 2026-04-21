@@ -131,9 +131,10 @@ days; caught here, they cost minutes.
 
 ## Backend on Render
 
-> **Fast path — Blueprint.** A `render.yaml` ships at the repo root.
-> Dashboard → **Blueprints** → **New Blueprint Instance** → select
-> the repo. Render reads the file and provisions the API + Redis +
+> **Fast path — Blueprint.** A `server/render.yaml` ships with the
+> backend. Dashboard → **Blueprints** → **New Blueprint Instance**
+> → select the repo, then point the blueprint config path at
+> `server/render.yaml`. Render reads the file and provisions the API + Redis +
 > all three cron jobs in one shot. You only need to fill in the
 > values marked `sync: false` (DB URI, Cloudinary, SMTP, admin,
 > CORS / `CLIENT_URL`) on the dashboard after the first apply —
@@ -267,13 +268,14 @@ prints a structured summary line.
 
 ## Frontend on Netlify
 
-> **Fast path — `netlify.toml`.** A `netlify.toml` ships at the
-> repo root and already pins `base = "client"`, the build command,
-> the publish directory, Node 20, the SPA fallback, and the
-> immutable cache headers for `/assets/*`. When you import the
-> site, Netlify auto-detects the file — leave the build settings
-> on the form blank and just add the `VITE_*` environment
-> variables in the **Environment variables** section below.
+> **Fast path — `netlify.toml`.** A `client/netlify.toml` ships
+> with the SPA and already pins the build command, the publish
+> directory (`dist`), Node 20, the SPA fallback, and the
+> immutable cache headers for `/assets/*`. Set the site's
+> **Base directory** to `client` so Netlify discovers the file —
+> after that, leave the rest of the build settings on the form
+> blank and just add the `VITE_*` environment variables in the
+> **Environment variables** section below.
 
 1. <https://app.netlify.com> → **Add new site** → **Import from Git**.
 2. Authorize GitHub if needed → pick the same repository.
@@ -284,7 +286,7 @@ prints a structured summary line.
     | Branch to deploy | `main` |
     | Base directory | `client` |
     | Build command | `npm run build` |
-    | Publish directory | `client/dist` |
+    | Publish directory | `dist` (relative to the base directory) |
     | Functions directory | _leave blank_ |
 
 4. **Environment variables** → add:

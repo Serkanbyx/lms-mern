@@ -123,7 +123,7 @@ const FeaturedSkeleton = () => (
         key={index}
         className="overflow-hidden rounded-2xl border border-border bg-bg"
       >
-        <Skeleton className="aspect-[16/9] w-full rounded-none" />
+        <Skeleton className="aspect-video w-full rounded-none" />
         <div className="space-y-3 p-5">
           <Skeleton variant="text" className="w-3/4" />
           <Skeleton variant="text" className="w-1/2" />

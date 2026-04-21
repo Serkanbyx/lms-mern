@@ -4,9 +4,12 @@
 # Why this file exists:
 #   - Pin Node + npm versions so prod builds match local dev.
 #   - Tell Netlify the SPA lives under `client/` (monorepo layout).
+#     Set the site's "Base directory" to `client` in the Netlify
+#     dashboard so this file is discovered; all paths below are then
+#     resolved relative to `client/`.
 #   - Keep SPA fallback + edge headers consistent across previews
-#     and production by promoting `client/public/_redirects` and
-#     `client/public/_headers` (already shipped in the bundle).
+#     and production by promoting `public/_redirects` and
+#     `public/_headers` (already shipped in the bundle).
 #
 # Anything secret (`VITE_API_BASE_URL`, etc.) lives on the Netlify
 # dashboard under Site configuration → Environment variables. Do
@@ -15,9 +18,8 @@
 # =====================================================================
 
 [build]
-  base    = "client"
   command = "npm run build"
-  publish = "client/dist"
+  publish = "dist"
 
 [build.environment]
   # Match server/package.json `"engines": { "node": ">=20.0.0" }`.

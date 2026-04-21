@@ -20,7 +20,7 @@
 
 import { Outlet, useLocation } from 'react-router-dom';
 
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from '../../context/useAuth.js';
 import { ROUTES } from '../../utils/constants.js';
 import { FullPageSpinner } from './FullPageSpinner.jsx';
 import { RedirectWithToast } from './RedirectWithToast.jsx';

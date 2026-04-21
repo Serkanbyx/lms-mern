@@ -54,7 +54,7 @@ export function Drawer({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100]"
+          className="fixed inset-0 z-100"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

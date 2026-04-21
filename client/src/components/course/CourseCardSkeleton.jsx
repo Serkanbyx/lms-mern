@@ -13,7 +13,7 @@ import { Skeleton } from '../ui/index.js';
 export function CourseCardSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-bg shadow-xs">
-      <Skeleton className="aspect-[16/9] w-full rounded-none" />
+      <Skeleton className="aspect-video w-full rounded-none" />
       <div className="space-y-3 p-5">
         <Skeleton variant="text" className="w-4/5" />
         <Skeleton variant="text" className="w-2/5" />

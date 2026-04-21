@@ -12,14 +12,14 @@
  */
 
 import { Toggle } from '../../components/ui/index.js';
-import { usePreferences } from '../../context/PreferencesContext.jsx';
+import { usePreferences } from '../../context/usePreferences.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import {
   AutoSaveIndicator,
   SegmentedControl,
   SettingsRow,
-  useAutoSaveIndicator,
 } from './_settingsShared.jsx';
+import { useAutoSaveIndicator } from './useAutoSaveIndicator.js';
 
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', icon: 'Sun' },

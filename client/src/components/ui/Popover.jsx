@@ -127,7 +127,7 @@ export function Popover({
                 exit={{ opacity: 0, y: side === 'bottom' ? -4 : side === 'top' ? 4 : 0 }}
                 transition={{ duration: 0.12 }}
                 className={cn(
-                  'z-[120] min-w-[180px] rounded-lg border border-border bg-bg shadow-lg',
+                  'z-120 min-w-45 rounded-lg border border-border bg-bg shadow-lg',
                   className,
                 )}
               >

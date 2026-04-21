@@ -149,7 +149,7 @@ export function EnrollmentCard({
         onClick={canPreview ? () => onPreview(previewLesson) : undefined}
         aria-label={canPreview ? `Play preview: ${previewLesson.title}` : undefined}
         className={[
-          'group relative block w-full aspect-[16/9] bg-bg-muted',
+          'group relative block w-full aspect-video bg-bg-muted',
           canPreview &&
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary',
         ]
@@ -167,7 +167,7 @@ export function EnrollmentCard({
         ) : (
           <div
             aria-hidden="true"
-            className="absolute inset-0 flex items-center justify-center bg-gradient-to-br
+            className="absolute inset-0 flex items-center justify-center bg-linear-to-br
               from-primary/30 via-info/20 to-bg-muted text-primary/70"
           >
             <Icon name="GraduationCap" size={42} />

@@ -26,7 +26,7 @@ import {
 } from '../components/layout/index.js';
 import { Seo } from '../components/seo/index.js';
 import { Avatar, Icon } from '../components/ui/index.js';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/useAuth.js';
 import { ROUTES } from '../utils/constants.js';
 
 export function LearnLayout() {
@@ -42,7 +42,7 @@ export function LearnLayout() {
 
       <a
         href="#player"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:px-3 focus:py-2 focus:rounded-md focus:bg-primary focus:text-primary-fg focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-100 focus:px-3 focus:py-2 focus:rounded-md focus:bg-primary focus:text-primary-fg focus:shadow-lg"
       >
         Skip to player
       </a>
