@@ -1,88 +1,59 @@
 # Security Policy
 
-Thanks for taking the time to keep Lumen LMS secure. This document is the
-**public-facing** contact for vulnerability reports.
+## Supported Versions
 
----
+The following versions of this project are currently being supported with security updates:
 
-## Supported versions
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.0.x   | :white_check_mark: |
+| < 1.0   | :x:                |
 
-Only the latest `main` branch is actively supported. Tagged releases on
-GitHub receive backported security fixes for **30 days** after a newer
-tag ships; older tags are unsupported and should be upgraded.
+## Reporting a Vulnerability
 
-| Version          | Supported          |
-| ---------------- | ------------------ |
-| `main` (latest)  | ✅ Yes             |
-| Last tagged ≤30d | ✅ Backports only  |
-| Older tags       | ❌ Upgrade required |
+We take the security of our project seriously. If you discover a security vulnerability, please follow these steps:
 
----
+### Do NOT
 
-## Reporting a vulnerability
+- **Do not** open a public GitHub issue for security vulnerabilities
+- **Do not** disclose the vulnerability publicly before it has been addressed
+- **Do not** exploit the vulnerability for malicious purposes
 
-**Please do not open a public GitHub issue for security reports.** Public
-issues become indexable within minutes and give attackers a head start.
+### Do
 
-Instead, please contact the maintainer privately through one of the
-following channels:
+1. **Email us directly** at **serkanbyx1@gmail.com** with details about the vulnerability
+2. **Include the following information**:
+   - Type of vulnerability (e.g., XSS, SQL Injection, Authentication Bypass)
+   - Step-by-step instructions to reproduce the issue
+   - Potential impact of the vulnerability
+   - Any possible solutions you may have identified
+3. **Allow time for response** - We will acknowledge receipt within 48 hours
+4. **Work with us** to understand and resolve the issue
 
-- **Preferred:** GitHub's private vulnerability reporting flow on this
-  repository (`Security` tab → `Report a vulnerability`).
-- **Email:** include the project name (`Lumen LMS`) in the subject line
-  and use the address listed on the maintainer's GitHub profile.
+### What to Expect
 
-To help us triage quickly, please include:
+- **Acknowledgment**: We will respond to your report within 48 hours
+- **Communication**: We will keep you informed about the progress of fixing the vulnerability
+- **Resolution**: Once the issue is resolved, we will notify you
+- **Credit**: With your permission, we will publicly acknowledge your responsible disclosure
 
-1. A clear description of the vulnerability and the affected component
-   (server route, client page, dependency, etc.).
-2. Reproduction steps — a minimal request, payload, or page interaction.
-3. The impact you observed (data exposure, privilege escalation, DoS,
-   etc.) and any working proof-of-concept.
-4. The commit SHA / deployed URL where you reproduced the issue.
+### Disclosure Policy
 
----
+- We will investigate all legitimate reports and do our best to quickly fix the problem
+- We will not take legal action against you if you follow this responsible disclosure policy
+- We will credit researchers who report valid security issues (unless they prefer to remain anonymous)
 
-## Response targets
+## Security Best Practices
 
-| Phase             | Target SLA          |
-| ----------------- | ------------------- |
-| Acknowledge       | Within **48 hours** |
-| Initial triage    | Within **5 days**   |
-| Fix or mitigation | Within **30 days**  |
-| Public disclosure | After patch ships   |
+When contributing to this project, please ensure:
 
-We aim to credit reporters in the release notes (opt-in). If a CVE is
-warranted we will coordinate the assignment via GitHub's advisory flow.
+- Never commit sensitive data (API keys, passwords, tokens)
+- Keep dependencies up to date
+- Follow secure coding practices
+- Use environment variables for sensitive configuration
 
----
+## Contact
 
-## Out of scope
+For security concerns, please contact: **serkanbyx1@gmail.com**
 
-The following are explicitly **out of scope** for this project's bounty
-expectations (we still appreciate the report — just no SLA):
-
-- Vulnerabilities in third-party services we depend on (MongoDB Atlas,
-  Cloudinary, Render, Netlify, SMTP providers). Please report those
-  directly to the upstream vendor.
-- Findings on a self-hosted deployment that diverges from the
-  documented configuration (`README.md` + `docs/RUNBOOK.md`).
-- Missing security headers on `*.example.com` placeholder content in
-  documentation.
-- Rate-limit bypass via clock skew (the limiter is sized for resilience
-  not absolute precision).
-- Theoretical XSS via the `dangerouslySetInnerHTML`-free codebase
-  unless you provide a working PoC.
-
----
-
-## What happens after disclosure
-
-1. We confirm reproduction and assign a severity (CVSS v3.1).
-2. A private patch is prepared on a security branch.
-3. The fix is merged to `main`, deployed to the canonical instance, and
-   tagged with security release notes.
-4. The reporter is credited (with consent) in the GitHub release notes.
-
-For internal procedures — secret rotation, log forensics, customer
-notification — see [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).
+Thank you for helping keep this project and its users safe!
