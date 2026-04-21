@@ -13,6 +13,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Footer,
   Navbar,
+  OfflineBanner,
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
@@ -88,6 +89,7 @@ export function SettingsLayout() {
         Skip to content
       </a>
 
+      <OfflineBanner />
       <Navbar />
 
       <div className="flex-1 mx-auto w-full max-w-5xl px-4 sm:px-6 py-8">

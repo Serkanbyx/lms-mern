@@ -30,6 +30,20 @@ const DENSITIES = Object.freeze(['compact', 'comfortable', 'spacious']);
 const LANGUAGES = Object.freeze(['en']);
 const PLAYBACK_SPEEDS = Object.freeze([0.5, 0.75, 1, 1.25, 1.5, 2]);
 
+// Learner interest tags captured during onboarding (STEP 39). The set is
+// kept aligned with the catalog's `COURSE_CATEGORIES` taxonomy so the
+// post-register recommendation step can map an interest straight to a
+// catalog category filter without an intermediate lookup table.
+const INTERESTS = Object.freeze([
+  'programming',
+  'design',
+  'business',
+  'marketing',
+  'data-science',
+  'language',
+  'other',
+]);
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const privacySchema = new Schema(
@@ -73,6 +87,17 @@ const preferencesSchema = new Schema(
     privacy: { type: privacySchema, default: () => ({}) },
     notifications: { type: notificationsSchema, default: () => ({}) },
     playback: { type: playbackSchema, default: () => ({}) },
+    // STEP 39 — onboarding interest tags. Bounded by the curated `INTERESTS`
+    // enum so a typo in the client can never fragment the taxonomy used
+    // by the recommended-course query.
+    interests: {
+      type: [{ type: String, enum: INTERESTS }],
+      default: [],
+    },
+    // Tracks whether the post-register onboarding flow has been completed
+    // or skipped. Persisted on the server so the modal never re-opens on a
+    // new device after the user has already dismissed it once.
+    onboardingCompletedAt: { type: Date, default: null },
   },
   { _id: false },
 );
@@ -163,6 +188,7 @@ export const USER_FONT_SIZES = FONT_SIZES;
 export const USER_DENSITIES = DENSITIES;
 export const USER_LANGUAGES = LANGUAGES;
 export const USER_PLAYBACK_SPEEDS = PLAYBACK_SPEEDS;
+export const USER_INTERESTS = INTERESTS;
 
 export const User = mongoose.models.User || mongoose.model('User', userSchema);
 

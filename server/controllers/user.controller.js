@@ -41,6 +41,11 @@ const PREFERENCE_TOP_KEYS = Object.freeze([
   'privacy',
   'notifications',
   'playback',
+  // STEP 39 — onboarding additions. Both are top-level scalars/arrays so
+  // they merge through the same path as `theme` / `fontSize` (no nested
+  // group merge needed).
+  'interests',
+  'onboardingCompletedAt',
 ]);
 
 const PREFERENCE_PRIVACY_KEYS = Object.freeze(['showEmail', 'showEnrolledCourses']);
@@ -77,7 +82,15 @@ const PUBLIC_PROFILE_FIELDS = Object.freeze([
 const mergePreferences = (user, payload) => {
   const top = pickFields(payload, PREFERENCE_TOP_KEYS);
 
-  for (const key of ['theme', 'fontSize', 'contentDensity', 'animations', 'language']) {
+  for (const key of [
+    'theme',
+    'fontSize',
+    'contentDensity',
+    'animations',
+    'language',
+    'interests',
+    'onboardingCompletedAt',
+  ]) {
     if (Object.prototype.hasOwnProperty.call(top, key)) {
       user.preferences[key] = top[key];
     }

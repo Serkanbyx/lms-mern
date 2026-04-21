@@ -15,18 +15,20 @@
  *    still enforces the canonical rules.
  *  - Terms-of-Service checkbox (links open in a new tab) gates submit.
  *  - On success: `register()` already auto-logs the user in (it stores the
- *    JWT in `AuthContext`); we toast + redirect to `?next=` or `/dashboard`.
+ *    JWT in `AuthContext`); we toast, mount the post-register
+ *    `OnboardingModal` (STEP 39), and only redirect to `?next=` /
+ *    `/dashboard` after the modal closes (whether the user finished or
+ *    skipped). Persisting the navigation through the modal lifecycle
+ *    means a learner who taps "Open course" on step 3 lands on the
+ *    course detail page instead of the dashboard.
  *
  * SECURITY: no `role` selector — server defaults new accounts to `student`.
- *
- * NOTE: STEP 39 will introduce a first-time onboarding modal. When it lands,
- * mount it here right after a successful registration instead of redirecting
- * straight to the dashboard.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
+import { OnboardingModal } from '../../components/onboarding/index.js';
 import {
   Alert,
   Button,
@@ -151,10 +153,37 @@ export default function RegisterPage() {
   const [capsOn, setCapsOn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [onboarding, setOnboarding] = useState({
+    open: false,
+    firstName: '',
+  });
 
   useEffect(() => {
     nameRef.current?.focus();
   }, []);
+
+  // Resolve where to send the learner once the onboarding modal closes.
+  // Honours the `?next=` redirect contract that protected routes use to
+  // bounce users back to where they came from after authenticating.
+  const resolveNextDestination = () => {
+    const next = new URLSearchParams(location.search).get('next');
+    return next || ROUTES.dashboard;
+  };
+
+  // Onboarding closes via three paths: (1) the user finishes the flow
+  // and clicks "Open course" / "Browse all courses" — both of which are
+  // `<Link>`s that have already kicked off a navigation and pass the
+  // target in `destination`; (2) "Finish" when no recommendation
+  // surfaced; (3) "Skip" or backdrop dismiss. In paths (2) and (3) we
+  // navigate to the resolved next destination so the user is never left
+  // stranded on a closed-modal Register page; in path (1) we DON'T —
+  // overriding it would clobber the in-flight navigation the user
+  // explicitly chose.
+  const handleOnboardingClose = ({ destination } = {}) => {
+    setOnboarding((prev) => ({ ...prev, open: false }));
+    if (destination) return;
+    navigate(resolveNextDestination(), { replace: true });
+  };
 
   const handleChange = (field) => (event) => {
     const next = { ...values, [field]: event.target.value };
@@ -198,10 +227,12 @@ export default function RegisterPage() {
     setFormError(null);
     try {
       await register(values.name.trim(), values.email.trim(), values.password);
+      // The shared welcome toast is intentional even though the modal
+      // also greets the user — it acknowledges the form submit
+      // independently of the modal that mounts on top.
       toast.success('Welcome to Lumen LMS!');
-      // STEP 39 onboarding modal will hook in here before this redirect.
-      const next = new URLSearchParams(location.search).get('next');
-      navigate(next || ROUTES.dashboard, { replace: true });
+      const firstName = values.name.trim().split(/\s+/)[0] ?? '';
+      setOnboarding({ open: true, firstName });
     } catch (err) {
       const message = err?.message || 'Unable to create your account. Please try again.';
       setFormError(message);
@@ -214,6 +245,7 @@ export default function RegisterPage() {
   };
 
   return (
+    <>
     <AuthShell
       title="Create your account"
       subtitle="Free forever for learners. No credit card required."
@@ -403,5 +435,12 @@ export default function RegisterPage() {
         </Button>
       </form>
     </AuthShell>
+
+    <OnboardingModal
+      open={onboarding.open}
+      firstName={onboarding.firstName}
+      onClose={handleOnboardingClose}
+    />
+    </>
   );
 }

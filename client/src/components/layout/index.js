@@ -10,4 +10,5 @@ export { PageTransition } from './PageTransition.jsx';
 export { Reveal } from './Reveal.jsx';
 export { Navbar } from './Navbar.jsx';
 export { Footer } from './Footer.jsx';
+export { OfflineBanner } from './OfflineBanner.jsx';
 export { RouteSkeleton } from './RouteSkeleton.jsx';

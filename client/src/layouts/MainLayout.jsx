@@ -17,6 +17,7 @@ import { Outlet } from 'react-router-dom';
 import {
   Footer,
   Navbar,
+  OfflineBanner,
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
@@ -31,6 +32,7 @@ export function MainLayout() {
         Skip to content
       </a>
 
+      <OfflineBanner />
       <Navbar />
 
       <main

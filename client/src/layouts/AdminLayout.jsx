@@ -17,6 +17,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import {
   Footer,
   Navbar,
+  OfflineBanner,
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
@@ -74,6 +75,7 @@ export function AdminLayout() {
         Skip to content
       </a>
 
+      <OfflineBanner />
       <Navbar />
 
       <div className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 py-6 flex gap-6">

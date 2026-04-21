@@ -19,6 +19,7 @@ import { Suspense } from 'react';
 import { Link, Outlet, useParams } from 'react-router-dom';
 
 import {
+  OfflineBanner,
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
@@ -38,6 +39,8 @@ export function LearnLayout() {
       >
         Skip to player
       </a>
+
+      <OfflineBanner />
 
       <header className="h-12 shrink-0 border-b border-border bg-bg-subtle/80 backdrop-blur-md">
         <div className="h-full mx-auto max-w-7xl px-4 flex items-center gap-3">

@@ -72,6 +72,22 @@ export const COURSE_LANGUAGES = Object.freeze([
   { value: 'ja', label: '日本語' },
 ]);
 
+/**
+ * Learning interest catalog used by the post-register `OnboardingModal`
+ * (STEP 39). Each interest's `value` mirrors a `COURSE_CATEGORIES` id so
+ * the modal's "your first course" step can map an interest straight to a
+ * catalog category filter without an intermediate lookup table.
+ */
+export const LEARNING_INTERESTS = Object.freeze([
+  { value: 'programming', label: 'Web Development', icon: 'Code2' },
+  { value: 'design', label: 'Design', icon: 'Palette' },
+  { value: 'business', label: 'Business', icon: 'Briefcase' },
+  { value: 'marketing', label: 'Marketing', icon: 'Megaphone' },
+  { value: 'data-science', label: 'Data Science', icon: 'LineChart' },
+  { value: 'language', label: 'Languages', icon: 'Languages' },
+  { value: 'other', label: 'Something else', icon: 'Sparkles' },
+]);
+
 export const ENROLLMENT_FILTERS = Object.freeze({
   all: 'all',
   inProgress: 'in-progress',

@@ -35,6 +35,7 @@ import { body } from 'express-validator';
 import {
   USER_DENSITIES,
   USER_FONT_SIZES,
+  USER_INTERESTS,
   USER_LANGUAGES,
   USER_PLAYBACK_SPEEDS,
   USER_THEMES,
@@ -95,6 +96,25 @@ export const updatePreferencesValidator = [
     .withMessage(
       `playback.defaultSpeed must be one of: ${USER_PLAYBACK_SPEEDS.join(', ')}.`,
     ),
+
+  // STEP 39 — onboarding additions.
+  body('interests')
+    .optional()
+    .isArray({ max: USER_INTERESTS.length })
+    .withMessage(`Interests must be an array of at most ${USER_INTERESTS.length} items.`),
+  body('interests.*')
+    .optional()
+    .isString()
+    .bail()
+    .isIn(USER_INTERESTS)
+    .withMessage(`Each interest must be one of: ${USER_INTERESTS.join(', ')}.`),
+
+  body('onboardingCompletedAt')
+    .optional({ nullable: true })
+    .isISO8601()
+    .withMessage('onboardingCompletedAt must be an ISO 8601 timestamp.')
+    .bail()
+    .toDate(),
 ];
 
 /**
