@@ -379,14 +379,43 @@ const parsePrice = (raw) => {
   return Number.isFinite(value) ? value : null;
 };
 
+const parseDuration = (raw) => {
+  const value = Number.parseInt(raw, 10);
+  return Number.isFinite(value) && value >= 0 ? value : null;
+};
+
+/**
+ * Parse a comma-separated query value (`?level=beginner,advanced`) into a
+ * deduplicated array filtered by a frozen allow-list. Returns `null` when
+ * no recognised value is supplied so the caller can skip the filter
+ * altogether instead of injecting an empty `$in: []` (which would match
+ * nothing and silently break the page).
+ */
+const parseEnumList = (raw, allowed) => {
+  if (typeof raw !== 'string' || raw.length === 0) return null;
+  const values = Array.from(
+    new Set(
+      raw
+        .split(',')
+        .map((piece) => piece.trim())
+        .filter((piece) => allowed.includes(piece)),
+    ),
+  );
+  return values.length > 0 ? values : null;
+};
+
 /**
  * Translate `?search=` / `?category=` / `?level=` / `?minPrice=` /
- * `?maxPrice=` / `?sort=` / `?page=` / `?limit=` into a safe Mongo
- * filter + pagination tuple for the public catalog. Every user-supplied
- * value is either:
+ * `?maxPrice=` / `?minDuration=` / `?maxDuration=` / `?sort=` / `?page=` /
+ * `?limit=` into a safe Mongo filter + pagination tuple for the public
+ * catalog. Every user-supplied value is either:
  *   - clamped to a numeric range,
  *   - matched against a frozen enum (categories, levels, sort keys), or
  *   - escaped via `escapeRegex` before being embedded in a `RegExp`.
+ *
+ * Categories and levels accept either a single value or a comma-separated
+ * list (`?level=beginner,intermediate`) so the catalog filter sidebar can
+ * express multi-select pills without smuggling Mongo operators through.
  *
  * Nothing in this function can produce a Mongo operator key from
  * untrusted input — that is the entire point.
@@ -402,12 +431,14 @@ const buildCatalogQuery = (query) => {
     }
   }
 
-  if (typeof query.category === 'string' && COURSE_CATEGORIES.includes(query.category)) {
-    filter.category = query.category;
+  const categories = parseEnumList(query.category, COURSE_CATEGORIES);
+  if (categories) {
+    filter.category = categories.length === 1 ? categories[0] : { $in: categories };
   }
 
-  if (typeof query.level === 'string' && COURSE_LEVELS.includes(query.level)) {
-    filter.level = query.level;
+  const levels = parseEnumList(query.level, COURSE_LEVELS);
+  if (levels) {
+    filter.level = levels.length === 1 ? levels[0] : { $in: levels };
   }
 
   const minPrice = parsePrice(query.minPrice);
@@ -416,6 +447,20 @@ const buildCatalogQuery = (query) => {
     filter.price = {};
     if (minPrice !== null) filter.price.$gte = Math.max(PRICE_MIN, minPrice);
     if (maxPrice !== null) filter.price.$lte = Math.min(PRICE_MAX, maxPrice);
+  }
+
+  const minDuration = parseDuration(query.minDuration);
+  const maxDuration = parseDuration(query.maxDuration);
+  if (minDuration !== null || maxDuration !== null) {
+    filter.totalDuration = {};
+    if (minDuration !== null) filter.totalDuration.$gte = minDuration;
+    if (maxDuration !== null) filter.totalDuration.$lte = maxDuration;
+  }
+
+  if (query.priceMode === 'free') {
+    filter.price = { $eq: 0 };
+  } else if (query.priceMode === 'paid') {
+    filter.price = { ...(filter.price ?? {}), $gt: 0 };
   }
 
   const sort = CATALOG_SORT_MAP[query.sort] ?? CATALOG_SORT_MAP.newest;
