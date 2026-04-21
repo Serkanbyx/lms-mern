@@ -36,10 +36,25 @@ export const deleteLesson = async (id) => {
   return data;
 };
 
-export const reorderLessons = async (sectionId, orderedIds) => {
-  const { data } = await api.patch(`/sections/${sectionId}/lessons/reorder`, {
-    orderedIds,
-  });
+/**
+ * Reorder lessons inside a section.
+ *
+ * The server expects a bare JSON array (`[{ id, order }, ...]`) — see
+ * `reorderLessonsValidator`. Accepting either an array of ids or the
+ * full `{ id, order }` shape lets callers pass whichever is most
+ * convenient: the curriculum tree already tracks the new index when it
+ * fires this off, so we normalize both forms here.
+ */
+export const reorderLessons = async (sectionId, items) => {
+  const body = (items ?? []).map((item, index) =>
+    typeof item === 'string'
+      ? { id: item, order: index }
+      : { id: item.id ?? item._id, order: item.order ?? index },
+  );
+  const { data } = await api.patch(
+    `/sections/${sectionId}/lessons/reorder`,
+    body,
+  );
   return data;
 };
 
@@ -58,10 +73,21 @@ export const deleteSection = async (id) => {
   return data;
 };
 
-export const reorderSections = async (courseId, orderedIds) => {
-  const { data } = await api.patch(`/courses/${courseId}/sections/reorder`, {
-    orderedIds,
-  });
+/**
+ * Reorder sections inside a course. Same payload shape as
+ * `reorderLessons` — the server validator (`reorderSectionsValidator`)
+ * expects a bare `[{ id, order }, ...]` array.
+ */
+export const reorderSections = async (courseId, items) => {
+  const body = (items ?? []).map((item, index) =>
+    typeof item === 'string'
+      ? { id: item, order: index }
+      : { id: item.id ?? item._id, order: item.order ?? index },
+  );
+  const { data } = await api.patch(
+    `/courses/${courseId}/sections/reorder`,
+    body,
+  );
   return data;
 };
 

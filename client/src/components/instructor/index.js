@@ -5,4 +5,9 @@
  */
 
 export { CourseForm } from './CourseForm.jsx';
+export { CurriculumTree } from './CurriculumTree.jsx';
 export { ImageDropzone } from './ImageDropzone.jsx';
+export { LessonModal } from './LessonModal.jsx';
+export { LessonPreview } from './LessonPreview.jsx';
+export { SectionModal } from './SectionModal.jsx';
+export { VideoDropzone } from './VideoDropzone.jsx';
