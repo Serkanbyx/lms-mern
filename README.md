@@ -33,14 +33,6 @@ A full-stack **Learning Management System** built with the **MERN** stack (Mongo
 
 [🚀 View Live Demo](https://lms-mernn.netlify.app/)
 
-> **Demo Credentials** — sandboxed accounts on a public demo database. Do not enter real personal data.
-
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@lms-demo.app` | `DemoAdmin!2026` |
-| Instructor | `instructor@lms-demo.app` | `DemoInstructor!2026` |
-| Student | `student@lms-demo.app` | `DemoStudent!2026` |
-
 ---
 
 ## Screenshots
