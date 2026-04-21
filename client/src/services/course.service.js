@@ -14,6 +14,11 @@ export const listCourses = async (params = {}) => {
   return data;
 };
 
+export const getCategoryStats = async () => {
+  const { data } = await api.get('/courses/categories');
+  return data;
+};
+
 export const getCourseBySlug = async (slug) => {
   const { data } = await api.get(`/courses/${encodeURIComponent(slug)}`);
   return data;
@@ -61,6 +66,7 @@ export const getInstructorPublicCourses = async (instructorId, params = {}) => {
 
 export default {
   listCourses,
+  getCategoryStats,
   getCourseBySlug,
   getCurriculum,
   getMyCourses,

@@ -30,6 +30,7 @@
  * Endpoints:
  *   GET    /                      — public catalog (filters + pagination)
  *   GET    /mine                  — owner's courses (instructor/admin)
+ *   GET    /categories            — public published-course counts per category
  *   GET    /:slug/curriculum      — public curriculum (gated lessons)
  *   GET    /:slug                 — public course detail
  *   POST   /:id/enroll            — enroll authenticated user (student)
@@ -50,6 +51,7 @@ import {
   archiveCourse,
   createCourse,
   deleteCourse,
+  getCategoryStats,
   getCourseBySlug,
   getCourseCurriculum,
   getMyCourses,
@@ -94,6 +96,11 @@ router.get('/', optionalAuth, validate(listCoursesValidator), listPublishedCours
 // explicit `protect + instructorOrAdmin` stack — the router-level gate
 // further down doesn't apply to routes declared above it.
 router.get('/mine', protect, instructorOrAdmin, getMyCourses);
+
+// Static `/categories` segment must also win over the dynamic `/:slug`
+// matcher. Anonymous-friendly: feeds the landing-page category grid
+// with live published-course counts (no per-user data leaks).
+router.get('/categories', optionalAuth, getCategoryStats);
 
 router.get(
   '/:slug/curriculum',

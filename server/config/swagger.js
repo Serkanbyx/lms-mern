@@ -715,6 +715,20 @@ const swaggerDefinition = {
         },
       },
     },
+    '/api/courses/categories': {
+      get: {
+        tags: ['Courses'],
+        summary: 'Public — published-course counts per category',
+        description:
+          'Aggregates `Course.category` for `status: "published"` documents and returns one entry per `COURSE_CATEGORIES` enum value (zeroes included). Powers the landing-page category grid.',
+        responses: {
+          200: jsonResponse(
+            'Per-category counts and total.',
+            '#/components/schemas/ApiSuccess',
+          ),
+        },
+      },
+    },
     '/api/courses/{slug}/curriculum': {
       get: {
         tags: ['Courses'],

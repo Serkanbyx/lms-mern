@@ -556,6 +556,45 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
 });
 
 /**
+ * GET /api/courses/categories
+ * Aggregated published-course counts per `Course.category`. Powers the
+ * landing-page "Browse by category" grid so the marketing surface
+ * always reflects the live catalog instead of stale hard-coded numbers.
+ *
+ * Response shape:
+ *   { success: true, data: { items: [{ category, count }], total } }
+ *
+ * - Always returns one row per enum value in `COURSE_CATEGORIES`, even
+ *   when a category currently has zero published courses (so the UI can
+ *   render a stable grid without conditionals).
+ * - Filters `status: 'published'` server-side so draft / pending /
+ *   archived courses never inflate public counters.
+ * - Cached identically to the public catalog list (60s public, SWR 5m
+ *   for anonymous viewers; private no-store for authenticated requests
+ *   that may carry per-user data later).
+ */
+export const getCategoryStats = asyncHandler(async (req, res) => {
+  const aggregated = await Course.aggregate([
+    { $match: { status: 'published' } },
+    { $group: { _id: '$category', count: { $sum: 1 } } },
+  ]);
+
+  const counts = new Map(aggregated.map(({ _id, count }) => [_id, count]));
+  const items = COURSE_CATEGORIES.map((category) => ({
+    category,
+    count: counts.get(category) ?? 0,
+  }));
+  const total = items.reduce((sum, item) => sum + item.count, 0);
+
+  setPublicCatalogCache(res, req.user);
+
+  res.json({
+    success: true,
+    data: { items, total },
+  });
+});
+
+/**
  * GET /api/courses/:slug
  * Public detail page. Returns the full marketing payload (description,
  * requirements, learning outcomes, denormalized counters, instructor
