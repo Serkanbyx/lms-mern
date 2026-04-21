@@ -1,9 +1,7 @@
 # Security Policy
 
 Thanks for taking the time to keep Lumen LMS secure. This document is the
-**public-facing** contact for vulnerability reports. Operational security
-procedures (rotation, incident response, audit cadence) live in
-[`docs/SECURITY.md`](./docs/SECURITY.md).
+**public-facing** contact for vulnerability reports.
 
 ---
 
@@ -84,7 +82,7 @@ expectations (we still appreciate the report — just no SLA):
 2. A private patch is prepared on a security branch.
 3. The fix is merged to `main`, deployed to the canonical instance, and
    tagged with security release notes.
-4. The reporter is credited (with consent) in `CHANGELOG.md`.
+4. The reporter is credited (with consent) in the GitHub release notes.
 
 For internal procedures — secret rotation, log forensics, customer
-notification — see [`docs/SECURITY.md`](./docs/SECURITY.md).
+notification — see [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).

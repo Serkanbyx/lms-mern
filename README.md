@@ -122,7 +122,7 @@ A unified dashboard with platform health metrics (users, courses, enrollments, r
 
 ## Screenshots
 
-> Drop the PNGs listed in [`assets/screenshots/README.md`](./assets/screenshots/README.md). Until then, the gallery below renders with broken-image icons; everything else in this README is fully styled.
+> Drop captures into `assets/screenshots/` using the filenames referenced in the gallery below (1440×900 PNG, light mode, ≤ 250 KB). Until then, the gallery renders with broken-image icons; everything else in this README is fully styled.
 
 | Landing | Catalog | Course Detail |
 |---|---|---|
@@ -492,7 +492,7 @@ A non-exhaustive list of the security controls in place — every line below is 
 - ✅ Graceful SIGTERM handling so in-flight requests aren't dropped on deploy.
 - ✅ Index hygiene (compound + sparse + TTL indexes where appropriate).
 
-A dedicated write-up lives at [`docs/SECURITY.md`](./docs/SECURITY.md). Quiz-grading integrity is documented separately in [`docs/QUIZ-INTEGRITY.md`](./docs/QUIZ-INTEGRITY.md).
+The public vulnerability-reporting policy lives at [`SECURITY.md`](./SECURITY.md). Quiz-grading integrity is documented separately in [`docs/QUIZ-INTEGRITY.md`](./docs/QUIZ-INTEGRITY.md).
 
 ---
 
@@ -550,7 +550,7 @@ This project is version-controlled manually with **GitHub Desktop**. The build a
 
 ## Deployment
 
-A short summary; the full step-by-step is in [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).
+A short summary; the **full first-deploy walkthrough** lives in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md), and the day-2 ops recipes live in [`docs/RUNBOOK.md`](./docs/RUNBOOK.md).
 
 - **MongoDB Atlas** — primary database (free tier is sufficient for the demo).
 - **Render** — Express API service + the three Cron Jobs + optional managed Redis.
@@ -558,6 +558,8 @@ A short summary; the full step-by-step is in [`docs/RUNBOOK.md`](./docs/RUNBOOK.
 - **Cloudinary** — video and image storage with signed uploads and optional HLS.
 
 Render and Netlify both connect to this GitHub repository the developer pushes to via GitHub Desktop. Auto-deploy on `main` is enabled on both, so every merged PR ships.
+
+> Heads-up for first deploy: the SPA's `Content-Security-Policy` in `client/public/_headers` ships with the placeholder `https://your-api.onrender.com` inside `connect-src`. Replace it with the real Render URL (and set `VITE_API_BASE_URL` accordingly) before pushing the build that goes public — `docs/DEPLOYMENT.md` § "Final wiring" walks through this.
 
 ---
 

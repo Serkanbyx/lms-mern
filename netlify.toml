@@ -1,0 +1,72 @@
+# =====================================================================
+# Netlify build & runtime configuration for the Lumen LMS SPA.
+# ---------------------------------------------------------------------
+# Why this file exists:
+#   - Pin Node + npm versions so prod builds match local dev.
+#   - Tell Netlify the SPA lives under `client/` (monorepo layout).
+#   - Keep SPA fallback + edge headers consistent across previews
+#     and production by promoting `client/public/_redirects` and
+#     `client/public/_headers` (already shipped in the bundle).
+#
+# Anything secret (`VITE_API_BASE_URL`, etc.) lives on the Netlify
+# dashboard under Site configuration → Environment variables. Do
+# NOT hard-code real URLs / keys here — the file is committed to a
+# public repo.
+# =====================================================================
+
+[build]
+  base    = "client"
+  command = "npm run build"
+  publish = "client/dist"
+
+[build.environment]
+  # Match server/package.json `"engines": { "node": ">=20.0.0" }`.
+  NODE_VERSION = "20"
+  NPM_VERSION  = "10"
+  # Vite keeps the build snappy without dev-server overhead.
+  CI           = "true"
+
+# Per-context tweaks. Production gets the strict env; previews and
+# branch deploys can keep the dashboard's preview env vars (e.g.
+# pointing VITE_API_BASE_URL at a Render preview API).
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "production"
+
+# ---------------------------------------------------------------------
+# SPA fallback. `client/public/_redirects` already ships the same rule;
+# this entry is a belt-and-braces guarantee in case the static file is
+# ever removed by accident — Netlify merges both sources.
+# ---------------------------------------------------------------------
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# ---------------------------------------------------------------------
+# Cache the hashed Vite assets aggressively. Vite content-addresses
+# every file under /assets/ so a new build naturally invalidates the
+# CDN cache without us touching anything.
+# ---------------------------------------------------------------------
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Never cache the SPA shell — it has to fetch the latest hashed
+# entry filenames on every reload.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Lighthouse / SEO friendliness for the SPA root.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "index, follow"

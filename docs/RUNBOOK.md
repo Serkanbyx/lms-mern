@@ -1,8 +1,7 @@
 # Runbook
 
-> Companion to STEP 49 of `STEPS.md`. Step-by-step recipes for the
-> most common operational tasks. Every entry assumes you're an admin
-> with shell access to the relevant Render service.
+> Operational recipes for the most common tasks. Every entry assumes
+> you're an admin with shell access to the relevant Render service.
 
 ---
 
@@ -53,8 +52,7 @@ followed by `MongoDB connection closed.` and `Redis connection closed.`
 
 ## Rotate a secret
 
-See `docs/SECURITY.md` for the per-secret procedures (JWT, Cloudinary,
-SMTP, Mongo, admin password). The summary loop is:
+The generic loop is:
 
 1. Generate the new value.
 2. Update the env var on the Render dashboard for **every** affected
@@ -64,8 +62,62 @@ SMTP, Mongo, admin password). The summary loop is:
 5. Revoke the old value at the source (Cloudinary console, MongoDB
    Atlas user, etc.).
 
-For JWT secrets specifically, expect every active session to be
-invalidated — users will see a one-time login prompt.
+Per-secret notes follow.
+
+### `JWT_ACCESS_SECRET` (quarterly + on suspected compromise)
+
+**Impact:** every existing access token becomes invalid. The SPA
+seamlessly recovers via the refresh-token cookie within 15 minutes —
+users do **not** need to log back in.
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+Update the value on Render → API service → Environment, redeploy,
+watch for a brief 401 spike followed by a `/api/auth/refresh` spike
+that absorbs it within ~5 minutes.
+
+### `JWT_REFRESH_SECRET` (only when required)
+
+**Impact:** every refresh token becomes invalid → **all users are
+forced to re-login**. Schedule and announce before doing this.
+
+> Always rotate `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` at the
+> **same** time when responding to a confirmed compromise — partial
+> rotation leaves a usable token alive on the unrotated side.
+
+### `CLOUDINARY_API_SECRET` (quarterly + on suspected compromise)
+
+**Impact:** every previously minted signed video URL stops working.
+New URLs are minted on the next request, so users see a brief stall
+on any video already loaded in their player. Regenerate on the
+Cloudinary dashboard, push to Render env, redeploy, then verify
+upload + signed-URL playback against a freshly created test course.
+
+### SMTP credentials (on provider rotation / leak)
+
+Provision a new SMTP user / app password, update `SMTP_USER` and
+`SMTP_PASS` on Render, redeploy, then trigger
+`POST /api/auth/forgot-password` against an internal account and
+confirm delivery.
+
+### MongoDB credentials (on team change / leak)
+
+1. In MongoDB Atlas, create a new database user with the same role set.
+2. Update `MONGO_URI` on Render + redeploy.
+3. Once the new instance is healthy, **delete** the old user from Atlas.
+4. Audit the Atlas access list — remove IP entries that are no longer needed.
+
+### `ADMIN_PASSWORD` (on handover / leak)
+
+1. Generate a new strong password (≥ 12 chars).
+2. Update Render env (so the seeder can be re-run if needed).
+3. Sign in as the admin and change the password via
+   `PATCH /api/auth/me/password`.
+4. The env value is only consumed by `npm run seed:admin`; the live
+   admin credential is stored hashed in the `User` collection from
+   that point on.
 
 ---
 

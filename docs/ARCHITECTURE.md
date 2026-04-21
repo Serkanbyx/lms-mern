@@ -159,7 +159,8 @@ green run is required before Render will redeploy.
 
 ## Where to read next
 
-- `docs/SECURITY.md` — secrets rotation, threat model.
+- `SECURITY.md` — vulnerability disclosure policy.
+- `docs/RUNBOOK.md` — operational tasks (rotate secrets, restore, drain, recover lockouts).
+- `docs/DEPLOYMENT.md` — first-deploy walkthrough (Atlas + Render + Netlify).
 - `docs/QA.md` — browser support, mobile QA matrix.
 - `docs/QUIZ-INTEGRITY.md` — anti-cheat policy boundaries.
-- `docs/RUNBOOK.md` — operational tasks (rotate, restore, drain).

@@ -1,0 +1,200 @@
+# =====================================================================
+# Render Blueprint for the Lumen LMS backend.
+# ---------------------------------------------------------------------
+# What you get when this blueprint is applied (Render dashboard →
+# "Blueprints" → "New Blueprint Instance" → pick the repo):
+#
+#   1. `lumen-lms-api`         — the Express 5 API (Node 20).
+#   2. `lumen-lms-redis`       — managed Redis used by the rate
+#                                limiter (STEP 48). Optional but
+#                                strongly recommended for prod.
+#   3. `cleanup-stale-drafts`  — daily cron, deletes idle drafts.
+#   4. `cleanup-expired-tokens`— hourly cron, sweeps stale auth
+#                                tokens (verify / reset).
+#   5. `certificate-reminder`  — daily cron, nudges users sitting
+#                                on unclaimed certificates.
+#
+# Secrets are intentionally NOT in this file. Every entry below with
+# `sync: false` MUST be filled in on the dashboard after the first
+# blueprint apply (Render → service → Environment). That keeps the
+# repo public-safe — no secret material is ever committed.
+#
+# Companion docs:
+#   - docs/DEPLOYMENT.md      first-deploy walkthrough
+#   - docs/RUNBOOK.md         day-2 operations
+#   - server/.env.example     authoritative env reference
+# =====================================================================
+
+# A reusable env group keeps the API and the three cron jobs in lock-
+# step on shared values (DB, JWT, Cloudinary, mail, etc.). Without it
+# you'd have to set every secret 4× — and the cron jobs would silently
+# connect to "no database" the moment one variable drifts.
+envVarGroups:
+  - name: lumen-lms-shared
+    envVars:
+      # --- Runtime ---
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+
+      # --- Database (Atlas connection string from MongoDB Atlas UI) ---
+      - key: MONGO_URI
+        sync: false
+
+      # --- JWT (auto-generated on first apply; rotate via dashboard) ---
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+      - key: REFRESH_COOKIE_NAME
+        value: lms.refresh
+
+      # --- Cloudinary (signed uploads, video, image) ---
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # --- Mail (verification, password reset) ---
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+
+      # --- Initial admin (used by `npm run seed:admin`) ---
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Platform Admin
+
+      # --- Hashing / lockout ---
+      - key: BCRYPT_ROUNDS
+        value: "12"
+      - key: MAX_LOGIN_ATTEMPTS
+        value: "10"
+      - key: LOCK_DURATION_MIN
+        value: "15"
+      - key: EMAIL_VERIFICATION_TTL_MIN
+        value: "1440"
+      - key: PASSWORD_RESET_TTL_MIN
+        value: "15"
+
+      # --- CORS allowlist (set to the Netlify origin after first deploy) ---
+      - key: CLIENT_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+
+      # --- Feature flags (mirror VITE_FEATURE_* on Netlify) ---
+      - key: FEATURE_CERTIFICATES
+        value: "true"
+      - key: FEATURE_HLS
+        value: "false"
+      - key: FEATURE_BETA_QUIZ_TIMER
+        value: "false"
+
+services:
+  # -------------------------------------------------------------------
+  # 1) Express API
+  # -------------------------------------------------------------------
+  - type: web
+    name: lumen-lms-api
+    runtime: node
+    plan: free                    # bump to `starter` once you outgrow cold starts
+    region: oregon                # match your Atlas + Redis region
+    rootDir: server
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - fromGroup: lumen-lms-shared
+      - key: PORT
+        value: "10000"            # Render's default external port
+      # Wire Redis automatically — no manual paste needed. The
+      # connection string flows from the Redis service below.
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: lumen-lms-redis
+          property: connectionString
+
+  # -------------------------------------------------------------------
+  # 2) Cron — clean stale draft courses (daily 03:00 UTC)
+  # -------------------------------------------------------------------
+  - type: cron
+    name: cleanup-stale-drafts
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    branch: main
+    schedule: "0 3 * * *"
+    buildCommand: npm install
+    startCommand: npm run cron:cleanup-drafts
+    envVars:
+      - fromGroup: lumen-lms-shared
+
+  # -------------------------------------------------------------------
+  # 3) Cron — expire auth tokens (hourly)
+  # -------------------------------------------------------------------
+  - type: cron
+    name: cleanup-expired-tokens
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    branch: main
+    schedule: "0 * * * *"
+    buildCommand: npm install
+    startCommand: npm run cron:cleanup-tokens
+    envVars:
+      - fromGroup: lumen-lms-shared
+
+  # -------------------------------------------------------------------
+  # 4) Cron — nudge users with unclaimed certificates (daily 10:00 UTC)
+  # -------------------------------------------------------------------
+  - type: cron
+    name: certificate-reminder
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: server
+    branch: main
+    schedule: "0 10 * * *"
+    buildCommand: npm install
+    startCommand: npm run cron:certificate-reminder
+    envVars:
+      - fromGroup: lumen-lms-shared
+
+  # -------------------------------------------------------------------
+  # 5) Managed Redis — backs the API rate limiter (STEP 48)
+  # -------------------------------------------------------------------
+  # Without this, `createLimiter()` falls back to an in-memory store
+  # and per-IP limits are silently multiplied by the replica count.
+  # Comment this block out if you intentionally want the in-memory
+  # fallback (single-instance, hobby deploys only).
+  - type: redis
+    name: lumen-lms-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []               # empty = only same-region Render services may connect
