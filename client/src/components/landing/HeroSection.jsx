@@ -25,6 +25,7 @@ import { motion } from 'framer-motion';
 import { Button, Icon } from '../ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
 import { durations, ease } from '../../utils/motion.js';
+import { prefetchCatalog } from '../../utils/prefetch.js';
 
 const HEADLINE = 'Master new skills, on your schedule.';
 const SUBCOPY =
@@ -79,6 +80,9 @@ export function HeroSection() {
               to={ROUTES.catalog}
               size="lg"
               rightIcon={<Icon name="ArrowRight" size={18} />}
+              onMouseEnter={() => prefetchCatalog()}
+              onFocus={() => prefetchCatalog()}
+              onTouchStart={() => prefetchCatalog()}
             >
               Browse courses
             </Button>

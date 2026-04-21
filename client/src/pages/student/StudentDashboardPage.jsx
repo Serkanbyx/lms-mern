@@ -743,7 +743,7 @@ export default function StudentDashboardPage() {
           },
         );
         const data = result?.data ?? result;
-        generateCertificatePdf({
+        await generateCertificatePdf({
           studentName: data.studentName ?? studentName,
           courseTitle: data.courseTitle ?? enrollment.courseId.title,
           instructorName:

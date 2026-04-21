@@ -50,6 +50,7 @@ import { useDebounce } from '../../hooks/useDebounce.js';
 import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import { useMediaQuery } from '../../hooks/useMediaQuery.js';
 import { listCourses } from '../../services/course.service.js';
+import { readPrefetchedCatalog } from '../../utils/prefetch.js';
 
 /**
  * Build a friendly SEO title and description for the catalog from the
@@ -255,7 +256,26 @@ export default function CourseCatalogPage() {
   const fetchCourses = useCallback(async () => {
     requestId.current += 1;
     const myId = requestId.current;
-    setData((prev) => ({ ...prev, status: 'loading', error: null }));
+
+    // Stale-while-revalidate: if a recent hover-prefetched payload
+    // matches the current query, paint it immediately so the grid
+    // never starts on a skeleton flash. The real fetch still fires
+    // below to refresh against the server.
+    const cached = readPrefetchedCatalog({
+      sort: apiQuery.sort,
+      limit: apiQuery.limit,
+    });
+    if (cached) {
+      const items = cached?.data?.items ?? cached?.items ?? [];
+      const total = cached?.data?.total ?? cached?.total ?? items.length;
+      const totalPages =
+        cached?.data?.totalPages ??
+        cached?.totalPages ??
+        Math.max(1, Math.ceil(total / PAGE_SIZE));
+      setData({ status: 'ready', items, total, totalPages, error: null });
+    } else {
+      setData((prev) => ({ ...prev, status: 'loading', error: null }));
+    }
 
     try {
       const payload = await listCourses(apiQuery);

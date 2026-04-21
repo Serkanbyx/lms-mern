@@ -24,12 +24,21 @@
  * utilities that the global CSS rule already overrides.
  */
 
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Avatar, Badge, Icon } from '../ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
 import { cn } from '../../utils/cn.js';
+import {
+  cloudinaryPresets,
+  cloudinarySrcSet,
+} from '../../utils/cloudinaryUrl.js';
+
+const CARD_THUMB_WIDTHS = [320, 480, 640, 960];
+const CARD_THUMB_SIZES =
+  '(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw';
 
 const LEVEL_VARIANT = {
   beginner: 'success',
@@ -59,7 +68,7 @@ const formatEnrolled = (count) => {
   return `${(safe / 1_000_000).toFixed(1)}M`;
 };
 
-export function CourseCard({ course, className }) {
+function CourseCardComponent({ course, className }) {
   if (!course) return null;
 
   const instructorName = course.instructor?.name ?? 'Lumen Instructor';
@@ -69,6 +78,11 @@ export function CourseCard({ course, className }) {
   const enrolled = formatEnrolled(course.enrollmentCount);
   const priceLabel = formatPrice(course.price);
   const isFree = priceLabel === null;
+
+  const rawThumb = course.thumbnail?.url ?? course.thumbnail;
+  const thumbSrc =
+    typeof rawThumb === 'string' ? cloudinaryPresets.cardThumb(rawThumb) : null;
+  const thumbSrcSet = typeof rawThumb === 'string' ? cloudinarySrcSet(rawThumb, CARD_THUMB_WIDTHS) : '';
 
   return (
     <Link
@@ -83,12 +97,16 @@ export function CourseCard({ course, className }) {
       )}
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-bg-muted">
-        {course.thumbnail?.url || typeof course.thumbnail === 'string' ? (
+        {thumbSrc ? (
           <img
-            src={course.thumbnail?.url ?? course.thumbnail}
+            src={thumbSrc}
+            srcSet={thumbSrcSet || undefined}
+            sizes={thumbSrcSet ? CARD_THUMB_SIZES : undefined}
             alt=""
             loading="lazy"
             decoding="async"
+            width="640"
+            height="360"
             className="h-full w-full object-cover transition-transform duration-500 ease-out
               group-hover:scale-[1.06]"
           />
@@ -178,5 +196,13 @@ export function CourseCard({ course, className }) {
     </Link>
   );
 }
+
+/**
+ * Memoise the card so the catalog grid doesn't re-render every tile
+ * when a sibling-level state (filters sheet open, sort dropdown) flips.
+ * The shallow `course` reference is stable because the page swaps the
+ * whole `items` array on each fetch.
+ */
+export const CourseCard = memo(CourseCardComponent);
 
 export default CourseCard;

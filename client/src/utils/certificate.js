@@ -23,14 +23,12 @@
  *   - All text is rendered via `doc.text(...)` so jsPDF escapes it for
  *     us — there's no HTML/SVG injection surface here.
  *
- * The function is intentionally synchronous-ish (it returns the
- * `jsPDF` instance for callers that want to inspect or attach extra
- * pages before saving). It calls `doc.save(...)` itself for the common
- * "click → download" path so consumers get a one-liner at the call
- * site.
+ * The function returns a Promise so we can dynamically import
+ * `jspdf` (~150KB gzip) only when the user actually clicks "Download
+ * certificate" — keeping it out of the dashboard's initial chunk.
+ * It still calls `doc.save(...)` itself for the common "click →
+ * download" path so consumers get a one-liner at the call site.
  */
-
-import { jsPDF } from 'jspdf';
 
 const PAGE = Object.freeze({
   width: 297,
@@ -84,9 +82,9 @@ const drawCenteredText = (doc, text, y, { size, weight = 'normal', color = COLOR
  * @param {string|Date} [data.completedAt]          — when the learner reached 100%
  * @param {string|Date} [data.certificateIssuedAt]  — when the server stamped issuance
  * @param {string} data.certificateId   — enrollment `_id` (verifiable identifier)
- * @returns {jsPDF} the underlying jsPDF instance after `doc.save(...)` ran
+ * @returns {Promise<jsPDF>} resolves to the jsPDF instance after `doc.save(...)` ran
  */
-export const generateCertificatePdf = ({
+export const generateCertificatePdf = async ({
   studentName,
   courseTitle,
   instructorName,
@@ -98,6 +96,7 @@ export const generateCertificatePdf = ({
     throw new Error('generateCertificatePdf: studentName, courseTitle and certificateId are required.');
   }
 
+  const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
   drawBorder(doc);

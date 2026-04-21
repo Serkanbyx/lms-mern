@@ -2,11 +2,10 @@
  * `FeaturedCourses` — "Trending this week" block.
  *
  * Fetches the top 8 published courses sorted by `enrollmentCount` from
- * `GET /api/courses?sort=popular&limit=8` (see STEP 26 spec). The
- * canonical `CourseCard` ships with the catalog page in STEP 28; until
- * then we render a self-contained `LandingCourseCard` so the marketing
- * page can already showcase real catalog data without a forward
- * dependency on the catalog grid.
+ * `GET /api/courses?sort=popular&limit=8` (see STEP 26 spec). Renders
+ * each result through the shared, memoised `CourseCard` so a future
+ * visual tweak (radius, hover, density) propagates everywhere from
+ * one place.
  *
  * Loading: 8 skeleton cards keep the layout stable so the section never
  * "jumps" once the API resolves.
@@ -20,37 +19,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-import { Alert, Badge, Icon, Skeleton } from '../ui/index.js';
+import { Alert, Icon, Skeleton } from '../ui/index.js';
 import { Reveal } from '../layout/index.js';
+import { CourseCard } from '../course/CourseCard.jsx';
 import { listCourses } from '../../services/course.service.js';
 import { ROUTES } from '../../utils/constants.js';
 import { stagger, staggerItem } from '../../utils/motion.js';
 
 const LIMIT = 8;
-
-const formatPrice = (price) => {
-  if (price == null || Number(price) === 0) return 'Free';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(Number(price));
-};
-
-const formatDuration = (minutes) => {
-  if (!minutes) return '—';
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (!hours) return `${mins}m`;
-  if (!mins) return `${hours}h`;
-  return `${hours}h ${mins}m`;
-};
-
-const LEVEL_VARIANT = {
-  beginner: 'success',
-  intermediate: 'info',
-  advanced: 'warning',
-};
 
 export function FeaturedCourses() {
   const [state, setState] = useState({
@@ -131,7 +107,7 @@ export function FeaturedCourses() {
           >
             {state.items.map((course) => (
               <motion.li key={course._id ?? course.slug} variants={staggerItem}>
-                <LandingCourseCard course={course} />
+                <CourseCard course={course} />
               </motion.li>
             ))}
           </motion.ul>
@@ -140,83 +116,6 @@ export function FeaturedCourses() {
     </section>
   );
 }
-
-const LandingCourseCard = ({ course }) => {
-  const instructorName = course.instructor?.name ?? 'Lumen Instructor';
-  const lessons = course.totalLessons ?? 0;
-  const duration = formatDuration(course.totalDuration);
-  const enrolled = course.enrollmentCount ?? 0;
-  const isFree = !course.price || Number(course.price) === 0;
-
-  return (
-    <Link
-      to={ROUTES.courseDetail(course.slug)}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border
-        border-border bg-bg shadow-xs transition-all duration-200
-        hover:-translate-y-0.5 hover:shadow-md hover:border-border-strong
-        focus-visible:outline-2 focus-visible:outline-primary"
-    >
-      <div className="relative aspect-[16/9] overflow-hidden bg-bg-muted">
-        {course.thumbnail ? (
-          <img
-            src={course.thumbnail}
-            alt=""
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-300
-              group-hover:scale-[1.04]"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-info/20 to-bg-muted
-            flex items-center justify-center text-primary/50">
-            <Icon name="GraduationCap" size={32} />
-          </div>
-        )}
-        {course.level && (
-          <Badge
-            variant={LEVEL_VARIANT[course.level] ?? 'neutral'}
-            className="absolute top-3 left-3 backdrop-blur-sm"
-          >
-            {course.level}
-          </Badge>
-        )}
-      </div>
-
-      <div className="flex flex-1 flex-col gap-3 p-5">
-        <h3 className="text-base font-semibold text-text leading-snug line-clamp-2">
-          {course.title}
-        </h3>
-        <p className="text-xs text-text-subtle">by {instructorName}</p>
-
-        <ul className="mt-auto flex items-center gap-3 text-xs text-text-muted">
-          <li className="inline-flex items-center gap-1">
-            <Icon name="PlayCircle" size={14} />
-            {lessons} lessons
-          </li>
-          <li className="inline-flex items-center gap-1">
-            <Icon name="Clock" size={14} />
-            {duration}
-          </li>
-          <li className="inline-flex items-center gap-1">
-            <Icon name="Users" size={14} />
-            {enrolled.toLocaleString()}
-          </li>
-        </ul>
-
-        <div className="flex items-center justify-between pt-3 border-t border-border">
-          <span className={`text-base font-semibold ${isFree ? 'text-success' : 'text-text'}`}>
-            {formatPrice(course.price)}
-          </span>
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary
-            opacity-0 -translate-x-1 transition-all
-            group-hover:opacity-100 group-hover:translate-x-0">
-            View
-            <Icon name="ArrowRight" size={14} />
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-};
 
 const FeaturedSkeleton = () => (
   <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

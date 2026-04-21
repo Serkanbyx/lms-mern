@@ -5,6 +5,7 @@
  * top-level layouts.
  */
 
+export { CommandPalette } from './CommandPalette.jsx';
 export { MotionProvider } from './MotionProvider.jsx';
 export { PageTransition } from './PageTransition.jsx';
 export { Reveal } from './Reveal.jsx';

@@ -16,6 +16,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
+  CommandPalette,
   Footer,
   Navbar,
   OfflineBanner,
@@ -56,6 +57,8 @@ export function MainLayout() {
       </main>
 
       <Footer />
+
+      <CommandPalette />
     </div>
   );
 }

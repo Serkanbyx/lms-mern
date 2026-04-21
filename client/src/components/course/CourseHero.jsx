@@ -16,7 +16,14 @@ import { Link } from 'react-router-dom';
 import { Avatar, Badge, Breadcrumbs, Icon } from '../ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
+import {
+  cloudinaryPresets,
+  cloudinarySrcSet,
+} from '../../utils/cloudinaryUrl.js';
 import { CATEGORY_LABELS, LEVEL_LABELS } from './filterConstants.js';
+
+const HERO_THUMB_WIDTHS = [640, 960, 1280, 1600];
+const HERO_THUMB_SIZES = '100vw';
 
 const formatEnrolled = (count) => {
   const safe = Number(count) || 0;
@@ -65,16 +72,23 @@ export function CourseHero({ course }) {
 
   const thumbnailUrl =
     typeof course.thumbnail === 'string' ? course.thumbnail : course.thumbnail?.url;
+  const heroSrc = thumbnailUrl ? cloudinaryPresets.heroThumb(thumbnailUrl) : null;
+  const heroSrcSet = thumbnailUrl ? cloudinarySrcSet(thumbnailUrl, HERO_THUMB_WIDTHS) : '';
 
   return (
     <section className="relative isolate overflow-hidden bg-bg-subtle border-b border-border text-white">
       <div aria-hidden="true" className="absolute inset-0 -z-10">
-        {thumbnailUrl ? (
+        {heroSrc ? (
           <img
-            src={thumbnailUrl}
+            src={heroSrc}
+            srcSet={heroSrcSet || undefined}
+            sizes={heroSrcSet ? HERO_THUMB_SIZES : undefined}
             alt=""
             loading="eager"
             decoding="async"
+            fetchPriority="high"
+            width="1600"
+            height="600"
             className="h-full w-full object-cover"
           />
         ) : (

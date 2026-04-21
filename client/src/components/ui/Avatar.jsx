@@ -12,6 +12,7 @@
 
 import { useMemo, useState } from 'react';
 import { cn } from '../../utils/cn.js';
+import { cloudinaryPresets } from '../../utils/cloudinaryUrl.js';
 
 const SIZES = {
   xs: 'h-6 w-6 text-[10px]',
@@ -19,6 +20,18 @@ const SIZES = {
   md: 'h-10 w-10 text-sm',
   lg: 'h-12 w-12 text-base',
   xl: 'h-16 w-16 text-lg',
+};
+
+// Pixel sizes (matching the Tailwind classes above) for Cloudinary's
+// `w_/h_/c_fill/g_face` transformation. We request 2× to keep the
+// avatar crisp on retina without ever shipping a 1024px PNG for a
+// 24px circle.
+const SIZE_PX = {
+  xs: 48,
+  sm: 64,
+  md: 80,
+  lg: 96,
+  xl: 128,
 };
 
 const FALLBACK_HUES = [210, 260, 290, 340, 20, 50, 140, 170];
@@ -56,6 +69,11 @@ export function Avatar({
   );
 
   const showImage = src && !errored;
+  const pxSize = SIZE_PX[size] ?? SIZE_PX.md;
+  const optimisedSrc = useMemo(
+    () => (showImage ? cloudinaryPresets.avatar(src, pxSize) : undefined),
+    [showImage, src, pxSize],
+  );
 
   return (
     <span
@@ -79,10 +97,12 @@ export function Avatar({
     >
       {showImage ? (
         <img
-          src={src}
+          src={optimisedSrc}
           alt={alt ?? name}
           loading="lazy"
           decoding="async"
+          width={pxSize}
+          height={pxSize}
           onError={() => setErrored(true)}
           className="h-full w-full object-cover"
         />
