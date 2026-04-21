@@ -6,10 +6,20 @@
  * HTTP plumbing.
  *
  * Server response shapes (see `server/controllers/auth.controller.js`):
- *   register / login        → { success, token, user }
- *   getMe / updateProfile   → { success, user }
- *   changePassword          → { success, message }
- *   deleteAccount           → { success, message }
+ *   register / login / refresh   → { success, token, user }
+ *   getMe / updateProfile        → { success, user }
+ *   changePassword               → { success, message, token }
+ *   verifyEmail                  → { success, message, user }
+ *   resendVerification           → { success, message }
+ *   forgotPassword               → { success, message }
+ *   resetPassword                → { success, message }
+ *   logout / logoutAll           → { success, message }
+ *   deleteAccount                → { success, message }
+ *
+ * Refresh-token note (STEP 46): the refresh token lives in an HttpOnly
+ * cookie scoped to `/api/auth`. Because the axios instance is created
+ * with `withCredentials: true`, every call below already ships and
+ * receives that cookie automatically — no manual header plumbing.
  */
 
 import api from '../api/axios.js';
@@ -47,6 +57,52 @@ export const deleteAccount = async ({ password }) => {
   return data;
 };
 
+// --- STEP 46 — verification, reset, refresh, logout(s) -------------------
+
+export const verifyEmail = async (token) => {
+  const { data } = await api.get(`/auth/verify-email/${encodeURIComponent(token)}`);
+  return data;
+};
+
+export const resendVerification = async (email) => {
+  const payload = email ? { email } : {};
+  const { data } = await api.post('/auth/resend-verification', payload);
+  return data;
+};
+
+export const forgotPassword = async (email) => {
+  const { data } = await api.post('/auth/forgot-password', { email });
+  return data;
+};
+
+export const resetPassword = async ({ token, password }) => {
+  const { data } = await api.post(
+    `/auth/reset-password/${encodeURIComponent(token)}`,
+    { password },
+  );
+  return data;
+};
+
+/**
+ * Mark this call as `silent` so the global axios interceptor does NOT
+ * fire its toast / redirect chain when the refresh fails — the caller
+ * (axios interceptor or AuthContext) handles the failure path itself.
+ */
+export const refreshAccessToken = async () => {
+  const { data } = await api.post('/auth/refresh', null, { silent: true });
+  return data;
+};
+
+export const logout = async () => {
+  const { data } = await api.post('/auth/logout', null, { silent: true });
+  return data;
+};
+
+export const logoutAll = async () => {
+  const { data } = await api.post('/auth/logout-all');
+  return data;
+};
+
 export default {
   register,
   login,
@@ -54,4 +110,11 @@ export default {
   updateProfile,
   changePassword,
   deleteAccount,
+  verifyEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword,
+  refreshAccessToken,
+  logout,
+  logoutAll,
 };

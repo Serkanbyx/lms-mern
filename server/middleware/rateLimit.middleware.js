@@ -42,6 +42,8 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 const TEN_MINUTES = 10 * 60 * 1000;
+const ONE_MINUTE = 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
 
 const tooManyMessage = (message) => ({
   success: false,
@@ -215,6 +217,98 @@ export const enrollLimiter = rateLimit({
   ),
 });
 
+// ---------------------------------------------------------------------------
+// STEP 46 — Limiters for verification, password reset, and refresh.
+// ---------------------------------------------------------------------------
+
+/**
+ * Email verification + resend-verification limiter.
+ *
+ * 5 attempts / 15 min / IP+email is enough headroom for a confused user
+ * (open the email twice, click the wrong link, request a new one) but
+ * immediately stops a script scanning the verify endpoint for valid
+ * tokens, and stops mail-bombing a victim with resend requests.
+ */
+export const verifyEmailLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = ipKeyGenerator(req.ip);
+    const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
+    return `verify:${ip}:${email}`;
+  },
+  message: tooManyMessage(
+    'Too many verification attempts. Please try again in 15 minutes.',
+  ),
+});
+
+/**
+ * Forgot-password limiter — 3 / hour, keyed by IP + email.
+ *
+ * Tighter than the verify bucket because password resets actually send
+ * mail and reveal that an account exists if you watch the mailbox.
+ * Combined with the always-200 "if an account exists…" response, an
+ * attacker cannot enumerate accounts AND cannot mail-bomb any real
+ * user past the threshold either.
+ */
+export const forgotPasswordLimiter = rateLimit({
+  windowMs: ONE_HOUR,
+  limit: 3,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = ipKeyGenerator(req.ip);
+    const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
+    return `forgot:${ip}:${email}`;
+  },
+  message: tooManyMessage(
+    'Too many password reset requests. Please wait an hour before trying again.',
+  ),
+});
+
+/**
+ * Reset-password (token consumption) limiter — 5 / 15 min / IP+token.
+ *
+ * Keyed by IP + the token in the URL so an attacker can't iterate
+ * possible tokens from one IP, but legitimate users who paste a stale
+ * link several times still see helpful errors instead of a wall of 429s.
+ */
+export const resetPasswordLimiter = rateLimit({
+  windowMs: FIFTEEN_MINUTES,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const ip = ipKeyGenerator(req.ip);
+    const token = typeof req.params?.token === 'string' ? req.params.token : '';
+    return `reset:${ip}:${token}`;
+  },
+  message: tooManyMessage(
+    'Too many password reset attempts. Please request a new link.',
+  ),
+});
+
+/**
+ * Refresh-token limiter — 30 / minute / IP.
+ *
+ * Refresh is called as a SILENT retry by the axios interceptor when an
+ * access token expires. Legitimate flows never need more than one or
+ * two per minute, so 30/min is generous while still containing a
+ * runaway client (or a stolen cookie being burned through).
+ */
+export const refreshLimiter = rateLimit({
+  windowMs: ONE_MINUTE,
+  limit: 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => `refresh:${ipKeyGenerator(req.ip)}`,
+  message: tooManyMessage(
+    'Too many refresh attempts. Please sign in again.',
+  ),
+});
+
 export default {
   apiLimiter,
   authLimiter,
@@ -223,4 +317,8 @@ export default {
   quizSubmitLimiter,
   adminLimiter,
   enrollLimiter,
+  verifyEmailLimiter,
+  forgotPasswordLimiter,
+  resetPasswordLimiter,
+  refreshLimiter,
 };

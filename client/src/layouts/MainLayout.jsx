@@ -17,6 +17,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary.jsx';
 import {
   CommandPalette,
+  EmailVerificationBanner,
   Footer,
   Navbar,
   OfflineBanner,
@@ -38,6 +39,7 @@ export function MainLayout() {
       </a>
 
       <OfflineBanner />
+      <EmailVerificationBanner />
       <InstallPrompt />
       <Navbar />
 

@@ -13,6 +13,7 @@
  * are blocked by validators before they reach the database.
  */
 
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
@@ -61,6 +62,11 @@ app.use(
 // 4) Body parsers — capped at 10 KB to mitigate payload-DoS.
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// 4b) Cookie parser — required by STEP 46 so the refresh-token HttpOnly
+//     cookie can reach `req.cookies` in the auth controller. The cookie
+//     itself is never signed (the JWT inside is self-authenticating).
+app.use(cookieParser());
 
 // 5) Mongo-sanitize on body + params only (Express 5 safe — see file header).
 app.use((req, _res, next) => {

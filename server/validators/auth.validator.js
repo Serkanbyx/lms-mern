@@ -14,7 +14,7 @@
  *  - We never validate `role` — it is server-controlled (see the controller).
  */
 
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d)[\s\S]{8,128}$/;
 
@@ -87,10 +87,54 @@ export const deleteAccountValidator = [
   body('password').isString().notEmpty().withMessage('Password is required.'),
 ];
 
+// --- STEP 46 — verification, reset, resend validators --------------------
+
+// Tokens are 32-byte hex (64 chars) — see `utils/tokens.js`. Validating the
+// shape here lets the Mongo query short-circuit on obvious garbage.
+const TOKEN_RULE = /^[a-f0-9]{64}$/i;
+
+export const verifyEmailValidator = [
+  param('token')
+    .isString()
+    .matches(TOKEN_RULE)
+    .withMessage('Verification token is malformed.'),
+];
+
+export const resendVerificationValidator = [
+  body('email')
+    .optional({ nullable: true })
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address.')
+    .bail()
+    .normalizeEmail(),
+];
+
+export const forgotPasswordValidator = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address.')
+    .bail()
+    .normalizeEmail(),
+];
+
+export const resetPasswordValidator = [
+  param('token')
+    .isString()
+    .matches(TOKEN_RULE)
+    .withMessage('Reset token is malformed.'),
+  passwordChain('password'),
+];
+
 export default {
   registerValidator,
   loginValidator,
   updateProfileValidator,
   changePasswordValidator,
   deleteAccountValidator,
+  verifyEmailValidator,
+  resendVerificationValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
 };

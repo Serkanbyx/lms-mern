@@ -146,6 +146,42 @@ const BCRYPT_ROUNDS = parseInteger('BCRYPT_ROUNDS', process.env.BCRYPT_ROUNDS, 1
   max: 14,
 });
 
+// --- Account lockout (STEP 46) ---
+// Every failed login increments `User.failedLoginAttempts`. Once it hits
+// `MAX_LOGIN_ATTEMPTS` the account is locked for `LOCK_DURATION_MIN` minutes.
+// Defaults are intentionally generous so a forgetful human typing the wrong
+// password a few times doesn't get locked out, but a credential-stuffing
+// script is contained almost immediately.
+const MAX_LOGIN_ATTEMPTS = parseInteger(
+  'MAX_LOGIN_ATTEMPTS',
+  process.env.MAX_LOGIN_ATTEMPTS,
+  10,
+  { min: 3, max: 50 },
+);
+const LOCK_DURATION_MIN = parseInteger(
+  'LOCK_DURATION_MIN',
+  process.env.LOCK_DURATION_MIN,
+  15,
+  { min: 1, max: 1440 },
+);
+
+// --- Email verification & password reset token TTLs (STEP 46) ---
+const EMAIL_VERIFICATION_TTL_MIN = parseInteger(
+  'EMAIL_VERIFICATION_TTL_MIN',
+  process.env.EMAIL_VERIFICATION_TTL_MIN,
+  60 * 24,
+  { min: 5, max: 60 * 24 * 7 },
+);
+const PASSWORD_RESET_TTL_MIN = parseInteger(
+  'PASSWORD_RESET_TTL_MIN',
+  process.env.PASSWORD_RESET_TTL_MIN,
+  15,
+  { min: 5, max: 60 * 4 },
+);
+
+// --- Refresh-token cookie name (STEP 46 — Option A: HttpOnly cookie) ---
+const REFRESH_COOKIE_NAME = optionalVar(process.env.REFRESH_COOKIE_NAME, 'lms.refresh');
+
 // --- Logging ---
 const LOG_LEVEL = optionalVar(process.env.LOG_LEVEL, isProd ? 'info' : 'debug');
 
@@ -191,6 +227,11 @@ export const env = Object.freeze({
   ADMIN_PASSWORD,
   ADMIN_NAME,
   BCRYPT_ROUNDS,
+  MAX_LOGIN_ATTEMPTS,
+  LOCK_DURATION_MIN,
+  EMAIL_VERIFICATION_TTL_MIN,
+  PASSWORD_RESET_TTL_MIN,
+  REFRESH_COOKIE_NAME,
   LOG_LEVEL,
 });
 

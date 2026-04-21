@@ -4,18 +4,22 @@
  * Responsibilities:
  *  - Hydrate the session on mount: if `localStorage` has a token we call
  *    `GET /auth/me` to confirm it is still valid and load the user record.
- *    A failure clears the token silently (the axios interceptor will
- *    redirect to `/login` for protected routes).
+ *    On a 401 we attempt one silent refresh (handled inside the axios
+ *    interceptor) before giving up and clearing the token.
  *  - Expose imperative session methods (`login`, `register`, `logout`,
- *    `updateUser`) plus three role booleans (`isStudent`, `isInstructor`,
- *    `isAdmin`) for guards and conditional UI.
- *  - Persist the token via `STORAGE_KEYS.token` so the axios request
- *    interceptor (see `api/axios.js`) can attach the `Authorization`
- *    header on every call without re-reading React state.
+ *    `logoutAll`, `updateUser`) plus three role booleans (`isStudent`,
+ *    `isInstructor`, `isAdmin`) for guards and conditional UI.
+ *  - Persist the access token via `STORAGE_KEYS.token` so the axios
+ *    request interceptor can attach the `Authorization` header on every
+ *    call without re-reading React state. The longer-lived refresh token
+ *    is stored by the server in an HttpOnly cookie and never touches JS.
  *
  * Design notes:
  *  - All state mutations live inside this provider; consumers receive a
  *    stable, memoised value and never set state directly.
+ *  - `logout` calls `POST /auth/logout` (best-effort; the cookie is
+ *    cleared regardless) and `logoutAll` bumps `tokenVersion` server-
+ *    side so every other device loses its session immediately.
  *  - Navigation after logout uses `window.location` instead of a router
  *    hook because this context is mounted above the router and must work
  *    even when called from a 401 handler far below it.
@@ -67,9 +71,25 @@ export const AuthProvider = ({ children }) => {
 
     const hydrate = async () => {
       if (!token) {
-        setLoading(false);
+        // Even with no access token we may still have a valid refresh
+        // cookie from a previous session. Try ONE silent refresh before
+        // we treat the visitor as a logged-out guest — that's what makes
+        // a browser refresh on a protected page survive.
+        try {
+          const { token: refreshed, user: me } = await authService.refreshAccessToken();
+          if (!cancelled && refreshed && me) {
+            writeStoredToken(refreshed);
+            setToken(refreshed);
+            setUser(me);
+          }
+        } catch {
+          // No valid session at all — anonymous visitor.
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
         return;
       }
+
       try {
         const { user: me } = await authService.getMe();
         if (!cancelled) setUser(me ?? null);
@@ -124,10 +144,28 @@ export const AuthProvider = ({ children }) => {
     [persistSession],
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // Best-effort server hit so the refresh cookie is cleared. Failure
+    // here MUST NOT block the local-state cleanup below — even if the
+    // network is dead the user expects to be logged out.
+    try {
+      await authService.logout();
+    } catch {
+      /* noop */
+    }
     persistSession(null, null);
     if (typeof window !== 'undefined') {
       window.location.assign(ROUTES.login);
+    }
+  }, [persistSession]);
+
+  const logoutAll = useCallback(async () => {
+    // Server bumps `tokenVersion` (kicking every other device off) and
+    // issues us a fresh access + refresh pair so the calling tab stays
+    // signed in. We swap the local session over to the new credentials.
+    const { token: nextToken, user: nextUser } = await authService.logoutAll();
+    if (nextToken && nextUser) {
+      persistSession(nextToken, nextUser);
     }
   }, [persistSession]);
 
@@ -139,21 +177,34 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const { user: me } = await authService.getMe();
+      setUser(me ?? null);
+      return me;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
       token,
       loading,
       isAuthenticated: Boolean(user && token),
+      isEmailVerified: Boolean(user?.isEmailVerified),
       isStudent: user?.role === ROLES.student,
       isInstructor: user?.role === ROLES.instructor,
       isAdmin: user?.role === ROLES.admin,
       login,
       register,
       logout,
+      logoutAll,
       updateUser,
+      refreshUser,
     }),
-    [user, token, loading, login, register, logout, updateUser],
+    [user, token, loading, login, register, logout, logoutAll, updateUser, refreshUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

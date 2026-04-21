@@ -59,7 +59,7 @@ const EMPTY_PASSWORD_FORM = {
 };
 
 export default function SettingsAccountPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, logoutAll } = useAuth();
   useDocumentTitle('Account settings');
 
   const [passwordForm, setPasswordForm] = useState(EMPTY_PASSWORD_FORM);
@@ -67,6 +67,21 @@ export default function SettingsAccountPage() {
   const [passwordSubmitting, setPasswordSubmitting] = useState(false);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [logoutAllOpen, setLogoutAllOpen] = useState(false);
+  const [logoutAllSubmitting, setLogoutAllSubmitting] = useState(false);
+
+  const handleLogoutAll = async () => {
+    setLogoutAllSubmitting(true);
+    try {
+      await logoutAll();
+      toast.success('Signed out from every other device.');
+      setLogoutAllOpen(false);
+    } catch (err) {
+      toast.error(err?.message || 'Could not sign out other devices.');
+    } finally {
+      setLogoutAllSubmitting(false);
+    }
+  };
 
   const setPasswordField = (key) => (event) => {
     const value = event.target.value;
@@ -202,6 +217,33 @@ export default function SettingsAccountPage() {
         </form>
       </section>
 
+      <section aria-labelledby="sessions-heading" className="space-y-4">
+        <header>
+          <h2
+            id="sessions-heading"
+            className="text-lg font-semibold text-text"
+          >
+            Active sessions
+          </h2>
+          <p className="text-sm text-text-muted mt-0.5">
+            Signing out everywhere ends every other browser, tab and device
+            you&apos;re currently logged into. Use it if you suspect somebody
+            else has access to your account.
+          </p>
+        </header>
+
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setLogoutAllOpen(true)}
+            leftIcon={<Icon name="LogOut" size={16} />}
+          >
+            Sign out from all other devices
+          </Button>
+        </div>
+      </section>
+
       <section
         aria-labelledby="danger-heading"
         className="rounded-xl border border-danger/30 bg-danger/5 p-5 space-y-4"
@@ -237,6 +279,33 @@ export default function SettingsAccountPage() {
         open={deleteOpen}
         onClose={() => setDeleteOpen(false)}
         onDeleted={logout}
+      />
+
+      <Modal
+        open={logoutAllOpen}
+        onClose={() => (logoutAllSubmitting ? null : setLogoutAllOpen(false))}
+        title="Sign out from all devices?"
+        description="Every other session — browsers, mobile, anywhere you're signed in — will be revoked. You'll stay signed in here until you sign out manually."
+        size="sm"
+        showCloseButton={!logoutAllSubmitting}
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setLogoutAllOpen(false)}
+              disabled={logoutAllSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleLogoutAll}
+              loading={logoutAllSubmitting}
+            >
+              Sign out everywhere
+            </Button>
+          </>
+        }
       />
     </div>
   );

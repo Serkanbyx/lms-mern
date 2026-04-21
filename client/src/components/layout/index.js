@@ -13,4 +13,5 @@ export { Navbar } from './Navbar.jsx';
 export { Footer } from './Footer.jsx';
 export { OfflineBanner } from './OfflineBanner.jsx';
 export { OfflineGate } from './OfflineGate.jsx';
+export { EmailVerificationBanner } from './EmailVerificationBanner.jsx';
 export { RouteSkeleton } from './RouteSkeleton.jsx';

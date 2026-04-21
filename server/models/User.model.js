@@ -16,6 +16,8 @@
  *    `preferences.privacy.showEmail` flag before returning to clients.
  */
 
+import crypto from 'node:crypto';
+
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 
@@ -143,6 +145,32 @@ const userSchema = new Schema(
     },
     isActive: { type: Boolean, default: true },
     preferences: { type: preferencesSchema, default: () => ({}) },
+
+    // STEP 46 — Email verification.
+    // The raw token is emailed to the user; only its sha256 hash is stored
+    // in the DB so a database leak cannot be replayed against the verify
+    // endpoint. `select: false` keeps the hash out of every default query.
+    isEmailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
+
+    // STEP 46 — Password reset (single-use, short-lived).
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+
+    // STEP 46 — Token revocation. Embedded in every issued access &
+    // refresh token; bumping it invalidates every previously issued token
+    // across every device (logout-all, password change).
+    tokenVersion: { type: Number, default: 0, select: false },
+
+    // STEP 46 — Account lockout.
+    failedLoginAttempts: { type: Number, default: 0, select: false },
+    lockUntil: { type: Date, select: false },
+    lastLoginAt: { type: Date },
+
+    // STEP 46 — Reserved for future TOTP-based 2FA.
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: { type: String, select: false },
   },
   {
     timestamps: true,
@@ -179,8 +207,74 @@ userSchema.methods.toSafeJSON = function toSafeJSON() {
   const obj = this.toObject({ virtuals: true });
   delete obj.password;
   delete obj.__v;
+  // Defensive — these have `select: false` so they normally never load,
+  // but if a controller did `select('+...')` for an internal reason we
+  // never want them leaving the API surface.
+  delete obj.emailVerificationToken;
+  delete obj.emailVerificationExpires;
+  delete obj.passwordResetToken;
+  delete obj.passwordResetExpires;
+  delete obj.tokenVersion;
+  delete obj.failedLoginAttempts;
+  delete obj.lockUntil;
+  delete obj.twoFactorSecret;
   return obj;
 };
+
+// --- STEP 46 helpers -------------------------------------------------------
+
+userSchema.virtual('isLocked').get(function isLocked() {
+  return Boolean(this.lockUntil && this.lockUntil.getTime() > Date.now());
+});
+
+const sha256 = (raw) => crypto.createHash('sha256').update(raw).digest('hex');
+
+/**
+ * Generate a random verification token, store its SHA-256 hash + TTL on
+ * the user document, and return the RAW token. Only the raw value should
+ * be emailed — the DB never sees it in plain form.
+ *
+ * Caller is responsible for `await user.save()` (we mutate but don't
+ * persist so the controller can batch the write with other changes).
+ */
+userSchema.methods.createEmailVerificationToken = function createEmailVerificationToken() {
+  const raw = crypto.randomBytes(32).toString('hex');
+  this.emailVerificationToken = sha256(raw);
+  this.emailVerificationExpires = new Date(
+    Date.now() + env.EMAIL_VERIFICATION_TTL_MIN * 60_000,
+  );
+  return raw;
+};
+
+userSchema.methods.createPasswordResetToken = function createPasswordResetToken() {
+  const raw = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = sha256(raw);
+  this.passwordResetExpires = new Date(
+    Date.now() + env.PASSWORD_RESET_TTL_MIN * 60_000,
+  );
+  return raw;
+};
+
+/**
+ * Atomic-ish lockout bump. The caller still owns the `await user.save()`
+ * so the failed-login bookkeeping ends up in the same write as
+ * `lastLoginAt` updates etc., but the policy lives here so every entry
+ * point (login, future SSO callbacks) shares the same threshold.
+ */
+userSchema.methods.registerFailedLoginAttempt = function registerFailedLoginAttempt() {
+  this.failedLoginAttempts = (this.failedLoginAttempts || 0) + 1;
+  if (this.failedLoginAttempts >= env.MAX_LOGIN_ATTEMPTS) {
+    this.lockUntil = new Date(Date.now() + env.LOCK_DURATION_MIN * 60_000);
+    this.failedLoginAttempts = 0;
+  }
+};
+
+userSchema.methods.resetLoginAttempts = function resetLoginAttempts() {
+  this.failedLoginAttempts = 0;
+  this.lockUntil = undefined;
+};
+
+export const hashAuthToken = sha256;
 
 export const USER_ROLES = ROLES;
 export const USER_THEMES = THEMES;

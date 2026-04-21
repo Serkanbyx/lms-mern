@@ -66,6 +66,15 @@ const RegisterPage = lazy(() => import('./pages/auth/RegisterPage.jsx'));
 const ForgotPasswordPage = lazy(() =>
   import('./pages/auth/ForgotPasswordPage.jsx'),
 );
+const ResetPasswordPage = lazy(() =>
+  import('./pages/auth/ResetPasswordPage.jsx'),
+);
+const VerifyEmailPage = lazy(() =>
+  import('./pages/auth/VerifyEmailPage.jsx'),
+);
+const VerifyEmailPendingPage = lazy(() =>
+  import('./pages/auth/VerifyEmailPendingPage.jsx'),
+);
 
 // Student
 const StudentDashboardPage = lazy(() =>
@@ -144,7 +153,17 @@ export default function App() {
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route
+            path="reset-password/:token"
+            element={<ResetPasswordPage />}
+          />
         </Route>
+
+        {/* Verification pages stay reachable to both anonymous AND
+            authenticated-but-unverified users — that's why they sit
+            outside `GuestOnlyRoute`. */}
+        <Route path="verify-email/pending" element={<VerifyEmailPendingPage />} />
+        <Route path="verify-email/:token" element={<VerifyEmailPage />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="dashboard" element={<StudentDashboardPage />} />
