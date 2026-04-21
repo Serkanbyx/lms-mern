@@ -33,16 +33,20 @@
  * are blocked by validators before they reach the database.
  */
 
+import { createRequire } from 'node:module';
+
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import mongoSanitize from 'express-mongo-sanitize';
 import mongoose from 'mongoose';
+import swaggerUi from 'swagger-ui-express';
 
 import { connectDB } from './config/db.js';
 import { env } from './config/env.js';
 import { redis } from './config/redis.js';
+import { swaggerSpec, swaggerUiOptions } from './config/swagger.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFound } from './middleware/notFound.middleware.js';
 import { apiLimiter } from './middleware/rateLimit.middleware.js';
@@ -65,6 +69,10 @@ import sectionRoutes, { courseSectionsRouter } from './routes/section.routes.js'
 import uploadRoutes from './routes/upload.routes.js';
 import userRoutes from './routes/user.routes.js';
 import { httpLogger, logger } from './utils/logger.js';
+import { renderWelcomePage } from './utils/welcomePage.js';
+
+const require = createRequire(import.meta.url);
+const { version: pkgVersion } = require('./package.json');
 
 const app = express();
 
@@ -175,6 +183,34 @@ app.get('/api/health', (_req, res) => {
     env: env.NODE_ENV,
   });
 });
+
+// 14a) Public welcome page — a single self-contained HTML doc served at the
+//      root so a human hitting the bare API URL gets a friendly landing page
+//      with quick links to the docs and health probe instead of a 404.
+app.get('/', (_req, res) => {
+  res
+    .type('html')
+    .send(renderWelcomePage({ version: pkgVersion, env: env.NODE_ENV }));
+});
+
+// 14b) OpenAPI / Swagger reference.
+//      - `/api-docs.json` exposes the raw spec for tooling (Postman import,
+//        OpenAPI generators, etc.).
+//      - `/api-docs` mounts the interactive Swagger UI. We disable the helmet
+//        CSP for this path only because Swagger UI ships inline scripts and
+//        styles that the global strict CSP would otherwise block.
+app.get('/api-docs.json', (_req, res) => {
+  res.type('application/json').send(swaggerSpec);
+});
+app.use(
+  '/api-docs',
+  (_req, res, next) => {
+    res.removeHeader('Content-Security-Policy');
+    next();
+  },
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, swaggerUiOptions),
+);
 
 // 15) Feature route modules — mounted under /api/*.
 //

@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "LMS Platform — Express 5 API (auth, courses, lessons, quizzes, enrollments, progress, uploads, admin).",
+  "author": {
+    "name": "Serkanby",
+    "url": "https://serkanbayraktar.com/"
+  },
   "type": "module",
   "main": "index.js",
   "engines": {
@@ -38,7 +42,9 @@
     "pino-http": "^11.0.0",
     "rate-limit-redis": "^4.3.1",
     "slugify": "^1.6.9",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",

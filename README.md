@@ -18,6 +18,11 @@
 </p>
 
 <p align="center">
+  <a href="https://serkanbayraktar.com/"><img src="https://img.shields.io/badge/Created%20by-Serkanby-4338ca?style=flat-square" alt="Created by Serkanby" /></a>
+  <a href="https://github.com/Serkanbyx"><img src="https://img.shields.io/badge/GitHub-Serkanbyx-181717?style=flat-square&logo=github" alt="GitHub Serkanbyx" /></a>
+</p>
+
+<p align="center">
   <a href="https://lumen-lms.netlify.app"><b>Live Demo</b></a> •
   <a href="https://lumen-lms.netlify.app/courses"><b>Browse Catalog</b></a> •
   <a href="#-getting-started"><b>Quick Start</b></a> •
@@ -63,9 +68,10 @@
 14. [Lessons Learned](#-lessons-learned)
 15. [Version Control](#-version-control)
 16. [Deployment](#-deployment)
-17. [Author](#-author)
-18. [Acknowledgments](#-acknowledgments)
-19. [License](#-license)
+17. [Developer](#-developer)
+18. [Contact](#-contact)
+19. [Acknowledgments](#-acknowledgments)
+20. [License](#-license)
 
 ---
 
@@ -298,6 +304,8 @@ Open <http://localhost:5173>. The Vite dev server proxies API requests to <http:
 ## API Reference
 
 All endpoints are mounted under `/api`. Endpoints flagged with the lock icon below have a stricter rate limiter applied. Auth column legend: `—` public, `User` any logged-in user, `Owner` resource owner, `Instructor`, `Admin`.
+
+> **Interactive docs:** the running server exposes a Swagger UI at [`/api-docs`](http://localhost:5000/api-docs) and the raw OpenAPI 3.0 spec at [`/api-docs.json`](http://localhost:5000/api-docs.json). Hitting the bare API root (`/`) returns a friendly welcome page with one-click links to both.
 
 ### Auth (`/api/auth`)
 
@@ -563,16 +571,21 @@ Render and Netlify both connect to this GitHub repository the developer pushes t
 
 ---
 
-## Author
+## Developer
 
-**Serkan**
+**Serkanby**
 
-- Portfolio: [your-portfolio.com](https://your-portfolio.com)
-- LinkedIn: [linkedin.com/in/your-handle](https://linkedin.com/in/your-handle)
-- GitHub: [@your-github](https://github.com/your-github)
-- Email: hello@your-domain.com
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+- GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
 
 If this project helped you or you'd like to chat about it, reach out — I'm always happy to talk shop.
+
+## Contact
+
+- [Open an Issue](https://github.com/Serkanbyx/lumen-lms/issues)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
 
 ---
 
