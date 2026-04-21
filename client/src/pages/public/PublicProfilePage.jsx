@@ -39,18 +39,9 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle.js';
 import * as courseService from '../../services/course.service.js';
 import * as userService from '../../services/user.service.js';
 import { ROLES, ROUTES } from '../../utils/constants.js';
+import { formatMonthYear } from '../../utils/formatDate.js';
 
 const COURSE_SKELETON_COUNT = 4;
-
-const formatJoinDate = (value) => {
-  if (!value) return null;
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
-  });
-};
 
 const buildTabs = ({ isInstructor, hasStats }) => {
   const tabs = [];
@@ -246,7 +237,7 @@ export default function PublicProfilePage() {
 }
 
 function ProfileHeader({ profile, isOwnProfile }) {
-  const joined = formatJoinDate(profile.createdAt);
+  const joined = formatMonthYear(profile.createdAt);
 
   return (
     <header className="flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:text-left">
@@ -375,7 +366,7 @@ function StatsTab({ profile }) {
       />
       <Stat
         label="Member since"
-        value={formatJoinDate(profile.createdAt) ?? '—'}
+        value={formatMonthYear(profile.createdAt) ?? '—'}
         icon={<Icon name="Calendar" size={18} />}
       />
     </div>

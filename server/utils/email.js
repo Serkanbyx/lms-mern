@@ -30,6 +30,7 @@
 import nodemailer from 'nodemailer';
 
 import { env } from '../config/env.js';
+import { logger } from './logger.js';
 
 let transporterPromise = null;
 
@@ -72,8 +73,7 @@ const ctaButton = (label, url) =>
 
 const logFallback = (subject, to, link) => {
   if (env.isProd) return;
-  // eslint-disable-next-line no-console
-  console.log(`[email] (dev/no-smtp) → ${to}\n  Subject: ${subject}` + (link ? `\n  Link: ${link}` : ''));
+  logger.info({ to, subject, link }, '[email] (dev/no-smtp) — copy link from this log.');
 };
 
 /**
@@ -99,8 +99,7 @@ export const sendEmail = async ({ to, subject, html, text, devLink } = {}) => {
     });
     return { ok: true, skipped: false };
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(`[email] send failed (${subject} → ${to}):`, err.message);
+    logger.error({ to, subject, err: err.message }, '[email] send failed.');
     return { ok: false, skipped: false, reason: 'smtp-error' };
   }
 };

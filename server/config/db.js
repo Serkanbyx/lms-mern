@@ -10,6 +10,7 @@
 
 import mongoose from 'mongoose';
 
+import { logger } from '../utils/logger.js';
 import { env } from './env.js';
 
 mongoose.set('strictQuery', true);
@@ -23,29 +24,28 @@ export async function connectDB() {
       autoIndex: !env.isProd,
     });
 
-    // eslint-disable-next-line no-console
-    console.log(`[db] MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
+    logger.info(
+      { host: conn.connection.host, db: conn.connection.name },
+      '[db] MongoDB connected.',
+    );
 
     mongoose.connection.on('disconnected', () => {
-      // eslint-disable-next-line no-console
-      console.warn('[db] MongoDB disconnected.');
+      logger.warn('[db] MongoDB disconnected.');
     });
 
     mongoose.connection.on('reconnected', () => {
-      // eslint-disable-next-line no-console
-      console.log('[db] MongoDB reconnected.');
+      logger.info('[db] MongoDB reconnected.');
     });
 
     mongoose.connection.on('error', (err) => {
-      // eslint-disable-next-line no-console
-      console.error('[db] MongoDB error:', err.message);
+      logger.error({ err: err.message }, '[db] MongoDB error.');
     });
 
     return conn;
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(
-      `[db] Failed to connect to MongoDB at ${redactUri(env.MONGO_URI)}: ${err.message}`,
+    logger.fatal(
+      { uri: redactUri(env.MONGO_URI), err: err.message },
+      '[db] Failed to connect to MongoDB.',
     );
     process.exit(1);
   }

@@ -10,7 +10,7 @@
  * Separators render a thin divider — they are NOT focusable.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '../../utils/cn.js';
 import { Popover } from './Popover.jsx';
 import { Icon } from './Icon.jsx';
@@ -26,9 +26,13 @@ export function Dropdown({
   const listRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(-1);
 
-  const focusableIndexes = items
-    .map((it, i) => (it.separator || it.disabled ? null : i))
-    .filter((i) => i !== null);
+  const focusableIndexes = useMemo(
+    () =>
+      items
+        .map((it, i) => (it.separator || it.disabled ? null : i))
+        .filter((i) => i !== null),
+    [items],
+  );
 
   useEffect(() => {
     if (!open) {
@@ -36,7 +40,7 @@ export function Dropdown({
       return;
     }
     setActiveIndex(focusableIndexes[0] ?? -1);
-  }, [open]);
+  }, [open, focusableIndexes]);
 
   useEffect(() => {
     if (!open || activeIndex < 0) return;

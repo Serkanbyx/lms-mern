@@ -31,6 +31,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {
   minute: '2-digit',
 });
 
+const monthYearFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {
+  month: 'long',
+  year: 'numeric',
+});
+
 const relativeFormatter = new Intl.RelativeTimeFormat(DEFAULT_LOCALE, {
   numeric: 'auto',
   style: 'long',
@@ -55,6 +60,17 @@ export const formatDate = (value, { withTime = false } = {}) => {
  * time" don't have to remember the option object.
  */
 export const formatDateTime = (value) => formatDate(value, { withTime: true });
+
+/**
+ * Coarse "month + year" label — used for join dates and milestones
+ * where the day is noise. Returns `null` for missing/invalid input
+ * so callers can hide the surrounding label entirely.
+ */
+export const formatMonthYear = (value) => {
+  const date = toDate(value);
+  if (!date) return null;
+  return monthYearFormatter.format(date);
+};
 
 const tooltipFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {
   year: 'numeric',
@@ -113,4 +129,10 @@ export const formatRelativeTime = (value, { now = Date.now() } = {}) => {
   return dateFormatter.format(date);
 };
 
-export default { formatDate, formatDateTime, formatRelativeTime, formatDateTooltip };
+export default {
+  formatDate,
+  formatDateTime,
+  formatMonthYear,
+  formatRelativeTime,
+  formatDateTooltip,
+};

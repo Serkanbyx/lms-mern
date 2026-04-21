@@ -28,6 +28,7 @@
 
 import Redis from 'ioredis';
 
+import { logger } from '../utils/logger.js';
 import { env } from './env.js';
 
 /**
@@ -46,23 +47,19 @@ const createRedisClient = () => {
   });
 
   client.on('connect', () => {
-    // eslint-disable-next-line no-console
-    console.log('[redis] Connecting…');
+    logger.info('[redis] Connecting…');
   });
 
   client.on('ready', () => {
-    // eslint-disable-next-line no-console
-    console.log('[redis] Ready.');
+    logger.info('[redis] Ready.');
   });
 
   client.on('error', (err) => {
-    // eslint-disable-next-line no-console
-    console.error('[redis] Connection error:', err.message);
+    logger.error({ err: err.message }, '[redis] Connection error.');
   });
 
   client.on('end', () => {
-    // eslint-disable-next-line no-console
-    console.warn('[redis] Connection closed.');
+    logger.warn('[redis] Connection closed.');
   });
 
   return client;

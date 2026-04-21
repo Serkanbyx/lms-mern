@@ -14,7 +14,7 @@
  *     significant updates (we throttle in `aria-live` semantics).
  */
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 import { cn } from '../../utils/cn.js';
 
 export const Textarea = forwardRef(function Textarea(
@@ -40,7 +40,7 @@ export const Textarea = forwardRef(function Textarea(
   const invalid = ariaInvalid === true || ariaInvalid === 'true';
   const length = (value ?? defaultValue ?? '').toString().length;
 
-  const resize = () => {
+  const resize = useCallback(() => {
     const node = innerRef.current;
     if (!node || !autosize) return;
     node.style.height = 'auto';
@@ -48,11 +48,11 @@ export const Textarea = forwardRef(function Textarea(
     const max = lineHeight * maxRows;
     node.style.height = `${Math.min(node.scrollHeight, max)}px`;
     node.style.overflowY = node.scrollHeight > max ? 'auto' : 'hidden';
-  };
+  }, [autosize, maxRows]);
 
   useEffect(() => {
     resize();
-  }, [value, autosize, maxRows]);
+  }, [value, resize]);
 
   const handleChange = (event) => {
     onChange?.(event);
