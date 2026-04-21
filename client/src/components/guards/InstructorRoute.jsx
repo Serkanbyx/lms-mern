@@ -1,14 +1,24 @@
 /**
  * `InstructorRoute` — must be authenticated AND have the `instructor` or
- * `admin` role. A signed-in student lands on `/dashboard` (their natural
- * home) instead of seeing a 404 or a permission error mid-page.
+ * `admin` role.
+ *
+ * Behaviour:
+ *  - Anonymous visitors are redirected to `/login?next=…` with a polite
+ *    "please sign in" toast and the original URL preserved so we can
+ *    bring them back after the auth flow.
+ *  - Signed-in users without instructor privileges are sent to the
+ *    public home (not the dashboard) with a toast explaining why. We
+ *    deliberately route to `/` rather than `/dashboard` so a student
+ *    poking at a deep instructor URL doesn't get teleported into a
+ *    private surface they didn't ask for.
  */
 
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROUTES } from '../../utils/constants.js';
 import { FullPageSpinner } from './FullPageSpinner.jsx';
+import { RedirectWithToast } from './RedirectWithToast.jsx';
 
 export function InstructorRoute({ children }) {
   const { isAuthenticated, isInstructor, isAdmin, loading } = useAuth();
@@ -18,11 +28,23 @@ export function InstructorRoute({ children }) {
 
   if (!isAuthenticated) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
-    return <Navigate to={`${ROUTES.login}?next=${next}`} replace />;
+    return (
+      <RedirectWithToast
+        to={`${ROUTES.login}?next=${next}`}
+        message="Please sign in to continue."
+        variant="info"
+      />
+    );
   }
 
   if (!isInstructor && !isAdmin) {
-    return <Navigate to={ROUTES.dashboard} replace />;
+    return (
+      <RedirectWithToast
+        to={ROUTES.home}
+        message="This area is for instructors only."
+        variant="info"
+      />
+    );
   }
 
   return children ?? <Outlet />;

@@ -10,3 +10,4 @@ export { InstructorRoute } from './InstructorRoute.jsx';
 export { AdminRoute } from './AdminRoute.jsx';
 export { EnrolledRoute } from './EnrolledRoute.jsx';
 export { FullPageSpinner } from './FullPageSpinner.jsx';
+export { RedirectWithToast } from './RedirectWithToast.jsx';

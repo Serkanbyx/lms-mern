@@ -16,21 +16,25 @@
  *  - Both requests are guarded by an `ignore` flag to avoid setting
  *    state on an unmounted component when the user navigates away mid-
  *    fetch.
+ *  - The "not enrolled" toast is fired through `RedirectWithToast` so
+ *    `StrictMode`'s double render in dev never produces duplicate
+ *    toasts.
  */
 
 import { useEffect, useState } from 'react';
-import { Navigate, Outlet, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext.jsx';
 import * as courseService from '../../services/course.service.js';
 import * as enrollmentService from '../../services/enrollment.service.js';
 import { ROUTES } from '../../utils/constants.js';
-import { toast } from '../ui/index.js';
 import { FullPageSpinner } from './FullPageSpinner.jsx';
+import { RedirectWithToast } from './RedirectWithToast.jsx';
 
 export function EnrolledRoute({ children }) {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { slug } = useParams();
+  const location = useLocation();
   const [status, setStatus] = useState('checking');
 
   useEffect(() => {
@@ -68,15 +72,28 @@ export function EnrolledRoute({ children }) {
   if (authLoading) return <FullPageSpinner />;
 
   if (!isAuthenticated) {
-    const next = encodeURIComponent(window.location.pathname + window.location.search);
-    return <Navigate to={`${ROUTES.login}?next=${next}`} replace />;
+    const next = encodeURIComponent(`${location.pathname}${location.search}`);
+    return (
+      <RedirectWithToast
+        to={`${ROUTES.login}?next=${next}`}
+        message="Please sign in to continue."
+        variant="info"
+      />
+    );
   }
 
-  if (status === 'checking') return <FullPageSpinner label="Checking access…" />;
+  if (status === 'checking') {
+    return <FullPageSpinner label="Checking access…" />;
+  }
 
   if (status === 'not-enrolled') {
-    toast.info('Enroll in this course to access the lesson player.');
-    return <Navigate to={ROUTES.courseDetail(slug)} replace />;
+    return (
+      <RedirectWithToast
+        to={ROUTES.courseDetail(slug)}
+        message="Enroll to access this lesson."
+        variant="info"
+      />
+    );
   }
 
   return children ?? <Outlet />;

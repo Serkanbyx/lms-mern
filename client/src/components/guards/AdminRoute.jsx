@@ -1,15 +1,26 @@
 /**
- * `AdminRoute` — admins only. Non-admin signed-in users are sent to their
- * dashboard. Anonymous visitors get the standard login redirect with
- * `?next=` preservation so they can be brought back after signing in
- * (provided they actually have admin privileges).
+ * `AdminRoute` — admins only.
+ *
+ * Behaviour:
+ *  - Anonymous visitors are redirected to `/login?next=…` with a polite
+ *    "please sign in" toast.
+ *  - Non-admin signed-in users are redirected to the public home and
+ *    shown a deliberately neutral "Page not available" toast.
+ *
+ * SECURITY: The wording must not leak that an admin area exists. A
+ * "Admins only" message would tell a curious user that the URL they
+ * just probed is a real privileged surface — useful intel for an
+ * attacker. We mirror what the public 404 conveys instead. The server
+ * is, as always, the source of truth: every admin endpoint enforces
+ * its own authorization regardless of what this guard decides.
  */
 
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ROUTES } from '../../utils/constants.js';
 import { FullPageSpinner } from './FullPageSpinner.jsx';
+import { RedirectWithToast } from './RedirectWithToast.jsx';
 
 export function AdminRoute({ children }) {
   const { isAuthenticated, isAdmin, loading } = useAuth();
@@ -19,11 +30,23 @@ export function AdminRoute({ children }) {
 
   if (!isAuthenticated) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
-    return <Navigate to={`${ROUTES.login}?next=${next}`} replace />;
+    return (
+      <RedirectWithToast
+        to={`${ROUTES.login}?next=${next}`}
+        message="Please sign in to continue."
+        variant="info"
+      />
+    );
   }
 
   if (!isAdmin) {
-    return <Navigate to={ROUTES.dashboard} replace />;
+    return (
+      <RedirectWithToast
+        to={ROUTES.home}
+        message="That page isn't available."
+        variant="info"
+      />
+    );
   }
 
   return children ?? <Outlet />;
