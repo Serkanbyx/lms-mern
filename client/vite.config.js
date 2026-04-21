@@ -40,6 +40,19 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: false,
+      // `updateViaCache: 'none'` forces the browser to bypass its HTTP
+      // cache when fetching the Service Worker file itself. Without
+      // this, a long-lived `Cache-Control` on `/sw.js` (or any default
+      // CDN heuristic) can pin the OLD service worker in place even
+      // after a fresh deploy — the new SW is never discovered, so the
+      // old precache (and the stale `index.html` + obsolete CSP it
+      // carried) keeps being served. Combined with the `no-cache`
+      // headers on `/index.html` + `/sw.js` in `public/_headers`, this
+      // closes the "ghost service worker" loop reported in
+      // vite-pwa/vite-plugin-pwa #721 and #779.
+      registrationOptions: {
+        updateViaCache: 'none',
+      },
       // Emit the generated manifest at the same path the static
       // `index.html` already links to (`/site.webmanifest`). This
       // prevents two competing `<link rel="manifest">` tags from

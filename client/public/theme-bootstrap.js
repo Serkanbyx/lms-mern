@@ -31,7 +31,7 @@
  * reload loop if something else is broken.
  */
 (function () {
-  var BOOT_VERSION = '2025.04.21.1';
+  var BOOT_VERSION = '2026.04.21.2';
   var STORAGE_KEY = 'lms.boot.version';
   var SESSION_RELOADED = 'lms.boot.reloaded';
 

@@ -37,3 +37,31 @@
 # bumping the SPA build naturally invalidates them.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# =====================================================================
+# Never cache the SPA shell or the Service Worker entry.
+# ---------------------------------------------------------------------
+# `index.html` is the ONLY un-hashed bundle in the entire build — every
+# script/style it references uses content-addressed filenames under
+# `/assets/*`. If Netlify's edge (or the user's browser HTTP cache)
+# serves an old `index.html`, two things break at the same time:
+#   1. The CSP response header that travels with that HTML is the OLD
+#      policy. The current API origin gets blocked under the previous
+#      `connect-src` allow-list and every `/api/*` request fails — the
+#      app paints an empty shell with no error UI.
+#   2. The `<script>` tags inside that HTML point at chunk hashes that
+#      were already deleted from `/assets/`, so React never mounts.
+# Forcing `no-cache` here means the browser MUST revalidate `index.html`
+# (and the SW entry that bootstraps it) on every navigation, which is
+# what the `vite-plugin-pwa` auto-update flow assumes by design.
+#
+# Combined with `registrationOptions: { updateViaCache: 'none' }` in
+# `vite.config.js`, this guarantees a fresh deploy reaches every
+# returning visitor on their next pageload — no manual hard refresh,
+# no "clear site data" support ticket.
+# =====================================================================
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
