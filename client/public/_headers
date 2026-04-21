@@ -6,9 +6,14 @@
 # in `server/middleware/security.middleware.js` so the policy is
 # uniform across both surfaces.
 #
-# `connect-src` MUST list every backend the SPA talks to (the Render
-# API + any future origins). The same URL also lives in the SPA's
-# `VITE_API_BASE_URL` Netlify env var.
+# `connect-src` MUST list every origin the SPA reaches over `fetch()`
+# / `XHR`. That includes the Render API AND the Google Fonts hosts —
+# the Workbox runtime cache (see `vite.config.js` -> `runtimeCaching`)
+# revalidates `fonts.googleapis.com` (CSS) and `fonts.gstatic.com`
+# (woff2) via `fetch()` from inside the Service Worker, so they are
+# evaluated against `connect-src` rather than `style-src`/`font-src`.
+# The Render URL also lives in the SPA's `VITE_API_BASE_URL`
+# Netlify env var.
 #
 # `script-src` keeps the strict `'self'` baseline and explicitly
 # whitelists the theme/font-size bootstrap inline script in
@@ -18,7 +23,7 @@
 # =====================================================================
 
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-M4sPx2ZKxLOlpGb+jNYHEZ+gomDvyGqG0c7PVN0mQTQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://lms-mern-jby8.onrender.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://player.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-M4sPx2ZKxLOlpGb+jNYHEZ+gomDvyGqG0c7PVN0mQTQ='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://res.cloudinary.com; media-src 'self' https://res.cloudinary.com; connect-src 'self' https://lms-mern-jby8.onrender.com https://fonts.googleapis.com https://fonts.gstatic.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://player.cloudinary.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()

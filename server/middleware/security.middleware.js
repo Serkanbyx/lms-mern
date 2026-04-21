@@ -58,7 +58,16 @@ export const securityHeaders = [
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
         imgSrc: ["'self'", 'data:', 'blob:', 'https://res.cloudinary.com'],
         mediaSrc: ["'self'", 'https://res.cloudinary.com'],
-        connectSrc: ["'self'", env.CLIENT_URL, ...env.CORS_ORIGINS],
+        // Google Fonts hosts must appear here (not just in `style-src` /
+        // `font-src`) because the SPA's Service Worker revalidates them
+        // via `fetch()` — and `fetch()` is governed by `connect-src`.
+        connectSrc: [
+          "'self'",
+          env.CLIENT_URL,
+          ...env.CORS_ORIGINS,
+          'https://fonts.googleapis.com',
+          'https://fonts.gstatic.com',
+        ],
         frameSrc: [
           'https://www.youtube.com',
           'https://www.youtube-nocookie.com',
