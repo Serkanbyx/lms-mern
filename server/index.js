@@ -15,14 +15,17 @@
  *   5. `denyObsoleteMethods`  — kill TRACE / TRACK at the edge.
  *   6. `cors`                 — CORS preflight cached 24h, exposes the
  *                               request id so clients can echo it back.
- *   7. body parsers           — capped at 10 KB.
- *   8. `cookie-parser`        — refresh-token HttpOnly cookie reader.
- *   9. mongo-sanitize         — body + params (Express 5 won't let us touch
+ *   7. `compression`          — STEP 48: gzip JSON/HTML responses ≥ 1 KB.
+ *                               Mounted BEFORE body parsers so it can
+ *                               wrap every downstream `res.write/end`.
+ *   8. body parsers           — capped at 10 KB.
+ *   9. `cookie-parser`        — refresh-token HttpOnly cookie reader.
+ *  10. mongo-sanitize         — body + params (Express 5 won't let us touch
  *                               req.query).
- *  10. `httpLogger`           — structured pino request log.
- *  11. `apiLimiter`           — global rate-limit floor.
- *  12. routes
- *  13. notFound + errorHandler — last.
+ *  11. `httpLogger`           — structured pino request log.
+ *  12. `apiLimiter`           — global rate-limit floor.
+ *  13. routes
+ *  14. notFound + errorHandler — last.
  *
  * EXPRESS 5 NOTE: `req.query` is a read-only getter, so the `express-mongo-
  * sanitize` middleware (which mutates req.query) crashes when used as
@@ -31,6 +34,7 @@
  * are blocked by validators before they reach the database.
  */
 
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -101,38 +105,67 @@ app.use(
     },
     credentials: true,
     maxAge: 86_400,
-    exposedHeaders: ['X-Request-Id', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
+    exposedHeaders: [
+      'X-Request-Id',
+      'RateLimit-Limit',
+      'RateLimit-Remaining',
+      'RateLimit-Reset',
+      'Cache-Control',
+      'Vary',
+    ],
   }),
 );
 
-// 8) Body parsers — capped at 10 KB to mitigate payload-DoS.
+// 8) Response compression (STEP 48).
+//    gzip every response body ≥ `threshold` bytes. JSON catalogs and
+//    curriculum trees shrink ~70 % on the wire, which is the cheapest
+//    meaningful win for a list-heavy SPA.
+//
+//    - `level: 6` is the zlib default — best size/CPU trade-off; higher
+//      levels burn the event loop without much further savings on JSON.
+//    - `threshold: 1024` skips tiny responses (auth check pings, empty
+//      204s) where gzip framing overhead would actually grow the payload.
+//    - Clients that opt out via `Cache-Control: no-transform` (rare, but
+//      e.g. some intermediate proxies) keep their guarantee — `compression`
+//      respects that header by default.
+//    - Mounted BEFORE body parsers / routes so it can wrap every
+//      downstream response. Mounting it AFTER routes would be a no-op
+//      because the handler has already flushed `res.end`.
+app.use(compression({ level: 6, threshold: 1024 }));
+
+// 9) Body parsers — capped at 10 KB to mitigate payload-DoS.
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-// 9) Cookie parser — required so the refresh-token HttpOnly cookie can
-//    reach `req.cookies` in the auth controller. The cookie itself is
-//    never signed (the JWT inside is self-authenticating).
+// 10) Cookie parser — required so the refresh-token HttpOnly cookie can
+//     reach `req.cookies` in the auth controller. The cookie itself is
+//     never signed (the JWT inside is self-authenticating).
 app.use(cookieParser());
 
-// 10) Mongo-sanitize on body + params only (Express 5 safe — see file header).
+// 11) Mongo-sanitize on body + params only (Express 5 safe — see file header).
 app.use((req, _res, next) => {
   if (req.body) mongoSanitize.sanitize(req.body);
   if (req.params) mongoSanitize.sanitize(req.params);
   next();
 });
 
-// 11) Structured request logging (pino-http). Every line carries `req.id`
+// 12) Structured request logging (pino-http). Every line carries `req.id`
 //     and authorization / cookie / password fields are pre-redacted.
 app.use(httpLogger);
 
-// 12) Global rate limiter — `apiLimiter` lives in the shared rate-limit
+// 13) Global rate limiter — `apiLimiter` lives in the shared rate-limit
 //     module so the per-route limiters (auth, password, upload, quiz,
 //     admin, enroll) and this global cap stay in one place. The global
 //     bucket forms the outermost layer of defence; per-route limiters
 //     narrow specific endpoints further down the chain.
+//
+//     STEP 48: when `REDIS_URL` is set the limiter uses a shared Redis
+//     store so multiple API replicas count against a single bucket per
+//     IP / user. Without that, each replica's in-memory counter would
+//     silently multiply the cap by the replica count.
 app.use(apiLimiter);
 
-// 13) Health check — used by uptime probes and load balancers.
+// 14) Health check — used by uptime probes and load balancers.
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
@@ -142,7 +175,7 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// 14) Feature route modules — mounted under /api/*. Additional groups
+// 15) Feature route modules — mounted under /api/*. Additional groups
 //     (quizzes, enrollments, …) are added by later steps.
 //
 //    Mount order notes:
@@ -173,10 +206,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 
-// 15) 404 handler — must come after all real routes.
+// 16) 404 handler — must come after all real routes.
 app.use(notFound);
 
-// 16) Error handler — must be the last middleware. Express 5 forwards
+// 17) Error handler — must be the last middleware. Express 5 forwards
 //     thrown errors and rejected promises here automatically.
 app.use(errorHandler);
 

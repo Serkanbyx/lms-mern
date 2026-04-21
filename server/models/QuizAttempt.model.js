@@ -132,11 +132,19 @@ const quizAttemptSchema = new Schema(
   },
 );
 
-// Powers both "history of my attempts on this quiz" (sort by date desc)
-// and the aggregation pipeline that derives a learner's best score for
-// a quiz — the descending `attemptedAt` keeps the most recent attempts
-// at the top of every page, which is the dominant access pattern.
+// Powers "history of my attempts on this quiz" (sort by date desc) — the
+// descending `attemptedAt` keeps the most recent attempts at the top of
+// every page, which is the dominant access pattern for the timeline view.
 quizAttemptSchema.index({ userId: 1, quizId: 1, attemptedAt: -1 });
+
+// STEP 48 — Powers the "best score per (user, quiz)" lookup used by the
+// learner dashboard, completion gates, and certificate flow. The
+// descending `score` lets Mongo answer `findOne().sort({ score: -1 })`
+// from a single index hit instead of scanning every prior attempt and
+// in-memory sorting them. Two indexes on the same `(userId, quizId)`
+// prefix are intentional: each query has a different sort key, and
+// Mongo can only honour one sort direction per index.
+quizAttemptSchema.index({ userId: 1, quizId: 1, score: -1 });
 
 /**
  * Server-authoritative grading.

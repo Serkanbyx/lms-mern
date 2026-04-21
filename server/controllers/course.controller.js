@@ -375,6 +375,30 @@ const clampLimit = (raw) => {
   return Math.min(CATALOG_MAX_LIMIT, Math.max(1, requested));
 };
 
+/**
+ * STEP 48 — HTTP cache hint for public catalog reads.
+ *
+ * Anonymous viewers get `public, max-age=60, stale-while-revalidate=300`
+ * so a CDN / browser cache can serve repeat hits instantly while still
+ * revalidating in the background within five minutes. Authenticated
+ * viewers (owners previewing their drafts, admins with elevated
+ * visibility) get `private, no-store` because their response shape
+ * depends on `req.user` and MUST NOT be served from a shared cache.
+ *
+ * Mounted by every public reader that runs under `optionalAuth`. Caller
+ * also sends `Vary: Authorization` so an upstream cache that DOES key
+ * by header doesn't leak an authenticated payload to anonymous viewers
+ * on the same URL.
+ */
+const setPublicCatalogCache = (res, user) => {
+  if (user) {
+    res.set('Cache-Control', 'private, no-store');
+    return;
+  }
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.set('Vary', 'Authorization');
+};
+
 const parsePrice = (raw) => {
   const value = Number.parseFloat(raw);
   return Number.isFinite(value) ? value : null;
@@ -518,6 +542,8 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
     Course.countDocuments(filter),
   ]);
 
+  setPublicCatalogCache(res, req.user);
+
   res.json({
     success: true,
     data: {
@@ -539,6 +565,7 @@ export const listPublishedCourses = asyncHandler(async (req, res) => {
  */
 export const getCourseBySlug = asyncHandler(async (req, res) => {
   const course = await findVisibleCourseBySlugOr404(req.params.slug, req.user);
+  setPublicCatalogCache(res, req.user);
   res.json({ success: true, course });
 });
 
@@ -629,6 +656,13 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
     lessons: lessonsBySection.get(String(section._id)) ?? [],
   }));
 
+  // Curriculum payload includes signed Cloudinary URLs (gated by enrollment
+  // / ownership) — those URLs MUST NOT land in a shared cache, so the
+  // hint is `private, no-store` whenever a real user is attached. Anonymous
+  // viewers only see the locked / free-preview shape, which is safe to
+  // cache briefly behind a CDN.
+  setPublicCatalogCache(res, req.user);
+
   res.json({
     success: true,
     data: {
@@ -675,6 +709,8 @@ export const getInstructorPublicCourses = asyncHandler(async (req, res) => {
       .lean(),
     Course.countDocuments(filter),
   ]);
+
+  setPublicCatalogCache(res, req.user);
 
   res.json({
     success: true,

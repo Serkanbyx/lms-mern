@@ -24,7 +24,7 @@
  * utilities that the global CSS rule already overrides.
  */
 
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Avatar, Badge, Icon } from '../ui/index.js';
@@ -32,6 +32,7 @@ import { ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
 import { cn } from '../../utils/cn.js';
 import {
+  cloudinaryLqip,
   cloudinaryPresets,
   cloudinarySrcSet,
 } from '../../utils/cloudinaryUrl.js';
@@ -69,6 +70,14 @@ const formatEnrolled = (count) => {
 };
 
 function CourseCardComponent({ course, className }) {
+  // STEP 48 — Track when the high-res thumbnail finishes loading so the
+  // tiny LQIP placeholder can fade out and reveal the sharp image.
+  // Defaulting to `false` (not loaded) means cards rendered server-side
+  // / on first paint show the blurred placeholder until the browser
+  // resolves the lazy `<img>`. The `useState` runs unconditionally to
+  // satisfy React's rules-of-hooks even though we early-return below.
+  const [thumbLoaded, setThumbLoaded] = useState(false);
+
   if (!course) return null;
 
   const instructorName = course.instructor?.name ?? 'Lumen Instructor';
@@ -83,6 +92,7 @@ function CourseCardComponent({ course, className }) {
   const thumbSrc =
     typeof rawThumb === 'string' ? cloudinaryPresets.cardThumb(rawThumb) : null;
   const thumbSrcSet = typeof rawThumb === 'string' ? cloudinarySrcSet(rawThumb, CARD_THUMB_WIDTHS) : '';
+  const thumbLqip = typeof rawThumb === 'string' ? cloudinaryLqip(rawThumb) : '';
 
   return (
     <Link
@@ -96,7 +106,17 @@ function CourseCardComponent({ course, className }) {
         className,
       )}
     >
-      <div className="relative aspect-[16/9] overflow-hidden bg-bg-muted">
+      <div
+        className="relative aspect-[16/9] overflow-hidden bg-bg-muted bg-cover bg-center"
+        // STEP 48 — Inline LQIP background. Cloudinary returns a ~500 B
+        // blurred preview; the browser paints it instantly so the card
+        // never shows an empty grey rectangle while the high-res asset
+        // streams in. Once the real `<img>` fires `onLoad` we no longer
+        // need the background, but leaving it in place is cheap (a
+        // single decoded raster) and avoids a flash if the browser
+        // evicts the cached image later.
+        style={thumbLqip ? { backgroundImage: `url("${thumbLqip}")` } : undefined}
+      >
         {thumbSrc ? (
           <img
             src={thumbSrc}
@@ -107,8 +127,18 @@ function CourseCardComponent({ course, className }) {
             decoding="async"
             width="640"
             height="360"
-            className="h-full w-full object-cover transition-transform duration-500 ease-out
-              group-hover:scale-[1.06]"
+            onLoad={() => setThumbLoaded(true)}
+            className={cn(
+              'h-full w-full object-cover ease-out',
+              // Single `transition` covers both the hover scale (slow,
+              // intentional) and the LQIP fade-in (fast, just enough to
+              // smooth the swap). Stacking two `transition-*` utilities
+              // would let the second one win and skip the scale entirely.
+              'transition-all duration-500',
+              'group-hover:scale-[1.06]',
+              'opacity-0',
+              thumbLoaded && 'opacity-100',
+            )}
           />
         ) : (
           <div

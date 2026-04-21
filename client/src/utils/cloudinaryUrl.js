@@ -81,4 +81,26 @@ export const cloudinaryPresets = {
     withCloudinaryTransform(url, `f_auto,q_auto,w_${size},h_${size},c_fill,g_face`),
 };
 
+/**
+ * STEP 48 — Low-Quality Image Placeholder (LQIP).
+ *
+ * Returns a tiny (~500 B) heavily-blurred preview of the same Cloudinary
+ * asset. Strategy:
+ *   1. Render the LQIP as a CSS `background-image` on the thumbnail wrapper.
+ *   2. Layer the real `<img>` on top with `loading="lazy"` and a fade-in
+ *      transition controlled by an `onLoad` handler.
+ *   3. Result: instant perceived load on the catalog grid, smooth
+ *      blur-to-sharp transition once the high-res asset arrives.
+ *
+ * `e_blur:1000` is Cloudinary's max blur strength; `q_1` drops quality to
+ * the cheapest possible JPEG / WebP encoding; `f_auto` lets the browser
+ * negotiate the smallest format it accepts. The placeholder weighs in at
+ * roughly the size of a single TLS frame, so loading it is essentially free.
+ *
+ * Returns `''` for non-Cloudinary URLs so call sites can wrap any image
+ * source defensively without branching.
+ */
+export const cloudinaryLqip = (url) =>
+  isCloudinaryUrl(url) ? withCloudinaryTransform(url, 'e_blur:1000,q_1,f_auto,w_64') : '';
+
 export default withCloudinaryTransform;

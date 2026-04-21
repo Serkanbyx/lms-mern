@@ -4,13 +4,20 @@
  * Each export is an Express middleware created with `express-rate-limit`.
  * They are kept here (rather than next to the route) so different route
  * groups can share consistent windows/limits and so the Redis-backed store
- * (added in a later step) can be wired into a single place.
+ * (STEP 48) can be wired into a single place.
  *
- * Defaults use the in-memory store, which is sufficient for development
- * and single-instance deployments. The Redis upgrade only requires changing
- * the `store` option of each limiter — call sites stay untouched.
+ * STEP 48 — Horizontal scalability.
+ *   When `REDIS_URL` is set, every limiter swaps its in-memory store for
+ *   a Redis-backed `rate-limit-redis` store so multiple API instances
+ *   share one bucket per (limiter, key) pair. Without that, each instance
+ *   keeps its own counter and effectively multiplies the cap by the
+ *   replica count — which silently nullifies the limit at scale.
  *
- * The full STEP 18 matrix:
+ *   The fallback to the in-memory store is automatic when no Redis is
+ *   configured, so local dev and single-instance prod stay zero-config.
+ *   Call sites never see the difference.
+ *
+ * The full limiter matrix:
  *
  *   | Limiter            | Window | Max | Routes                                  |
  *   |--------------------|--------|-----|-----------------------------------------|
@@ -22,6 +29,10 @@
  *   | quizSubmitLimiter  | 10 min |  30 | `POST /api/quizzes/:id/submit`          |
  *   | adminLimiter       | 10 min | 100 | `/api/admin/*`                          |
  *   | enrollLimiter      | 10 min |  30 | `POST /api/courses/:id/enroll`          |
+ *   | verifyEmailLimiter | 15 min |   5 | `/api/auth/verify-email/*`              |
+ *   | forgotPasswordL.   |  1 hr  |   3 | `POST /api/auth/forgot-password`        |
+ *   | resetPasswordL.    | 15 min |   5 | `POST /api/auth/reset-password/:token`  |
+ *   | refreshLimiter     |  1 min |  30 | `POST /api/auth/refresh`                |
  *
  * SECURITY NOTES:
  *   - Limits are per-IP using the trust-proxy aware `req.ip` lookup, except
@@ -36,9 +47,34 @@
  *     after `protect`), so we key by user id with an IP fallback.
  *   - Upload limiter is intentionally tighter than the global API limiter
  *     because each upload consumes bandwidth and Cloudinary quota.
+ *   - The Redis store keys are namespaced per-limiter (`rl:<name>:<key>`)
+ *     so a `FLUSHDB` accident or a cross-prefix collision can't drain
+ *     unrelated buckets together.
  */
 
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
+
+import { redis } from '../config/redis.js';
+
+/**
+ * Build the shared `store` option for a limiter.
+ *
+ * Returns `undefined` when Redis is not configured so `express-rate-limit`
+ * picks up its default in-memory store (no behaviour change for local dev
+ * or single-instance deployments).
+ *
+ * The `prefix` keeps each limiter in its own keyspace so we can inspect
+ * per-limiter usage (`SCAN 0 MATCH rl:auth:*`) and so a hot bucket on one
+ * limiter never collides with another.
+ */
+const makeStore = (name) => {
+  if (!redis) return undefined;
+  return new RedisStore({
+    sendCommand: (...args) => redis.call(...args),
+    prefix: `rl:${name}:`,
+  });
+};
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 const TEN_MINUTES = 10 * 60 * 1000;
@@ -64,6 +100,7 @@ export const apiLimiter = rateLimit({
   limit: 300,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('api'),
   message: tooManyMessage('Too many requests. Please try again in a few minutes.'),
 });
 
@@ -85,6 +122,7 @@ export const authLimiter = rateLimit({
   limit: 10,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('auth'),
   keyGenerator: (req) => {
     const ip = ipKeyGenerator(req.ip);
     const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
@@ -110,6 +148,7 @@ export const passwordLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('password'),
   keyGenerator: (req) =>
     req.user?._id
       ? `pwd:user:${req.user._id.toString()}`
@@ -129,6 +168,7 @@ export const uploadLimiter = rateLimit({
   limit: 20,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('upload'),
   message: tooManyMessage(
     'Too many upload attempts. Please try again in a few minutes.',
   ),
@@ -154,6 +194,7 @@ export const quizSubmitLimiter = rateLimit({
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('quiz-submit'),
   keyGenerator: (req) =>
     req.user?._id
       ? `quiz-submit:user:${req.user._id.toString()}`
@@ -182,6 +223,7 @@ export const adminLimiter = rateLimit({
   limit: 100,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('admin'),
   keyGenerator: (req) =>
     req.user?._id
       ? `admin:user:${req.user._id.toString()}`
@@ -208,6 +250,7 @@ export const enrollLimiter = rateLimit({
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('enroll'),
   keyGenerator: (req) =>
     req.user?._id
       ? `enroll:user:${req.user._id.toString()}`
@@ -234,6 +277,7 @@ export const verifyEmailLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('verify'),
   keyGenerator: (req) => {
     const ip = ipKeyGenerator(req.ip);
     const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
@@ -258,6 +302,7 @@ export const forgotPasswordLimiter = rateLimit({
   limit: 3,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('forgot'),
   keyGenerator: (req) => {
     const ip = ipKeyGenerator(req.ip);
     const email = typeof req.body?.email === 'string' ? req.body.email.toLowerCase() : '';
@@ -280,6 +325,7 @@ export const resetPasswordLimiter = rateLimit({
   limit: 5,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('reset'),
   keyGenerator: (req) => {
     const ip = ipKeyGenerator(req.ip);
     const token = typeof req.params?.token === 'string' ? req.params.token : '';
@@ -303,6 +349,7 @@ export const refreshLimiter = rateLimit({
   limit: 30,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  store: makeStore('refresh'),
   keyGenerator: (req) => `refresh:${ipKeyGenerator(req.ip)}`,
   message: tooManyMessage(
     'Too many refresh attempts. Please sign in again.',
