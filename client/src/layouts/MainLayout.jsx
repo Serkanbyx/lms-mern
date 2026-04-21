@@ -23,6 +23,7 @@ import {
   PageTransition,
   RouteSkeleton,
 } from '../components/layout/index.js';
+import { InstallPrompt, PWAUpdatePrompt } from '../components/pwa/index.js';
 
 export function MainLayout() {
   const location = useLocation();
@@ -37,6 +38,7 @@ export function MainLayout() {
       </a>
 
       <OfflineBanner />
+      <InstallPrompt />
       <Navbar />
 
       <main
@@ -59,6 +61,7 @@ export function MainLayout() {
       <Footer />
 
       <CommandPalette />
+      <PWAUpdatePrompt />
     </div>
   );
 }

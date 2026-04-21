@@ -14,6 +14,9 @@ export const STORAGE_KEYS = Object.freeze({
   theme: 'lms.theme',
   preferences: 'lms.preferences',
   returnTo: 'lms.returnTo',
+  pwaVisitCount: 'lms.pwa.visits',
+  pwaEnrolledOnce: 'lms.pwa.enrolled',
+  pwaInstallDismissedAt: 'lms.pwa.installDismissedAt',
 });
 
 export const ROLES = Object.freeze({
