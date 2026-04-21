@@ -1,5 +1,5 @@
 /**
- * STEP 49 — Cron: prune stale draft courses.
+ * Cron: prune stale draft courses.
  *
  * Schedule (Render Cron Jobs): `0 3 * * *` — daily at 03:00 UTC.
  *

@@ -11,8 +11,8 @@
  *    job stays focused on real correctness issues, not stylistic ones.
  *  - `eslint-plugin-react-refresh` — keeps Vite Fast Refresh happy by
  *    surfacing component files that accidentally export non-components.
- *  - `eslint-plugin-jsx-a11y` (recommended set) — STEP 41's accessibility
- *    audit gate. Every interactive element gets a label, every <img>
+ *  - `eslint-plugin-jsx-a11y` (recommended set) — accessibility audit
+ *    gate. Every interactive element gets a label, every <img>
  *    gets `alt`, every keyboard-only flow round-trips. Warnings are
  *    fixed before merge; the build fails loudly on a fresh violation.
  *

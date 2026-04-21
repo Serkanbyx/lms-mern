@@ -83,7 +83,7 @@ const tooltipFormatter = new Intl.DateTimeFormat(DEFAULT_LOCALE, {
 });
 
 /**
- * STEP 49 — Tooltip-grade timestamp.
+ * Tooltip-grade timestamp.
  *
  * Use as the `title` attribute next to a `formatRelativeTime()` label
  * for sensitive timestamps (quiz `attemptedAt`, enrollment

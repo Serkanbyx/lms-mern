@@ -1,5 +1,5 @@
 /**
- * Barrel for the Progressive Web App layer (STEP 44).
+ * Barrel for the Progressive Web App layer.
  *
  * Both components are mounted exactly once, from `MainLayout`, so the
  * install banner / update toast survive every route transition and

@@ -1,6 +1,6 @@
 /**
- * STEP 46 — JWT signing helpers (access + refresh) and crypto utilities for
- * email verification / password reset tokens.
+ * JWT signing helpers (access + refresh) and crypto utilities for email
+ * verification / password reset tokens.
  *
  * Design notes:
  *  - Access and refresh tokens are signed with DIFFERENT secrets so a

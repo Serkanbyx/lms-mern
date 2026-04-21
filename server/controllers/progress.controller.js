@@ -10,8 +10,8 @@
  *   2. Loads the requester's enrollment for that course and 403s when
  *      it is missing — even instructors and admins must be enrolled to
  *      record progress, because progress is per-learner state and an
- *      authoring view of "what students completed" is a separate
- *      analytics surface added in a later step.
+ *      authoring view of "what students completed" lives behind a
+ *      separate analytics surface.
  *   3. Mutates the enrollment via `addToSet` / `pull` so concurrent
  *      requests can't inflate `progressPercent` by inserting the same
  *      lesson twice. The `Enrollment.pre('save')` hook recomputes

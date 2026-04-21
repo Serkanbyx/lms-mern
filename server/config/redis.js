@@ -1,5 +1,5 @@
 /**
- * Redis client (STEP 48).
+ * Redis client.
  *
  * Single shared `ioredis` connection used by:
  *   - the rate-limit store (`middleware/rateLimit.middleware.js`) so multiple

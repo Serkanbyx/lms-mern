@@ -29,10 +29,10 @@
  *   already enrolled in client-side (the catalog endpoint has no
  *   "exclude these ids" filter, and shipping one would balloon the
  *   public API surface for a single page).
- * - The certificate download is a 2-step flow: hit the server to
- *   issue / re-issue the certificate metadata, then render the PDF
- *   client-side via `generateCertificatePdf` (see STEP 30 rationale).
- *   `toast.promise` shows progress + success/error in a single line.
+ * - The certificate download has two parts: hit the server to issue /
+ *   re-issue the certificate metadata, then render the PDF client-side
+ *   via `generateCertificatePdf`. `toast.promise` shows progress +
+ *   success/error in a single line.
  *
  * Empty / loading
  * ---------------
@@ -40,7 +40,7 @@
  *   primary CTA back to `/courses` so the learner has an obvious
  *   next move on a brand-new account.
  * - Loading: skeleton rail + skeleton table so the layout never shifts
- *   when data arrives (CLS discipline, see STEP 23).
+ *   when data arrives (CLS discipline).
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';

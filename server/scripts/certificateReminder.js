@@ -1,6 +1,6 @@
 /**
- * STEP 49 — Cron: nudge learners who finished a course but never grabbed
- * the certificate.
+ * Cron: nudge learners who finished a course but never grabbed the
+ * certificate.
  *
  * Schedule (Render Cron Jobs): `0 10 * * *` — daily at 10:00 UTC.
  *

@@ -2,8 +2,8 @@
  * Lesson controller — instructor-facing CRUD + reorder + detail endpoints.
  *
  * Lessons are the atomic playable / readable unit of a course; this file
- * is the authoring API surface (a separate student-facing controller is
- * added in a later step). Every mutation:
+ * is the authoring API surface (the student-facing controller lives
+ * elsewhere). Every mutation:
  *
  *  - Re-resolves the parent `Course` and asserts ownership on every
  *    request. Lesson ids alone are NOT a permission token. Failures are
@@ -81,8 +81,8 @@ const findOwnedLessonOr404 = async (lessonId, user) => {
 const destroyCloudinaryVideo = async (publicId) => {
   if (!publicId) return;
   try {
-    // Lesson videos live under `type: 'authenticated'` since STEP 47, so the
-    // destroy call MUST pass the matching delivery type — otherwise Cloudinary
+    // Lesson videos live under `type: 'authenticated'`, so the destroy
+    // call MUST pass the matching delivery type — otherwise Cloudinary
     // looks under the default `upload` namespace and silently returns
     // "not found" while the real asset stays orphaned in the account.
     await cloudinary.uploader.destroy(publicId, {
@@ -99,8 +99,8 @@ const destroyCloudinaryVideo = async (publicId) => {
 /**
  * Project a Lesson document for an authoring response.
  *
- * STEP 47 — when the lesson is hosted on Cloudinary AND has a publicId, we
- * replace the stored `videoUrl` (the unplayable authenticated URL recorded at
+ * When the lesson is hosted on Cloudinary AND has a publicId, we replace
+ * the stored `videoUrl` (the unplayable authenticated URL recorded at
  * upload time) with a freshly minted, short-lived signed URL. YouTube / Vimeo
  * provider lessons are returned untouched because their URLs are governed by
  * the provider's own access controls.
@@ -229,7 +229,7 @@ export const reorderLessons = asyncHandler(async (req, res) => {
  * GET /api/lessons/:id
  * Instructor view — returns the full document including authoring-only
  * fields (`videoPublicId`, internal flags). The student-facing detail
- * endpoint (added in a later step) returns a redacted projection.
+ * endpoint returns a redacted projection.
  */
 export const getLessonForInstructor = asyncHandler(async (req, res) => {
   const { lesson } = await findOwnedLessonOr404(req.params.id, req.user);

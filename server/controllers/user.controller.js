@@ -41,7 +41,7 @@ const PREFERENCE_TOP_KEYS = Object.freeze([
   'privacy',
   'notifications',
   'playback',
-  // STEP 39 — onboarding additions. Both are top-level scalars/arrays so
+  // Onboarding additions. Both are top-level scalars/arrays so
   // they merge through the same path as `theme` / `fontSize` (no nested
   // group merge needed).
   'interests',

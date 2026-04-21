@@ -76,10 +76,10 @@ export const COURSE_LANGUAGES = Object.freeze([
 ]);
 
 /**
- * Learning interest catalog used by the post-register `OnboardingModal`
- * (STEP 39). Each interest's `value` mirrors a `COURSE_CATEGORIES` id so
- * the modal's "your first course" step can map an interest straight to a
- * catalog category filter without an intermediate lookup table.
+ * Learning interest catalog used by the post-register `OnboardingModal`.
+ * Each interest's `value` mirrors a `COURSE_CATEGORIES` id so the modal's
+ * "your first course" panel can map an interest straight to a catalog
+ * category filter without an intermediate lookup table.
  */
 export const LEARNING_INTERESTS = Object.freeze([
   { value: 'programming', label: 'Web Development', icon: 'Code2' },

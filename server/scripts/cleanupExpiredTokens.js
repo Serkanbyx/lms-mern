@@ -1,5 +1,5 @@
 /**
- * STEP 49 — Cron: clear expired auth tokens.
+ * Cron: clear expired auth tokens.
  *
  * Schedule (Render Cron Jobs): `0 * * * *` — hourly.
  *

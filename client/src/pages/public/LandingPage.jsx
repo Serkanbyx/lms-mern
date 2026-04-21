@@ -10,8 +10,8 @@
  * URL is derived from `VITE_SITE_URL` so the same code ships clean
  * across local, staging and production hosts.
  *
- * Performance — see STEP 26 ("Above the fold loads in < 2.5s on a fast
- * 3G connection"): the hero is fully static so it paints with the JS
+ * Performance budget — "above the fold loads in < 2.5s on a fast 3G
+ * connection". The hero is fully static so it paints with the JS
  * bundle, and `FeaturedCourses` is the only section that talks to the
  * API. Below-fold imagery on the catalog cards uses native `loading="lazy"`.
  */

@@ -1,5 +1,5 @@
 /**
- * Structured request logger (STEP 47).
+ * Structured request logger.
  *
  * Replaces `morgan` with `pino-http` so every request line is a single JSON
  * record in production (machine-parseable for the log aggregator) and a
@@ -38,7 +38,7 @@ const transport = env.isProd
     };
 
 /**
- * STEP 49 — Base structured logger.
+ * Base structured logger.
  *
  * Use this for non-request lifecycle events (server bootstrap, graceful
  * shutdown, cron jobs, background workers) so they share the same JSON

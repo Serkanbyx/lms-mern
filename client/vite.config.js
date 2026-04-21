@@ -26,7 +26,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     /**
-     * STEP 44 — Progressive Web App.
+     * Progressive Web App.
      *
      * `registerType: 'autoUpdate'` keeps the SW silent until the new
      * bundle is fully precached, then `vite-plugin-pwa/react`'s

@@ -16,7 +16,7 @@
  *   logout / logoutAll           → { success, message }
  *   deleteAccount                → { success, message }
  *
- * Refresh-token note (STEP 46): the refresh token lives in an HttpOnly
+ * Refresh-token note: the refresh token lives in an HttpOnly
  * cookie scoped to `/api/auth`. Because the axios instance is created
  * with `withCredentials: true`, every call below already ships and
  * receives that cookie automatically — no manual header plumbing.
@@ -57,7 +57,7 @@ export const deleteAccount = async ({ password }) => {
   return data;
 };
 
-// --- STEP 46 — verification, reset, refresh, logout(s) -------------------
+// --- Verification, reset, refresh, logout(s) -----------------------------
 
 export const verifyEmail = async (token) => {
   const { data } = await api.get(`/auth/verify-email/${encodeURIComponent(token)}`);

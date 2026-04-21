@@ -91,7 +91,7 @@ const issueAuthResponse = (res, status, user, { message } = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-// Account-cascade helpers (carried over from STEP 3).
+// Account-cascade helpers.
 // ---------------------------------------------------------------------------
 
 const cascadeDeleteForUser = async (userId) => {
@@ -172,7 +172,7 @@ export const login = asyncHandler(async (req, res) => {
   if (user.isLocked) {
     // Same message as bad credentials so an attacker can't differentiate
     // a locked vs nonexistent account, but a 423 status hands the client
-    // a cue for a friendlier UX (see security note in STEP 46).
+    // a cue for a friendlier UX.
     throw new ApiError(423, 'Account temporarily locked. Please try again later.', {
       code: 'ACCOUNT_LOCKED',
     });
@@ -226,7 +226,7 @@ export const changePassword = asyncHandler(async (req, res) => {
   if (!isMatch) throw ApiError.unauthorized('Current password is incorrect.');
 
   user.password = newPassword;
-  // STEP 46 — bump tokenVersion so every other session is invalidated.
+  // Bump tokenVersion so every other session is invalidated.
   user.tokenVersion = (user.tokenVersion || 0) + 1;
   await user.save();
 
@@ -264,7 +264,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// STEP 46 — Email verification.
+// Email verification.
 // ---------------------------------------------------------------------------
 
 export const verifyEmail = asyncHandler(async (req, res) => {
@@ -335,7 +335,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// STEP 46 — Password reset.
+// Password reset.
 // ---------------------------------------------------------------------------
 
 export const forgotPassword = asyncHandler(async (req, res) => {
@@ -409,7 +409,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// STEP 46 — Refresh token rotation + logout(s).
+// Refresh token rotation + logout(s).
 // ---------------------------------------------------------------------------
 
 export const refreshAccessToken = asyncHandler(async (req, res) => {

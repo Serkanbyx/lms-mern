@@ -1,8 +1,7 @@
 /**
  * LMS API — Express 5 entry point.
  *
- * Middleware ordering follows STEP 2 of the build guide, refined by the
- * STEP 47 hardening pass. Order matters:
+ * Middleware ordering matters:
  *
  *   1. `trust proxy`          — required so `req.secure`, `req.ip`, and the
  *                               rate limiter all see the real client IP /
@@ -15,9 +14,9 @@
  *   5. `denyObsoleteMethods`  — kill TRACE / TRACK at the edge.
  *   6. `cors`                 — CORS preflight cached 24h, exposes the
  *                               request id so clients can echo it back.
- *   7. `compression`          — STEP 48: gzip JSON/HTML responses ≥ 1 KB.
- *                               Mounted BEFORE body parsers so it can
- *                               wrap every downstream `res.write/end`.
+ *   7. `compression`          — gzip JSON/HTML responses ≥ 1 KB. Mounted
+ *                               BEFORE body parsers so it can wrap every
+ *                               downstream `res.write/end`.
  *   8. body parsers           — capped at 10 KB.
  *   9. `cookie-parser`        — refresh-token HttpOnly cookie reader.
  *  10. mongo-sanitize         — body + params (Express 5 won't let us touch
@@ -118,7 +117,7 @@ app.use(
   }),
 );
 
-// 8) Response compression (STEP 48).
+// 8) Response compression.
 //    gzip every response body ≥ `threshold` bytes. JSON catalogs and
 //    curriculum trees shrink ~70 % on the wire, which is the cheapest
 //    meaningful win for a list-heavy SPA.
@@ -161,10 +160,10 @@ app.use(httpLogger);
 //     bucket forms the outermost layer of defence; per-route limiters
 //     narrow specific endpoints further down the chain.
 //
-//     STEP 48: when `REDIS_URL` is set the limiter uses a shared Redis
-//     store so multiple API replicas count against a single bucket per
-//     IP / user. Without that, each replica's in-memory counter would
-//     silently multiply the cap by the replica count.
+//     When `REDIS_URL` is set the limiter uses a shared Redis store so
+//     multiple API replicas count against a single bucket per IP / user.
+//     Without that, each replica's in-memory counter would silently
+//     multiply the cap by the replica count.
 app.use(apiLimiter);
 
 // 14) Health check — used by uptime probes and load balancers.
@@ -177,8 +176,7 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// 15) Feature route modules — mounted under /api/*. Additional groups
-//     (quizzes, enrollments, …) are added by later steps.
+// 15) Feature route modules — mounted under /api/*.
 //
 //    Mount order notes:
 //    - The course-scoped sections sub-router
@@ -215,7 +213,7 @@ app.use(notFound);
 //     thrown errors and rejected promises here automatically.
 app.use(errorHandler);
 
-// STEP 49 — Graceful shutdown.
+// Graceful shutdown.
 //
 // Without this hook a deploy (or `kill` from your shell) drops every
 // in-flight request and leaves the database / Redis connections half-

@@ -10,9 +10,9 @@
  *  - The body fills the viewport and forces a `dark` class so even
  *    light-mode users get the cinematic player background.
  *
- * The collapsible curriculum drawer described in STEP 25 lives inside
- * the page itself (LessonPlayerPage / QuizPage) because its data
- * dependencies belong to the page, not the layout.
+ * The collapsible curriculum drawer lives inside the page itself
+ * (LessonPlayerPage / QuizPage) because its data dependencies belong
+ * to the page, not the layout.
  */
 
 import { Suspense } from 'react';

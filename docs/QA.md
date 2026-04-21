@@ -1,8 +1,7 @@
 # QA — Browser Support & Mobile Testing Matrix
 
-> Companion to STEP 49 of `STEPS.md`. This document is the authoritative
-> answer to "is this device officially supported?" and "what do we sweep
-> through before each deploy?".
+> The authoritative answer to "is this device officially supported?" and
+> "what do we sweep through before each deploy?".
 
 ---
 
@@ -84,7 +83,7 @@ desktop browser before promoting a build to production:
 - [ ] Enroll a free course → "Continue learning" appears on dashboard.
 - [ ] Lesson player streams, progress bar updates, completion ticks.
 - [ ] Quiz: intro → taking → submit → results works end-to-end.
-- [ ] Quiz tab-switch: minimise the browser during a `taking` step,
+- [ ] Quiz tab-switch: minimise the browser during a `taking` phase,
       a toast warns about the switch and `tabSwitches` increments on
       the persisted attempt.
 - [ ] Certificate downloads as a non-corrupt PDF (when feature flag is
@@ -116,9 +115,9 @@ desktop browser before promoting a build to production:
 | Chrome DevTools Device Mode    | Daily layout / responsive checks                 |
 | Lighthouse (Chrome DevTools)   | Perf + a11y regression spot-check                |
 | `react-helmet-async` checker   | Verify SEO + OG meta on the catalog & detail     |
-| `@axe-core/playwright`         | Automated a11y rules (planned — STEP 51)         |
+| `@axe-core/playwright`         | Automated a11y rules (planned)                   |
 | BrowserStack / Sauce Labs      | Real-device QA before major releases             |
 
-> Automated end-to-end tests are explicitly out of scope for STEP 49 —
-> they ship in STEP 51. Until then this checklist + the per-PR review
-> notes are the gate.
+> Automated end-to-end tests are explicitly out of scope for v1 — they
+> land in a follow-up release. Until then this checklist plus the
+> per-PR review notes are the gate.

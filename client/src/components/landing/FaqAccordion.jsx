@@ -3,7 +3,7 @@
  * primitive. Doubles as SEO surface (each answer is plain text in the
  * DOM even when the panel is collapsed, since `Accordion` mounts the
  * panel content lazily — but the section is structured so a future
- * static-render step can swap in a JSON-LD FAQPage block effortlessly).
+ * static-render pass can swap in a JSON-LD FAQPage block effortlessly).
  */
 
 import { Accordion } from '../ui/index.js';

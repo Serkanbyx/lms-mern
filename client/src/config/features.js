@@ -1,5 +1,5 @@
 /**
- * STEP 49 — Client-side feature flags.
+ * Client-side feature flags.
  *
  * Cosmetic counterpart to `server/config/features.js`. Hides UI
  * affordances for features that are dark-launched OFF in production.

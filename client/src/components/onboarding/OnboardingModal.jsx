@@ -56,7 +56,7 @@ const TOTAL_STEPS = 3;
 const RECOMMENDATION_LIMIT = 1;
 
 /* -------------------------------------------------------------------------- */
-/*  Step 1 — Welcome                                                          */
+/*  Welcome panel                                                             */
 /* -------------------------------------------------------------------------- */
 
 function WelcomeStep({ firstName }) {
@@ -106,7 +106,7 @@ function WelcomeStep({ firstName }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Step 2 — Interests                                                        */
+/*  Interests panel                                                           */
 /* -------------------------------------------------------------------------- */
 
 function InterestsStep({ interests, onToggle }) {
@@ -176,7 +176,7 @@ function InterestsStep({ interests, onToggle }) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Step 3 — First course recommendation                                      */
+/*  Recommendation panel                                                      */
 /* -------------------------------------------------------------------------- */
 
 function FirstCourseStep({ interests, recommendation }) {
@@ -307,8 +307,9 @@ export function OnboardingModal({ open, onClose, firstName }) {
   };
 
   // Out-of-order guard for the recommendation fetch — the user can flip
-  // back to step 2, change interests and reach step 3 again before the
-  // first request resolved. Only the latest fetch wins.
+  // back to the interests panel, change interests and reach the
+  // recommendation panel again before the first request resolved. Only
+  // the latest fetch wins.
   const recommendRequestId = useRef(0);
 
   useEffect(() => {

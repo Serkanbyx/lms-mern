@@ -16,7 +16,7 @@
  *     library — if we ever swap to a different toaster, only this file
  *     changes.
  *
- * `<Toaster />` mount lives in `main.jsx` (see STEP 22 → "Toaster mount").
+ * The single `<Toaster />` mount lives in `main.jsx`.
  */
 
 import baseToast from 'react-hot-toast';

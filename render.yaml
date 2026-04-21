@@ -6,8 +6,8 @@
 #
 #   1. `lumen-lms-api`         — the Express 5 API (Node 20).
 #   2. `lumen-lms-redis`       — managed Redis used by the rate
-#                                limiter (STEP 48). Optional but
-#                                strongly recommended for prod.
+#                                limiter. Optional but strongly
+#                                recommended for prod.
 #   3. `cleanup-stale-drafts`  — daily cron, deletes idle drafts.
 #   4. `cleanup-expired-tokens`— hourly cron, sweeps stale auth
 #                                tokens (verify / reset).
@@ -186,7 +186,7 @@ services:
       - fromGroup: lumen-lms-shared
 
   # -------------------------------------------------------------------
-  # 5) Managed Redis — backs the API rate limiter (STEP 48)
+  # 5) Managed Redis — backs the API rate limiter
   # -------------------------------------------------------------------
   # Without this, `createLimiter()` falls back to an in-memory store
   # and per-IP limits are silently multiplied by the replica count.

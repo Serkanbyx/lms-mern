@@ -146,7 +146,7 @@ const BCRYPT_ROUNDS = parseInteger('BCRYPT_ROUNDS', process.env.BCRYPT_ROUNDS, 1
   max: 14,
 });
 
-// --- Account lockout (STEP 46) ---
+// --- Account lockout ---
 // Every failed login increments `User.failedLoginAttempts`. Once it hits
 // `MAX_LOGIN_ATTEMPTS` the account is locked for `LOCK_DURATION_MIN` minutes.
 // Defaults are intentionally generous so a forgetful human typing the wrong
@@ -165,7 +165,7 @@ const LOCK_DURATION_MIN = parseInteger(
   { min: 1, max: 1440 },
 );
 
-// --- Email verification & password reset token TTLs (STEP 46) ---
+// --- Email verification & password reset token TTLs ---
 const EMAIL_VERIFICATION_TTL_MIN = parseInteger(
   'EMAIL_VERIFICATION_TTL_MIN',
   process.env.EMAIL_VERIFICATION_TTL_MIN,
@@ -179,13 +179,13 @@ const PASSWORD_RESET_TTL_MIN = parseInteger(
   { min: 5, max: 60 * 4 },
 );
 
-// --- Refresh-token cookie name (STEP 46 — Option A: HttpOnly cookie) ---
+// --- Refresh-token cookie name (Option A: HttpOnly cookie) ---
 const REFRESH_COOKIE_NAME = optionalVar(process.env.REFRESH_COOKIE_NAME, 'lms.refresh');
 
 // --- Logging ---
 const LOG_LEVEL = optionalVar(process.env.LOG_LEVEL, isProd ? 'info' : 'debug');
 
-// --- Feature flags (STEP 49) ---
+// --- Feature flags ---
 // Server-side mirror of `client/src/config/features.js`. Each flag MUST
 // default to the same value on both sides — diverging defaults cause
 // "the button is there but the API 404s" bugs that are extremely painful

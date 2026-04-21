@@ -1,5 +1,5 @@
 # =====================================================================
-# Netlify edge security headers (STEP 47).
+# Netlify edge security headers.
 # ---------------------------------------------------------------------
 # Helmet on the API protects /api/* responses; Netlify needs its own
 # header pass for the static SPA bundle. The CSP here mirrors the one

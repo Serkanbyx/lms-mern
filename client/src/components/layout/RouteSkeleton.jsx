@@ -1,6 +1,6 @@
 /**
  * `RouteSkeleton` — generic Suspense fallback for lazy-loaded route
- * chunks (see STEP 43 for the full list of `React.lazy` imports).
+ * chunks. See `App.jsx` for the full list of `React.lazy` imports.
  *
  * The shape is intentionally vague — a couple of stacked grey blocks —
  * because the same fallback covers every page. Page-level skeletons

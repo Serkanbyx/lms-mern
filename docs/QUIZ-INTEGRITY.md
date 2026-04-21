@@ -1,8 +1,7 @@
 # Quiz Integrity — Policy & Boundaries
 
-> Companion to STEP 49 of `STEPS.md`. This document is the honest answer
-> to "how do you stop people cheating on the quizzes?". The summary is:
-> we don't, fully — and we don't pretend to.
+> The honest answer to "how do you stop people cheating on the quizzes?".
+> The summary is: we don't, fully — and we don't pretend to.
 
 ---
 

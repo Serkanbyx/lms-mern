@@ -1,5 +1,5 @@
 /**
- * STEP 46 — Transactional email service.
+ * Transactional email service.
  *
  * Wraps `nodemailer` so the rest of the codebase can ask for "send the
  * verification email to user X" without knowing anything about SMTP.

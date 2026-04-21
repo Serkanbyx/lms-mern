@@ -32,9 +32,9 @@ const DENSITIES = Object.freeze(['compact', 'comfortable', 'spacious']);
 const LANGUAGES = Object.freeze(['en']);
 const PLAYBACK_SPEEDS = Object.freeze([0.5, 0.75, 1, 1.25, 1.5, 2]);
 
-// Learner interest tags captured during onboarding (STEP 39). The set is
+// Learner interest tags captured during onboarding. The set is
 // kept aligned with the catalog's `COURSE_CATEGORIES` taxonomy so the
-// post-register recommendation step can map an interest straight to a
+// post-register recommendation panel can map an interest straight to a
 // catalog category filter without an intermediate lookup table.
 const INTERESTS = Object.freeze([
   'programming',
@@ -89,7 +89,7 @@ const preferencesSchema = new Schema(
     privacy: { type: privacySchema, default: () => ({}) },
     notifications: { type: notificationsSchema, default: () => ({}) },
     playback: { type: playbackSchema, default: () => ({}) },
-    // STEP 39 — onboarding interest tags. Bounded by the curated `INTERESTS`
+    // Onboarding interest tags. Bounded by the curated `INTERESTS`
     // enum so a typo in the client can never fragment the taxonomy used
     // by the recommended-course query.
     interests: {
@@ -146,7 +146,7 @@ const userSchema = new Schema(
     isActive: { type: Boolean, default: true },
     preferences: { type: preferencesSchema, default: () => ({}) },
 
-    // STEP 46 — Email verification.
+    // Email verification.
     // The raw token is emailed to the user; only its sha256 hash is stored
     // in the DB so a database leak cannot be replayed against the verify
     // endpoint. `select: false` keeps the hash out of every default query.
@@ -154,21 +154,21 @@ const userSchema = new Schema(
     emailVerificationToken: { type: String, select: false },
     emailVerificationExpires: { type: Date, select: false },
 
-    // STEP 46 — Password reset (single-use, short-lived).
+    // Password reset (single-use, short-lived).
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
 
-    // STEP 46 — Token revocation. Embedded in every issued access &
+    // Token revocation. Embedded in every issued access &
     // refresh token; bumping it invalidates every previously issued token
     // across every device (logout-all, password change).
     tokenVersion: { type: Number, default: 0, select: false },
 
-    // STEP 46 — Account lockout.
+    // Account lockout.
     failedLoginAttempts: { type: Number, default: 0, select: false },
     lockUntil: { type: Date, select: false },
     lastLoginAt: { type: Date },
 
-    // STEP 46 — Reserved for future TOTP-based 2FA.
+    // Reserved for future TOTP-based 2FA.
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: { type: String, select: false },
   },
@@ -221,7 +221,7 @@ userSchema.methods.toSafeJSON = function toSafeJSON() {
   return obj;
 };
 
-// --- STEP 46 helpers -------------------------------------------------------
+// --- Authentication helpers ------------------------------------------------
 
 userSchema.virtual('isLocked').get(function isLocked() {
   return Boolean(this.lockUntil && this.lockUntil.getTime() > Date.now());

@@ -186,7 +186,7 @@ body {
 }
 
 /*
- * STEP 49 — Lightweight quiz anti-cheat surface.
+ * Lightweight quiz anti-cheat surface.
  *
  * `.quiz-question` flags the in-flight question card so we can disable
  * text selection on the question + options. This is a deterrent, not

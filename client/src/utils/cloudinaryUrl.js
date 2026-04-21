@@ -82,7 +82,7 @@ export const cloudinaryPresets = {
 };
 
 /**
- * STEP 48 — Low-Quality Image Placeholder (LQIP).
+ * Low-Quality Image Placeholder (LQIP).
  *
  * Returns a tiny (~500 B) heavily-blurred preview of the same Cloudinary
  * asset. Strategy:

@@ -16,10 +16,10 @@
  *                              served to a learner)
  *
  * The student-facing detail / submission endpoints (`GET /:id`,
- * `POST /:id/submit`, `…/attempts/mine`, `…/best/mine`) are added on
- * a separate router in a later step. Keeping the surfaces split
- * prevents an authorization regression where a public read could
- * accidentally inherit the instructor stack mounted here.
+ * `POST /:id/submit`, `…/attempts/mine`, `…/best/mine`) live on a
+ * separate router. Keeping the surfaces split prevents an
+ * authorization regression where a public read could accidentally
+ * inherit the instructor stack mounted here.
  */
 
 import { Router } from 'express';

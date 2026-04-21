@@ -120,7 +120,7 @@ const quizAttemptSchema = new Schema(
         message: 'Time spent must be an integer number of seconds.',
       },
     },
-    // STEP 49 — Lightweight quiz integrity signal.
+    // Lightweight quiz integrity signal.
     // Number of times the player tab lost focus (tab switch / minimise /
     // app switch on mobile) during the attempt. Reported by the client
     // via `document.visibilitychange`. NOT a hard gate — proctored
@@ -154,7 +154,7 @@ const quizAttemptSchema = new Schema(
 // every page, which is the dominant access pattern for the timeline view.
 quizAttemptSchema.index({ userId: 1, quizId: 1, attemptedAt: -1 });
 
-// STEP 48 — Powers the "best score per (user, quiz)" lookup used by the
+// Powers the "best score per (user, quiz)" lookup used by the
 // learner dashboard, completion gates, and certificate flow. The
 // descending `score` lets Mongo answer `findOne().sort({ score: -1 })`
 // from a single index hit instead of scanning every prior attempt and

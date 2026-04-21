@@ -1,7 +1,8 @@
 # Runbook
 
-> Operational recipes for the most common tasks. Every entry assumes
-> you're an admin with shell access to the relevant Render service.
+> Operational recipes for the most common day-2 tasks. Every entry
+> assumes you're an admin with shell access to the relevant Render
+> service.
 
 ---
 
@@ -233,7 +234,7 @@ the certificate feature for example:
 
 ## Recover a locked-out account
 
-Account lockout (STEP 46) trips after `MAX_LOGIN_ATTEMPTS` consecutive
+Account lockout trips after `MAX_LOGIN_ATTEMPTS` consecutive
 failed logins and persists for `LOCK_DURATION_MIN` minutes. To unlock
 manually (e.g. user is on the phone with support):
 

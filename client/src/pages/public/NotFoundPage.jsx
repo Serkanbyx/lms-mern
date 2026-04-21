@@ -1,8 +1,8 @@
 /**
  * `NotFoundPage` — catch-all 404 page (final route in `App.jsx`).
  *
- * Polished in STEP 45 to be a true dead-end recovery surface rather than
- * a generic empty state:
+ * Designed as a true dead-end recovery surface rather than a generic
+ * empty state:
  *   - Oversized "404" headline acts as a visual anchor so the user
  *     immediately recognises the situation, even with images blocked.
  *   - A short, plain-language explanation (no stack-trace jargon).

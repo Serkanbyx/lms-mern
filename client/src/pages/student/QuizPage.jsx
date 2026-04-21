@@ -100,14 +100,14 @@ const initialMachine = {
   startedAt: 0,
   timeLeft: undefined,
   result: null,
-  // STEP 49 — Lightweight integrity counter. Incremented every time
+  // Lightweight integrity counter. Incremented every time
   // the page goes hidden (tab switch / minimised / mobile app switch).
   // Submitted alongside the answers and persisted on `QuizAttempt`.
   tabSwitches: 0,
 };
 
 /**
- * STEP 49 — Anti-cheat: how often we toast the user about a tab
+ * Anti-cheat: how often we toast the user about a tab
  * switch. We don't want to spam them once per ms when they're flipping
  * back and forth, so the toast respects a 4-second cooldown.
  */
@@ -224,7 +224,7 @@ export default function QuizPage() {
         const resp = await quizService.submitQuiz(quizId, {
           answers,
           timeSpentSeconds,
-          // STEP 49 — Forward the integrity signal so the server can
+          // Forward the integrity signal so the server can
           // persist it on `QuizAttempt`. The server clamps to a sane
           // range, so a forged DevTools call cannot poison aggregate
           // analytics.
@@ -309,7 +309,7 @@ export default function QuizPage() {
   }, [machine.step]);
 
   // -------------------------------------------------------------------------
-  // STEP 49 — Tab-switch detection (lightweight quiz anti-cheat).
+  // Tab-switch detection (lightweight quiz anti-cheat).
   //
   // Honor system, but raise the bar. When the page goes hidden during
   // an active attempt we:
@@ -745,7 +745,7 @@ function QuestionCard({
   onSelect,
   radioName,
 }) {
-  // STEP 49 — Lightweight anti-cheat: block copy + right-click on the
+  // Lightweight anti-cheat: block copy + right-click on the
   // question card so casual "highlight + paste into ChatGPT" attempts
   // require obvious effort. Determined cheating is impossible to
   // prevent client-side; this is a deterrent layered on top of the

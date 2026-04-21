@@ -1,9 +1,9 @@
 /**
  * `TestimonialGrid` — three social-proof quotes from placeholder learners.
  *
- * Static for v1 (per STEP 26). When real reviews ship later, swap the
- * `TESTIMONIALS` array for an API-backed list — the card markup is
- * already shaped to receive it.
+ * Static for v1. When real reviews ship later, swap the `TESTIMONIALS`
+ * array for an API-backed list — the card markup is already shaped to
+ * receive it.
  */
 
 import { motion } from 'framer-motion';

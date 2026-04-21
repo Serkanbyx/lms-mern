@@ -4,9 +4,9 @@
  * Each export is an Express middleware created with `express-rate-limit`.
  * They are kept here (rather than next to the route) so different route
  * groups can share consistent windows/limits and so the Redis-backed store
- * (STEP 48) can be wired into a single place.
+ * can be wired into a single place.
  *
- * STEP 48 — Horizontal scalability.
+ * Horizontal scalability.
  *   When `REDIS_URL` is set, every limiter swaps its in-memory store for
  *   a Redis-backed `rate-limit-redis` store so multiple API instances
  *   share one bucket per (limiter, key) pair. Without that, each instance
@@ -261,7 +261,7 @@ export const enrollLimiter = rateLimit({
 });
 
 // ---------------------------------------------------------------------------
-// STEP 46 — Limiters for verification, password reset, and refresh.
+// Limiters for verification, password reset, and refresh.
 // ---------------------------------------------------------------------------
 
 /**

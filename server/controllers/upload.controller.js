@@ -19,7 +19,7 @@
  *     unrelated assets in the account.
  *   - Cloudinary "not found" results return 200 (idempotent delete) so the
  *     client can safely retry without 404 noise.
- *   - STEP 47: lesson videos are uploaded with `type: 'authenticated'`. The
+ *   - Lesson videos are uploaded with `type: 'authenticated'`. The
  *     `secure_url` Cloudinary returns at upload time is NOT directly playable
  *     — clients must hit a server endpoint that mints a fresh signed URL via
  *     `signedVideoUrl()` per request. We surface a one-shot `signedUrl` here
@@ -65,7 +65,7 @@ export const uploadCourseThumbnail = asyncHandler(async (req, res) => {
 export const uploadLessonVideo = asyncHandler(async (req, res) => {
   if (!req.file) throw ApiError.badRequest('No video file provided.');
 
-  // STEP 47 — Lesson videos are uploaded as `type: 'authenticated'` so the
+  // Lesson videos are uploaded as `type: 'authenticated'` so the
   // raw `secure_url` cannot be played without a fresh signature. We immediately
   // mint a short-lived signed URL for the authoring UI's "preview after upload"
   // affordance; long-term reads must always go through `signedVideoUrl()` again.
@@ -97,8 +97,8 @@ export const uploadLessonVideo = asyncHandler(async (req, res) => {
  *   - `resourceType` — one of `image` (default), `video`, `raw`.
  *   - `type` — one of `upload` (default), `authenticated`, `private`. Must
  *     match the delivery type the asset was uploaded with, otherwise
- *     Cloudinary returns "not found". Lesson videos created after STEP 47
- *     live under `type=authenticated`.
+ *     Cloudinary returns "not found". Lesson videos live under
+ *     `type=authenticated`.
  */
 export const deleteAsset = asyncHandler(async (req, res) => {
   const decoded = decodeURIComponent(req.params.publicId || '');

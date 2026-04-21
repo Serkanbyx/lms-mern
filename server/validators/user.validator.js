@@ -97,7 +97,7 @@ export const updatePreferencesValidator = [
       `playback.defaultSpeed must be one of: ${USER_PLAYBACK_SPEEDS.join(', ')}.`,
     ),
 
-  // STEP 39 — onboarding additions.
+  // Onboarding additions.
   body('interests')
     .optional()
     .isArray({ max: USER_INTERESTS.length })

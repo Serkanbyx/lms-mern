@@ -2,10 +2,9 @@
  * `FeaturedCourses` — "Trending this week" block.
  *
  * Fetches the top 8 published courses sorted by `enrollmentCount` from
- * `GET /api/courses?sort=popular&limit=8` (see STEP 26 spec). Renders
- * each result through the shared, memoised `CourseCard` so a future
- * visual tweak (radius, hover, density) propagates everywhere from
- * one place.
+ * `GET /api/courses?sort=popular&limit=8`. Renders each result through
+ * the shared, memoised `CourseCard` so a future visual tweak (radius,
+ * hover, density) propagates everywhere from one place.
  *
  * Loading: 8 skeleton cards keep the layout stable so the section never
  * "jumps" once the API resolves.

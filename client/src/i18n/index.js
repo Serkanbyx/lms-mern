@@ -1,5 +1,5 @@
 /**
- * STEP 49 — i18n scaffold (English-only for v1).
+ * i18n scaffold (English-only for v1).
  *
  * The client ships in a single language today, but every user-facing
  * string flows through `react-i18next`'s `t()` so adding a second

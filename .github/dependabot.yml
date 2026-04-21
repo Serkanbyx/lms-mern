@@ -1,5 +1,5 @@
 # =====================================================================
-# Dependabot configuration (STEP 47).
+# Dependabot configuration.
 # ---------------------------------------------------------------------
 # Watches the npm dependency trees of both workspaces and opens weekly
 # PRs for any non-major upgrades. Major bumps are still surfaced as PRs

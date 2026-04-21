@@ -5,7 +5,7 @@
  * `server/models/Course.model.js → CATEGORIES`); each card links to the
  * filtered catalog. Course counts are static placeholders for v1 — the
  * real numbers will land alongside an aggregated `/api/categories`
- * endpoint in a later step.
+ * endpoint.
  *
  * On mobile the grid switches to a horizontal swipe lane so the section
  * never collapses into a tall tower of cards. On desktop it's a 4-column

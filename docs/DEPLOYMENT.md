@@ -1,7 +1,7 @@
 # Deployment Guide
 
-> Companion to **STEP 53** of `STEPS.md`. End-to-end walkthrough for
-> shipping Lumen LMS to production: **MongoDB Atlas** (database) +
+> End-to-end walkthrough for shipping Lumen LMS to production:
+> **MongoDB Atlas** (database) +
 > **Render** (Express API, optional Redis, optional cron jobs) +
 > **Netlify** (React SPA) + **Cloudinary** (media).
 >
@@ -138,10 +138,10 @@ days; caught here, they cost minutes.
 > values marked `sync: false` (DB URI, Cloudinary, SMTP, admin,
 > CORS / `CLIENT_URL`) on the dashboard after the first apply —
 > the JWT secrets are auto-generated. If you take the Blueprint
-> path, skip steps 1–5 below and jump straight to step 6 (health
-> check) and step 7 (`seed:admin`). The manual UI flow that
-> follows is here for the case where you want to wire things by
-> hand.
+> path, skip the manual UI flow that follows and jump straight to
+> the health check and the `seed:admin` invocation. The manual UI
+> flow that follows is here for the case where you want to wire
+> things by hand.
 
 1. <https://dashboard.render.com> → **New +** → **Web Service**.
 2. Connect your GitHub account if you haven't already → pick the
@@ -241,9 +241,9 @@ silently multiplies the per-IP cap by the replica count.
 
 ## Optional — Render Cron Jobs
 
-Three background scripts ship with the server (STEP 49).
-Each is a separate Render **Cron Job** service that points at the
-same repo and runs the matching npm script.
+Three background scripts ship with the server. Each is a separate
+Render **Cron Job** service that points at the same repo and runs
+the matching npm script.
 
 | Cron Job name | Root directory | Schedule (UTC) | Start command |
 | --- | --- | --- | --- |
@@ -273,7 +273,7 @@ prints a structured summary line.
 > immutable cache headers for `/assets/*`. When you import the
 > site, Netlify auto-detects the file — leave the build settings
 > on the form blank and just add the `VITE_*` environment
-> variables in step 4 below.
+> variables in the **Environment variables** section below.
 
 1. <https://app.netlify.com> → **Add new site** → **Import from Git**.
 2. Authorize GitHub if needed → pick the same repository.
@@ -381,7 +381,7 @@ real product surface; if any fails, fix it before sharing the URL.
 
 ## Post-deploy verification — security
 
-These probe specific hardening from STEPs 33–48. Skipping them is
+These probe the hardening that's baked into the API. Skipping them is
 how a portfolio project ships its first CVE.
 
 - [ ] **Rate limit** — `for i in (1..11); curl … /api/auth/login` → the
@@ -451,9 +451,9 @@ how a portfolio project ships its first CVE.
 ### CSP blocks every API call
 
 `Refused to connect to 'https://api…' because it violates the
-document's Content Security Policy.` — you forgot step 2 of
-[Final wiring](#final-wiring-cors--csp). Replace the placeholder
-in `client/public/_headers`, push, redeploy.
+document's Content Security Policy.` — you forgot the SPA-CSP
+update in [Final wiring](#final-wiring-cors--csp). Replace the
+placeholder in `client/public/_headers`, push, redeploy.
 
 ### Mongo connection times out on Render
 

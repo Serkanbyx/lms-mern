@@ -10,8 +10,8 @@
  *   6. Title is exposed via `aria-labelledby`.
  *
  * Animation: framer-motion handles fade for the overlay and scale-in for
- * the panel. `MotionConfig reducedMotion="user"` at the app root (STEP 23)
- * makes both fall back to instant.
+ * the panel. `MotionConfig reducedMotion="user"` at the app root makes
+ * both fall back to instant.
  *
  * Sizing: `size` prop maps to a max-width, defaulting to `md` (good for
  * confirmation flows). Use `lg`/`xl` for forms.

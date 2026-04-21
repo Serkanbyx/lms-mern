@@ -11,7 +11,6 @@ export default function BecomeInstructorPage() {
       />
       <PlaceholderPage
         name="Become an Instructor"
-        step={26}
         description="Marketing pitch for instructors — value prop, payouts, support. Ships alongside the landing page."
       />
     </>

@@ -41,7 +41,6 @@ privately through the channels listed in
 | `server/`   | Express 5 REST API (Mongoose 8, JWT, rate-limiting, Cloudinary). |
 | `docs/`     | Architecture, runbook, QA, quiz integrity, security ops docs.  |
 | `assets/`   | Brand assets and screenshots referenced by `README.md`.        |
-| `STEPS.md`  | The sequenced build log for the entire project (52 steps).     |
 
 A more detailed walk-through of the architecture lives in
 [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).

@@ -1,5 +1,5 @@
 /**
- * STEP 49 — Privacy-friendly analytics wrapper.
+ * Privacy-friendly analytics wrapper.
  *
  * A thin façade over whichever cookieless analytics provider we wire in
  * later (Plausible / Umami / etc). Until that wiring lands the wrapper

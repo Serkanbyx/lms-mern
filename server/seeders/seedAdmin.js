@@ -14,7 +14,7 @@
  *    on every deploy).
  *
  * Designed to be safe to run repeatedly in CI/CD as an "ensure admin
- * exists" step.
+ * exists" guard.
  */
 
 import mongoose from 'mongoose';

@@ -7,7 +7,7 @@
  * `window` is undefined) so route components can call it unconditionally
  * even in a server-rendered context.
  *
- * Used by the global offline `Banner` (STEP 39) and any future feature
+ * Used by the global offline `Banner` and any future feature
  * that wants to disable network-bound actions (queueing a quiz submit,
  * for example).
  */

@@ -1,5 +1,5 @@
 /**
- * Per-request correlation id (STEP 47).
+ * Per-request correlation id.
  *
  * Tags every incoming request with a stable identifier so structured logs,
  * error reports, and (eventually) client-side telemetry can be correlated

@@ -46,7 +46,7 @@ const DEFAULT_PREFERENCES = Object.freeze({
   privacy: { showEmail: false, showEnrolledCourses: true },
   notifications: { emailOnEnroll: true, emailOnQuizGraded: true },
   playback: { autoplayNext: false, defaultSpeed: 1 },
-  // STEP 39 — onboarding additions: captured by the post-register
+  // Onboarding additions: captured by the post-register
   // `OnboardingModal`. `interests` drives recommendation queries;
   // `onboardingCompletedAt` (set on finish OR skip) prevents the modal
   // from re-opening after a fresh login on a new device.

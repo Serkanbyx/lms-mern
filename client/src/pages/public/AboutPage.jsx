@@ -9,7 +9,7 @@ export default function AboutPage() {
         description="Learn what Lumen LMS is, who builds it, and the mission behind the platform — practical, project-based learning for everyone."
         url="/about"
       />
-      <PlaceholderPage name="About Lumen LMS" step={26} />
+      <PlaceholderPage name="About Lumen LMS" />
     </>
   );
 }

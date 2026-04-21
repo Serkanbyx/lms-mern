@@ -1,8 +1,8 @@
 /**
  * Barrel export for layout-level building blocks (motion config, page
- * transitions, scroll-reveal, structural chrome). Updated in STEP 25 to
- * include the Navbar / Footer / RouteSkeleton primitives consumed by the
- * top-level layouts.
+ * transitions, scroll-reveal, structural chrome) plus the
+ * Navbar / Footer / RouteSkeleton primitives consumed by the top-level
+ * layouts.
  */
 
 export { CommandPalette } from './CommandPalette.jsx';

@@ -12,7 +12,7 @@
  *    happy path so the banner never flashes during initial hydration.
  *  - A short fade transition (via Tailwind's built-in opacity utilities)
  *    keeps the banner from popping in jarringly. The motion is plain CSS
- *    and respects the reduced-motion override applied globally in STEP 23.
+ *    and respects the reduced-motion override applied globally.
  */
 
 import { useEffect, useState } from 'react';

@@ -1,5 +1,5 @@
 /**
- * STEP 49 — Server-side feature flags.
+ * Server-side feature flags.
  *
  * Centralised toggle surface for non-trivial features so we can:
  *  - dark-launch a backend route in production WITHOUT a code change

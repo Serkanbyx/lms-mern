@@ -21,7 +21,7 @@
  * The bearer-token parser is shared so the extraction rules (case,
  * whitespace, "Bearer " prefix) live in one place.
  *
- * SECURITY (STEP 46):
+ * SECURITY:
  *  - The token's `tokenVersion` MUST match the user document's current
  *    version. Bumping the user's version (logout-all, password change)
  *    invalidates every previously issued token of either kind.
@@ -65,7 +65,7 @@ const loadUserFromToken = async (token) => {
   if (!payload?.id) {
     throw ApiError.unauthorized('Invalid authentication token.', { code: 'TOKEN_INVALID' });
   }
-  // We need the lockout + version columns to enforce STEP 46 invariants.
+  // We need the lockout + version columns to enforce session invariants.
   const user = await User.findById(payload.id).select('+tokenVersion +lockUntil');
   if (!user) {
     throw ApiError.unauthorized('Account no longer exists.', { code: 'TOKEN_INVALID' });

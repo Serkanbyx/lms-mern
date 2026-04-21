@@ -6,7 +6,7 @@
  * the bottom of the viewport on mobile so the primary CTA is always
  * one tap away.
  *
- * The CTA is context-aware (see `STEP 29`):
+ * The CTA is context-aware:
  *   1. Anonymous visitor → "Sign up to enroll" (deep-links back to
  *      this page after registration).
  *   2. Authenticated, not enrolled → "Enroll – $X" or "Enroll for

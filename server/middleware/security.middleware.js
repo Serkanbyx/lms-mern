@@ -1,5 +1,5 @@
 /**
- * Security middleware bundle (STEP 47).
+ * Security middleware bundle.
  *
  * Centralizes the production-grade hardening that wraps the API surface:
  *

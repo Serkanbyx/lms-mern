@@ -1,7 +1,7 @@
 # Architecture
 
-> Companion to STEP 49 of `STEPS.md`. High-level map of how the LMS is
-> assembled and the architectural decisions behind it.
+> High-level map of how the LMS is assembled and the architectural
+> decisions behind it.
 
 ---
 
@@ -94,7 +94,7 @@
 > Append-only. Newest entries on top. The point is to capture *why*,
 > not *what* — `git blame` already records the *what*.
 
-### 2026-04-21 — STEP 49: i18n scaffold instead of full localisation
+### 2026-04-21 — i18n scaffold instead of full localisation
 **Status**: accepted.
 **Context**: We ship in English-only for v1 but every translation
 attempt I've seen retrofit later required a full component sweep.
@@ -103,7 +103,7 @@ through `t()`. Translation files come later; the wiring stays.
 **Consequences**: +14 KB gzip on the client bundle today, near-zero
 work to add a locale tomorrow.
 
-### 2026-04-21 — STEP 49: env-driven feature flags, no third-party service
+### 2026-04-21 — env-driven feature flags, no third-party service
 **Status**: accepted.
 **Context**: We need kill switches and dark-launch capability without
 a six-figure LaunchDarkly bill on day one.
@@ -113,7 +113,7 @@ security gate; client is cosmetic.
 **Consequences**: Restart required to flip a flag. When/if we outgrow
 this, swap the implementation without touching callsites.
 
-### 2026-04-21 — STEP 49: tab-switch counter is a signal, not a gate
+### 2026-04-21 — tab-switch counter is a signal, not a gate
 **Status**: accepted.
 **Context**: We can't realistically prevent cheating without proctoring.
 **Decision**: Surface `tabSwitches` on `QuizAttempt` for instructor
@@ -121,7 +121,7 @@ review; never auto-fail on it.
 **Consequences**: Honest users with notification interruptions don't
 get punished; cheaters know they're being watched.
 
-### 2026-04-19 — STEP 47: signed Cloudinary URLs for paid lesson video
+### 2026-04-19 — signed Cloudinary URLs for paid lesson video
 **Status**: accepted.
 **Context**: Hot-linking and torrent uploads of premium video are the
 top piracy vector for content platforms.
@@ -130,7 +130,7 @@ type with short-lived signatures.
 **Consequences**: Slightly higher per-request latency (signature
 generation), full control over share-link expiry.
 
-### 2026-04-19 — STEP 47: HttpOnly cookie for refresh token, not header
+### 2026-04-19 — HttpOnly cookie for refresh token, not header
 **Status**: accepted.
 **Context**: A localStorage-stored refresh token is owned by any XSS
 that lands.

@@ -10,9 +10,9 @@
  * fires a best-effort delete on the previous publicId so we don't
  * leave orphans behind.
  *
- * Submit is explicit (per STEP 37) because changing your displayed
- * name has visible consequences across the app — autosaving every
- * keystroke would feel unsettling.
+ * Submit is explicit because changing your displayed name has visible
+ * consequences across the app — autosaving every keystroke would feel
+ * unsettling.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';

@@ -25,9 +25,8 @@
  *  - Published-course lockdown: once a course is `published`, only soft
  *    fields (description, marketing copy, thumbnail, taxonomy lists) can
  *    be edited inline. Title, price, category, level, and language all
- *    require an explicit re-submission flow (added in a later step) so
- *    enrolled students never see surprise changes to the product they
- *    paid for.
+ *    require an explicit re-submission flow so enrolled students never
+ *    see surprise changes to the product they paid for.
  *  - Delete protection: a non-admin owner cannot delete a course with
  *    active enrollments — they are nudged toward `archiveCourse` instead.
  *    Admins can force-delete (with the same cascade) for moderation.
@@ -280,7 +279,7 @@ export const deleteCourse = asyncHandler(async (req, res) => {
 /**
  * POST /api/courses/:id/submit
  * Promotes a `draft` course to `pending` review. Admins approve/reject
- * via a separate admin endpoint added in a later step.
+ * via the dedicated admin endpoint.
  */
 export const submitForReview = asyncHandler(async (req, res) => {
   const course = await findOwnedCourseOr404(req.params.id, req.user);
@@ -376,7 +375,7 @@ const clampLimit = (raw) => {
 };
 
 /**
- * STEP 48 — HTTP cache hint for public catalog reads.
+ * HTTP cache hint for public catalog reads.
  *
  * Anonymous viewers get `public, max-age=60, stale-while-revalidate=300`
  * so a CDN / browser cache can serve repeat hits instantly while still
@@ -590,8 +589,8 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
 
   const [sections, lessons] = await Promise.all([
     Section.find({ courseId: course._id }).sort({ order: 1 }).lean(),
-    // `videoPublicId` is needed to mint signed Cloudinary URLs (STEP 47) but
-    // is intentionally STRIPPED from the projected payload — clients must
+    // `videoPublicId` is needed to mint signed Cloudinary URLs but is
+    // intentionally STRIPPED from the projected payload — clients must
     // never see the raw publicId, only the short-lived signed URL we mint.
     Lesson.find({ courseId: course._id }).sort({ order: 1 }).lean(),
   ]);
@@ -627,7 +626,7 @@ export const getCourseCurriculum = asyncHandler(async (req, res) => {
       viewerIsOwner || viewerIsAdmin || viewerIsEnrolled || lesson.isFreePreview === true;
     if (!canSeeContent) return base;
 
-    // STEP 47 — Cloudinary lesson videos are stored with `type: 'authenticated'`,
+    // Cloudinary lesson videos are stored with `type: 'authenticated'`,
     // so the persisted `videoUrl` is unplayable on its own. Re-sign it per
     // request with a short TTL. Provider videos (YouTube/Vimeo) keep their
     // original URL because the provider owns access control there.

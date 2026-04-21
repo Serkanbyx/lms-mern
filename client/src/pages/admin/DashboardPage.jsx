@@ -9,7 +9,7 @@
  *   2. Charts row          → bar chart of enrollment activity over the last
  *                            30 days + donut of course status distribution.
  *                            Both are drawn with raw SVG to avoid pulling
- *                            in a chart library for v1 (per STEP 38 spec).
+ *                            in a chart library for v1.
  *   3. Recent activity     → two columns: latest 10 registrations + latest
  *                            10 pending course submissions, with avatars
  *                            and relative timestamps.

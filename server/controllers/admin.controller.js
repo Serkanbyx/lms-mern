@@ -149,8 +149,8 @@ const cascadeDeleteCourse = async (courseId, session) => {
  * `activeToday` is intentionally a proxy: we don't yet persist a
  * `lastSeenAt` timestamp on the User model, so we use `updatedAt >=
  * startOfToday` as a "touched their account today" approximation. When
- * a dedicated activity field lands in a later step, swap the filter
- * here without changing the response contract.
+ * a dedicated activity field is added, swap the filter here without
+ * changing the response contract.
  *
  * `passRate` is rounded to 1 decimal so the dashboard can render a
  * stable percentage without trailing-precision wobble.
@@ -442,7 +442,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
   const runCascade = async (session) => {
     const sessionOpt = session ? { session } : undefined;
 
-    // Step 1: drop the user's own enrollments. We use deleteMany rather
+    // First, drop the user's own enrollments. We use deleteMany rather
     // than per-document deletes because the per-doc post-hook (course
     // enrollmentCount decrement) is meaningful only when the parent
     // course survives — which it does for courses the user was

@@ -1,5 +1,5 @@
 /**
- * STEP 49 — `useFeature(name)` hook.
+ * `useFeature(name)` hook.
  *
  * Thin React wrapper over `features` so components can read flags
  * declaratively and so test suites can mock a flag for a single

@@ -87,7 +87,7 @@ export const deleteAccountValidator = [
   body('password').isString().notEmpty().withMessage('Password is required.'),
 ];
 
-// --- STEP 46 — verification, reset, resend validators --------------------
+// --- Verification, reset, resend validators ------------------------------
 
 // Tokens are 32-byte hex (64 chars) — see `utils/tokens.js`. Validating the
 // shape here lets the Mongo query short-circuit on obvious garbage.

@@ -16,11 +16,11 @@
  *  - Terms-of-Service checkbox (links open in a new tab) gates submit.
  *  - On success: `register()` already auto-logs the user in (it stores the
  *    JWT in `AuthContext`); we toast, mount the post-register
- *    `OnboardingModal` (STEP 39), and only redirect to `?next=` /
- *    `/dashboard` after the modal closes (whether the user finished or
- *    skipped). Persisting the navigation through the modal lifecycle
- *    means a learner who taps "Open course" on step 3 lands on the
- *    course detail page instead of the dashboard.
+ *    `OnboardingModal`, and only redirect to `?next=` / `/dashboard`
+ *    after the modal closes (whether the user finished or skipped).
+ *    Persisting the navigation through the modal lifecycle means a
+ *    learner who taps "Open course" on the recommendation panel lands
+ *    on the course detail page instead of the dashboard.
  *
  * SECURITY: no `role` selector — server defaults new accounts to `student`.
  */

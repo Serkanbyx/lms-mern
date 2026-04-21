@@ -25,10 +25,9 @@
  * the quiz-create handler would never run.
  *
  * A separate student-facing detail endpoint (with redacted projection
- * and enrollment-gated access) is added on a different router in a
- * later step — keeping the surfaces split prevents an authorization
- * regression where a public read accidentally inherits the protected
- * stack mounted here.
+ * and enrollment-gated access) lives on a different router — keeping
+ * the surfaces split prevents an authorization regression where a
+ * public read accidentally inherits the protected stack mounted here.
  */
 
 import { Router } from 'express';

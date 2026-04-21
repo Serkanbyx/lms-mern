@@ -9,7 +9,7 @@ export default function PrivacyPage() {
         description="How Lumen LMS collects, uses and protects your personal data — written in plain language."
         url="/privacy"
       />
-      <PlaceholderPage name="Privacy Policy" step={26} />
+      <PlaceholderPage name="Privacy Policy" />
     </>
   );
 }

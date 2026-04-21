@@ -19,7 +19,7 @@
  *   └──────────────────────────────┘
  *
  * Hover/focus motion (lift + shadow upgrade + thumbnail zoom) follows
- * the STEP 23 motion vocabulary and self-disables under
+ * the global motion vocabulary and self-disables under
  * `prefers-reduced-motion` because all transitions live inside Tailwind
  * utilities that the global CSS rule already overrides.
  */
@@ -70,7 +70,7 @@ const formatEnrolled = (count) => {
 };
 
 function CourseCardComponent({ course, className }) {
-  // STEP 48 — Track when the high-res thumbnail finishes loading so the
+  // Track when the high-res thumbnail finishes loading so the
   // tiny LQIP placeholder can fade out and reveal the sharp image.
   // Defaulting to `false` (not loaded) means cards rendered server-side
   // / on first paint show the blurred placeholder until the browser
@@ -108,7 +108,7 @@ function CourseCardComponent({ course, className }) {
     >
       <div
         className="relative aspect-[16/9] overflow-hidden bg-bg-muted bg-cover bg-center"
-        // STEP 48 — Inline LQIP background. Cloudinary returns a ~500 B
+        // Inline LQIP background. Cloudinary returns a ~500 B
         // blurred preview; the browser paints it instantly so the card
         // never shows an empty grey rectangle while the high-res asset
         // streams in. Once the real `<img>` fires `onLoad` we no longer

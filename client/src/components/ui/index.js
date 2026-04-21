@@ -3,8 +3,8 @@
  *
  * Pages and feature components should import from `@/components/ui`
  * (or the relative path) so adding/replacing a primitive becomes a
- * one-line change. Per STEP 22, no page may render a raw `<button>`,
- * `<input>`, or hand-rolled card — always go through this barrel.
+ * one-line change. No page may render a raw `<button>`, `<input>`, or
+ * hand-rolled card — always go through this barrel.
  */
 
 export { Accordion } from './Accordion.jsx';

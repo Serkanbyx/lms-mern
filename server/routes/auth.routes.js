@@ -21,7 +21,7 @@
  * Per-route validation runs first so malformed payloads never reach the
  * controllers; `protect` runs before any handler that touches `req.user`.
  *
- * Rate limiting (STEP 18 + STEP 46 matrix):
+ * Rate limiting matrix:
  *   - `authLimiter`           (10 / 15 min, IP+email keyed) on register/login
  *   - `verifyEmailLimiter`    (5 / 15 min)  on /verify-email + /resend-verification
  *   - `forgotPasswordLimiter` (3 / 1 hour)  on /forgot-password (IP+email keyed)

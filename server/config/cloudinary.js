@@ -9,11 +9,11 @@
  * Returns a normalized object: { secure_url, public_id, duration, type }.
  *  - `duration` is only present for video assets; otherwise it is null.
  *  - `type` mirrors the Cloudinary delivery type the asset was created with
- *    (`'upload'` by default, `'authenticated'` for STEP 47 video uploads) so
- *    callers know whether the asset can be served via a static `secure_url`
- *    or must be re-signed via `signedVideoUrl()` per request.
+ *    (`'upload'` by default, `'authenticated'` for protected video uploads)
+ *    so callers know whether the asset can be served via a static
+ *    `secure_url` or must be re-signed via `signedVideoUrl()` per request.
  *
- * STEP 47 — signed-URL hardening:
+ * Signed-URL hardening:
  *   Lesson videos are uploaded with `type: 'authenticated'`. Authenticated
  *   assets cannot be played from the bare `secure_url`; the client must be
  *   handed a short-lived signed URL minted via `signedVideoUrl()` on every
@@ -52,7 +52,7 @@ const ALLOWED_DELIVERY_TYPES = new Set(['upload', 'authenticated', 'private']);
  * @param {'auto'|'image'|'video'|'raw'} [resourceType='auto'] - Cloudinary resource hint.
  * @param {{ type?: 'upload'|'authenticated'|'private' }} [options] - Extra
  *   delivery options. `type: 'authenticated'` keeps the asset behind a signed
- *   URL even after upload — used by lesson videos (STEP 47).
+ *   URL even after upload — used by lesson videos.
  * @returns {Promise<{
  *   secure_url: string,
  *   public_id: string,

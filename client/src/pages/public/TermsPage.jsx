@@ -9,7 +9,7 @@ export default function TermsPage() {
         description="The rules that govern your use of Lumen LMS — accounts, content, payments and platform policies."
         url="/terms"
       />
-      <PlaceholderPage name="Terms of Service" step={26} />
+      <PlaceholderPage name="Terms of Service" />
     </>
   );
 }
