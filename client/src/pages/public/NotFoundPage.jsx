@@ -64,25 +64,30 @@ export default function NotFoundPage() {
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link to={ROUTES.home} className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              leftIcon={<Icon name="Home" size={18} />}
-              className="w-full sm:w-auto"
-            >
-              Back to home
-            </Button>
-          </Link>
-          <Link to={ROUTES.catalog} className="w-full sm:w-auto">
-            <Button
-              size="lg"
-              variant="outline"
-              leftIcon={<Icon name="BookOpen" size={18} />}
-              className="w-full sm:w-auto"
-            >
-              Browse courses
-            </Button>
-          </Link>
+          {/* Render the buttons AS the link so we end up with a single
+              <a role="button"> instead of nesting <button> inside <a>.
+              Nested interactive elements break keyboard navigation
+              (one tab stop per element, focus rings stack) and most
+              screen readers announce them twice. */}
+          <Button
+            as={Link}
+            to={ROUTES.home}
+            size="lg"
+            leftIcon={<Icon name="Home" size={18} />}
+            className="w-full sm:w-auto"
+          >
+            Back to home
+          </Button>
+          <Button
+            as={Link}
+            to={ROUTES.catalog}
+            size="lg"
+            variant="outline"
+            leftIcon={<Icon name="BookOpen" size={18} />}
+            className="w-full sm:w-auto"
+          >
+            Browse courses
+          </Button>
         </div>
 
         <p className="mt-10 text-xs text-text-subtle">

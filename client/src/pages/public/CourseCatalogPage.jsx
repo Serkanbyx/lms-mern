@@ -73,7 +73,8 @@ const buildCatalogSeo = ({ filters, total }) => {
     );
     parts.push(labels.join('/'));
   }
-  if (filters.priceMode === 'free') parts.push('free');
+  if (filters.priceMode === 'free') parts.push('Free');
+  else if (filters.priceMode === 'paid') parts.push('Paid');
   if (filters.search?.trim()) parts.push(`"${filters.search.trim()}"`);
 
   const title = parts.length > 0 ? `${parts.join(' · ')} courses` : 'Courses';

@@ -19,6 +19,7 @@
  *    tab", etc).
  */
 
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -26,18 +27,64 @@ import { Button, Icon } from '../ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
 import { durations, ease } from '../../utils/motion.js';
 import { prefetchCatalog } from '../../utils/prefetch.js';
+import { getCategoryStats } from '../../services/course.service.js';
 
 const HEADLINE = 'Master new skills, on your schedule.';
 const SUBCOPY =
   'Project-based courses taught by working professionals — learn by building, not by memorising.';
 
-const SOCIAL_PROOF = [
-  { value: '12k+', label: 'active learners' },
-  { value: '850+', label: 'expert-led courses' },
-  { value: '4.8★', label: 'average rating' },
-];
+/**
+ * Format a count as a compact, honest stat. We deliberately don't
+ * inflate small numbers (a "12+" badge for 8 courses would be a lie);
+ * if the real catalog is small we just show the exact figure so the
+ * marketing surface stays in sync with reality. The catalog page,
+ * which is the one users land on next, will quickly contradict any
+ * inflated claim and erode trust on the very first session.
+ */
+const formatCompactCount = (count) => {
+  if (!Number.isFinite(count) || count <= 0) return null;
+  if (count < 1000) return String(count);
+  if (count < 10_000) return `${(count / 1000).toFixed(1)}k`;
+  return `${Math.round(count / 1000)}k+`;
+};
 
 export function HeroSection() {
+  // Real catalog stats — derived from the same `/api/courses/categories`
+  // endpoint `CategoryGrid` already calls. We deliberately do NOT show
+  // hardcoded "12k+ learners" / "850+ courses" placeholders any more:
+  // those numbers contradicted the catalog itself (which currently
+  // surfaces a small handful of seeded courses) and made the whole
+  // marketing block read as fabricated. Until we have real learner /
+  // rating telemetry, we surface only what we can prove.
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await getCategoryStats();
+        if (cancelled) return;
+        const items = response?.data?.items ?? [];
+        const totalCourses = items.reduce(
+          (sum, item) => sum + (Number(item.count) || 0),
+          0,
+        );
+        const liveCategories = items.filter(
+          (item) => (Number(item.count) || 0) > 0,
+        ).length;
+        setStats({ totalCourses, liveCategories });
+      } catch {
+        if (!cancelled) setStats({ totalCourses: 0, liveCategories: 0 });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const courseCountLabel = formatCompactCount(stats?.totalCourses);
+  const categoryCountLabel = formatCompactCount(stats?.liveCategories);
+
   return (
     <section
       aria-labelledby="hero-headline"
@@ -96,16 +143,40 @@ export function HeroSection() {
             </Button>
           </div>
 
-          <dl className="mt-10 grid grid-cols-3 gap-6 max-w-md">
-            {SOCIAL_PROOF.map((item) => (
-              <div key={item.label}>
-                <dt className="text-2xl font-semibold text-text">
-                  {item.value}
-                </dt>
-                <dd className="text-xs text-text-subtle mt-1">{item.label}</dd>
+          {/* Honest stats row — only renders the figures we can back up
+              with live data. We hide the section entirely when the
+              catalog is still empty (fresh deploy / dev) instead of
+              shipping a row of zeros. */}
+          {stats && stats.totalCourses > 0 && (
+            <dl className="mt-10 grid grid-cols-2 gap-6 max-w-md sm:grid-cols-3">
+              {courseCountLabel && (
+                <div>
+                  <dt className="text-2xl font-semibold text-text">
+                    {courseCountLabel}
+                  </dt>
+                  <dd className="text-xs text-text-subtle mt-1">
+                    {stats.totalCourses === 1 ? 'course live' : 'courses live'}
+                  </dd>
+                </div>
+              )}
+              {categoryCountLabel && stats.liveCategories > 0 && (
+                <div>
+                  <dt className="text-2xl font-semibold text-text">
+                    {categoryCountLabel}
+                  </dt>
+                  <dd className="text-xs text-text-subtle mt-1">
+                    {stats.liveCategories === 1 ? 'topic' : 'topics covered'}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-2xl font-semibold text-text">100%</dt>
+                <dd className="text-xs text-text-subtle mt-1">
+                  project-based
+                </dd>
               </div>
-            ))}
-          </dl>
+            </dl>
+          )}
         </motion.div>
 
         <HeroDecoration />
@@ -192,8 +263,10 @@ const HeroDecoration = () => (
                 />
               ))}
             </div>
+            {/* Decorative mock-up card — copy is illustrative only.
+                Marked aria-hidden by the parent so it never reaches AT. */}
             <span className="text-xs text-text-subtle">
-              + 2,430 learners enrolled this week
+              Learn alongside a growing community
             </span>
           </div>
         </div>

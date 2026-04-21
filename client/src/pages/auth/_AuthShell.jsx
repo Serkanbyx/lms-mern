@@ -10,8 +10,10 @@
  *     they are signing into.
  *
  * Motion:
- *   - The form column animates in via `fadeUp`. The brand column uses a
- *     gentle scale-in so the two halves arrive in a coordinated way.
+ *   - The form column intentionally has NO entrance animation — see the
+ *     inline note on the <section> below for the rationale.
+ *   - The brand column uses a gentle scale-in so it still arrives with
+ *     polish without risking the form ever paint as invisible.
  *
  * Composition:
  *   - Pages render their form (title, fields, submit) as `children`. The
@@ -26,7 +28,7 @@ import { Logo } from '../../components/brand/index.js';
 import { Seo } from '../../components/seo/index.js';
 import { Icon } from '../../components/ui/index.js';
 import { ROUTES } from '../../utils/constants.js';
-import { durations, ease, fadeUp } from '../../utils/motion.js';
+import { durations, ease } from '../../utils/motion.js';
 
 const BRAND_HIGHLIGHTS = [
   {
@@ -59,9 +61,18 @@ export function AuthShell({
           level Seo owns the noindex policy. */}
       <Seo noIndex />
 
-      {/* Form column */}
-      <motion.section
-        {...fadeUp}
+      {/* Form column.
+          NOTE — we intentionally render this as a plain <section> (no
+          motion entrance animation). When AuthShell is reused across
+          /login → /register via SPA navigation, framer-motion can leave
+          the element stuck at `opacity: 0` if the variant transition is
+          interrupted by the lazy chunk swap. The brand panel keeps its
+          gentle scale-in because it's a sibling that always remounts as
+          a single block, but the form needs to be guaranteed visible
+          the moment React commits — there is no acceptable failure
+          mode where the user can't see the form they came here to fill
+          in. */}
+      <section
         className="flex flex-col justify-center px-6 py-12 sm:px-10 lg:px-16"
         aria-labelledby="auth-title"
       >
@@ -94,7 +105,7 @@ export function AuthShell({
             </p>
           )}
         </div>
-      </motion.section>
+      </section>
 
       {/* Brand column — desktop only. */}
       <BrandPanel />
@@ -166,7 +177,7 @@ const BrandPanel = () => (
             />
           ))}
         </div>
-        <span>Joined by 12,400+ learners this month.</span>
+        <span>Join a community that learns by building.</span>
       </div>
     </div>
   </motion.aside>

@@ -96,20 +96,31 @@ export function FiltersSidebar({
         <ul className="space-y-2">
           {CATEGORIES.map((category) => {
             const checked = (filters.categories ?? []).includes(category.id);
+            // NOTE — Checkbox already renders its own <label> wrapping the
+            // input + visual box. Wrapping it again in another <label> would
+            // create a nested label which:
+            //   1. Doubles the accessible name ("Programming Programming"),
+            //   2. Causes some browsers to fire two click events and toggle
+            //      the checkbox twice, netting to no change,
+            //   3. Triggers test tooling to flag the visible <span> as a
+            //      non-interactive intercept target.
+            // Using a plain <div> for the row layout keeps the count badge
+            // adjacent without layering interactivity.
             return (
-              <li key={category.id}>
-                <label className="flex items-center justify-between gap-3 cursor-pointer">
-                  <Checkbox
-                    label={category.label}
-                    checked={checked}
-                    onChange={() => toggleArrayValue('categories', category.id)}
-                  />
-                  {typeof category.count === 'number' && (
-                    <span className="text-xs text-text-subtle tabular-nums">
-                      {category.count}
-                    </span>
-                  )}
-                </label>
+              <li
+                key={category.id}
+                className="flex items-center justify-between gap-3"
+              >
+                <Checkbox
+                  label={category.label}
+                  checked={checked}
+                  onChange={() => toggleArrayValue('categories', category.id)}
+                />
+                {typeof category.count === 'number' && (
+                  <span className="text-xs text-text-subtle tabular-nums">
+                    {category.count}
+                  </span>
+                )}
               </li>
             );
           })}

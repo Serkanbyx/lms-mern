@@ -108,8 +108,23 @@ const SearchBox = ({ onSubmit, autoFocus = false }) => {
   }, []);
 
   const submit = (event) => {
-    event.preventDefault();
-    onSubmit(value.trim());
+    event?.preventDefault?.();
+    // Read the value straight off the DOM as a fallback so external
+    // automation that fills the input via raw `input.value = …` (no
+    // React change event) still gets navigated when the user hits
+    // Enter. Falls back to React state for normal typing.
+    const raw = inputRef.current?.value ?? value;
+    onSubmit(raw.trim());
+  };
+
+  // Native form `submit` on Enter only fires when there is at least
+  // one submitter (button) OR a single text input. Browsers are
+  // inconsistent for `type="search"` inside a non-button form, so we
+  // also handle Enter explicitly to guarantee the navigation fires.
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      submit(event);
+    }
   };
 
   return (
@@ -123,10 +138,17 @@ const SearchBox = ({ onSubmit, autoFocus = false }) => {
         type="search"
         value={value}
         onChange={(event) => setValue(event.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder="Search courses…"
         leadingIcon={<Icon name="Search" size={16} />}
         trailingIcon={<KBD className="hidden md:inline-flex">/</KBD>}
       />
+      {/* Hidden submitter — guarantees that a single text input form
+          submits on Enter on every browser engine (Safari/iOS used
+          to require an explicit submitter in some configurations). */}
+      <button type="submit" className="sr-only" aria-hidden="true" tabIndex={-1}>
+        Search
+      </button>
     </form>
   );
 };
@@ -263,13 +285,21 @@ export function Navbar() {
         <div className="flex items-center gap-1 ml-auto md:ml-0">
           <ThemeToggle />
 
-          <IconButton
-            aria-label="Notifications (coming soon)"
-            disabled
-            className="hidden sm:inline-flex"
+          {/* Notifications — placeholder until the feature ships.
+              Rendered as a non-interactive <span> (NOT a disabled
+              <IconButton>) so it never appears in the keyboard tab
+              order and never advertises itself to screen readers as
+              a real action. The docstring at the top of this file
+              promised this exact treatment; the previous IconButton
+              + `disabled` combo still showed a hover tooltip and
+              created a dead UX state where the icon looked clickable. */}
+          <span
+            aria-hidden="true"
+            title="Notifications (coming soon)"
+            className="hidden sm:inline-flex h-10 w-10 items-center justify-center rounded-lg text-text-subtle"
           >
             <Icon name="Bell" size={18} />
-          </IconButton>
+          </span>
 
           {isAuthenticated && user ? (
             <>

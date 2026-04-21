@@ -103,7 +103,19 @@ export function CourseHero({ course }) {
             <Breadcrumbs
               items={breadcrumbs}
               linkAs={Link}
-              className="text-white/70 [&_a:hover]:text-white **:aria-[aria-current='page']:text-white"
+              // Tailwind v4 variants:
+              //   - `[&_a:hover]:text-white` — descendant link hover.
+              //   - `**:aria-[current=page]:text-white` — the current
+              //     page <span> the Breadcrumbs primitive marks with
+              //     `aria-current="page"`. The previous selector
+              //     (`**:aria-[aria-current='page']`) was malformed:
+              //     the bracketed part after `aria-` is the attribute
+              //     name SUFFIX (Tailwind already prepends `aria-`),
+              //     so the double `aria-` produced `[aria-aria-current]`
+              //     and the rule never matched. The current crumb
+              //     therefore stayed dim and visually collided with
+              //     the previous link.
+              className="text-white/70 [&_a:hover]:text-white **:aria-[current=page]:text-white"
             />
 
             {course.category && (
