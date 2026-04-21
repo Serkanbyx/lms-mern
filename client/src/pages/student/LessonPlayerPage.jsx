@@ -47,7 +47,6 @@
 
 import {
   Suspense,
-  lazy,
   useCallback,
   useEffect,
   useMemo,
@@ -82,8 +81,9 @@ import * as progressService from '../../services/progress.service.js';
 import { ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
 import { cn } from '../../utils/cn.js';
+import { lazyWithReload } from '../../utils/lazyWithReload.js';
 
-const ReactPlayer = lazy(() => import('react-player'));
+const ReactPlayer = lazyWithReload(() => import('react-player'));
 
 const AUTO_ADVANCE_SECONDS = 5;
 

@@ -17,17 +17,22 @@
  *    URL param is required to verify enrollment.
  *
  * Lazy loading:
- *  - Every page is wrapped in `React.lazy` so the initial bundle stays
- *    light. The Suspense fallback (`<RouteSkeleton />`) is mounted by
- *    each layout so route-level chunk loads never blank out the chrome.
+ *  - Every page is wrapped in `lazyWithReload` (a thin `React.lazy`
+ *    wrapper) so the initial bundle stays light AND a stale entry
+ *    bundle from a previous deploy can't strand the user on a blank
+ *    screen — chunk-load failures trigger one automatic hard reload
+ *    that pulls down the fresh `index.html` + asset manifest. The
+ *    Suspense fallback (`<RouteSkeleton />`) is mounted by each layout
+ *    so route-level chunk loads never blank out the chrome.
  *
  * StyleGuide:
  *  - `/styleguide` is gated by `import.meta.env.DEV` so the visual QA
  *    surface never ships in production builds.
  */
 
-import { lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
+
+import { lazyWithReload as lazy } from './utils/lazyWithReload.js';
 
 import {
   AdminRoute,

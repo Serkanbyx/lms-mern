@@ -18,7 +18,7 @@
  * preview is only useful once the instructor actually clicks a lesson.
  */
 
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 
 import {
   Badge,
@@ -27,8 +27,9 @@ import {
   Icon,
   Spinner,
 } from '../ui/index.js';
+import { lazyWithReload } from '../../utils/lazyWithReload.js';
 
-const ReactPlayer = lazy(() => import('react-player'));
+const ReactPlayer = lazyWithReload(() => import('react-player'));
 
 const formatRuntime = (seconds) => {
   const total = Math.max(0, Math.floor(Number(seconds) || 0));

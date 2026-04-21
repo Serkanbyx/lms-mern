@@ -16,14 +16,15 @@
  * authenticated page.
  */
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../context/useAuth.js';
 import { usePreferences } from '../../context/usePreferences.js';
 import { ROUTES } from '../../utils/constants.js';
+import { lazyWithReload } from '../../utils/lazyWithReload.js';
 
-const CommandMenu = lazy(() =>
+const CommandMenu = lazyWithReload(() =>
   import('../ui/CommandMenu.jsx').then((m) => ({ default: m.CommandMenu })),
 );
 

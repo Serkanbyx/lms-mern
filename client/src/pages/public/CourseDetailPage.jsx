@@ -39,7 +39,7 @@
  * pays the import cost, every subsequent one uses the cached chunk.
  */
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import {
@@ -68,9 +68,10 @@ import * as enrollmentService from '../../services/enrollment.service.js';
 import * as progressService from '../../services/progress.service.js';
 import { ROLES, ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
+import { lazyWithReload } from '../../utils/lazyWithReload.js';
 import { markPwaEnrollment } from '../../utils/pwa.js';
 
-const ReactPlayer = lazy(() => import('react-player'));
+const ReactPlayer = lazyWithReload(() => import('react-player'));
 
 const TAB_ITEMS = [
   { id: 'overview', label: 'Overview' },
