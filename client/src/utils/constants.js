@@ -21,9 +21,6 @@ export const STORAGE_KEYS = Object.freeze({
   theme: 'lms.theme',
   preferences: 'lms.preferences',
   returnTo: 'lms.returnTo',
-  pwaVisitCount: 'lms.pwa.visits',
-  pwaEnrolledOnce: 'lms.pwa.enrolled',
-  pwaInstallDismissedAt: 'lms.pwa.installDismissedAt',
 });
 
 // Mirror of the server's refresh-cookie maxAge (`JWT_REFRESH_EXPIRES_IN`).

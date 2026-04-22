@@ -7,13 +7,9 @@
 # uniform across both surfaces.
 #
 # `connect-src` MUST list every origin the SPA reaches over `fetch()`
-# / `XHR`. That includes the Render API AND the Google Fonts hosts —
-# the Workbox runtime cache (see `vite.config.js` -> `runtimeCaching`)
-# revalidates `fonts.googleapis.com` (CSS) and `fonts.gstatic.com`
-# (woff2) via `fetch()` from inside the Service Worker, so they are
-# evaluated against `connect-src` rather than `style-src`/`font-src`.
-# The Render URL also lives in the SPA's `VITE_API_BASE_URL`
-# Netlify env var.
+# / `XHR`. That includes the Render API AND the Google Fonts hosts.
+# The Render URL also lives in the SPA's `VITE_API_BASE_URL` Netlify
+# env var.
 #
 # `script-src` is locked to `'self'` with NO inline allowance. The
 # theme/font-size bootstrap that used to be an inline <script> in
@@ -39,7 +35,7 @@
   Cache-Control: public, max-age=31536000, immutable
 
 # =====================================================================
-# Never cache the SPA shell or the Service Worker entry.
+# Never cache the SPA shell.
 # ---------------------------------------------------------------------
 # `index.html` is the ONLY un-hashed bundle in the entire build — every
 # script/style it references uses content-addressed filenames under
@@ -52,16 +48,9 @@
 #   2. The `<script>` tags inside that HTML point at chunk hashes that
 #      were already deleted from `/assets/`, so React never mounts.
 # Forcing `no-cache` here means the browser MUST revalidate `index.html`
-# (and the SW entry that bootstraps it) on every navigation, which is
-# what the `vite-plugin-pwa` auto-update flow assumes by design.
-#
-# Combined with `registrationOptions: { updateViaCache: 'none' }` in
-# `vite.config.js`, this guarantees a fresh deploy reaches every
-# returning visitor on their next pageload — no manual hard refresh,
-# no "clear site data" support ticket.
+# on every navigation so a fresh deploy reaches every returning visitor
+# on their next pageload — no manual hard refresh, no "clear site data"
+# support ticket.
 # =====================================================================
 /index.html
-  Cache-Control: public, max-age=0, must-revalidate
-
-/sw.js
   Cache-Control: public, max-age=0, must-revalidate

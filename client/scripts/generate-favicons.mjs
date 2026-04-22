@@ -1,5 +1,5 @@
 /**
- * Generates the binary favicon / OG / PWA icon set from the SVG source mark.
+ * Generates the binary favicon / OG icon set from the SVG source mark.
  *
  * Why this lives outside the runtime bundle:
  *  - PNG/ICO are heavyweight build-time artifacts. Keeping the generator out

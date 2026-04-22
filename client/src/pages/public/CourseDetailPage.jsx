@@ -69,7 +69,6 @@ import * as progressService from '../../services/progress.service.js';
 import { ROLES, ROUTES } from '../../utils/constants.js';
 import { formatDuration } from '../../utils/formatDuration.js';
 import { lazyWithReload } from '../../utils/lazyWithReload.js';
-import { markPwaEnrollment } from '../../utils/pwa.js';
 
 const ReactPlayer = lazyWithReload(() => import('react-player'));
 
@@ -266,10 +265,6 @@ export default function CourseDetailPage() {
       const enrollment =
         resp?.enrollment ?? resp?.data ?? resp ?? { courseId: course._id };
       toast.success("You're enrolled — happy learning!");
-      // Flip the high-intent flag the install prompt watches; first
-      // enrollment is the strongest "this user gets value" signal we
-      // have, so the PWA banner unlocks immediately afterwards.
-      markPwaEnrollment();
       setState((prev) => ({ ...prev, enrollment }));
       navigate(ROUTES.courseLearn(course.slug));
     } catch (error) {

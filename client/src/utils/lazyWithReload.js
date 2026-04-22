@@ -9,8 +9,7 @@
  *   Netlify CDN no longer serves — the import rejects, Suspense never
  *   resolves, AnimatePresence has already unmounted the previous
  *   route, and the user sees a fully blank screen until they hard-
- *   reload. The Service Worker can extend this window further by
- *   keeping the stale entry alive across navigations.
+ *   reload.
  *
  * Strategy:
  *   1. Detect a chunk-load failure (Vite/webpack throw distinct but
