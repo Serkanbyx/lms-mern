@@ -463,54 +463,223 @@ All endpoints are mounted under `/api`. Auth column legend: `—` public, `User`
 
 ## Project Structure
 
-A clean monorepo layout with an explicit backend / frontend split. Each panel below is collapsible — expand the one you care about.
+A clean monorepo layout with an explicit backend / frontend split. Each panel below is collapsible — expand the scope you care about. Every folder is annotated with its purpose and a representative file or two so you can navigate the codebase without opening anything.
 
 <details open>
-<summary><b>Server</b> — Express 5 API</summary>
+<summary><b>Server</b> — Express 5 API · 7 Mongoose models · 12 route groups · 3 cron jobs</summary>
 
 ```
 server/
-├── config/          # env validation, db, cloudinary, mailer, redis
-├── controllers/     # auth, course, lesson, quiz, enrollment, admin…
-├── middleware/      # auth, rbac, rateLimit, validate, error, sanitize
-├── models/          # Mongoose schemas + compound/sparse/TTL indexes
-├── routes/          # one file per resource group
-├── scripts/         # cron jobs (drafts, tokens, certificate reminders)
-├── seeders/         # initial admin + optional demo data
-├── utils/           # token, mailer templates, slug, error classes
-├── validators/      # express-validator schemas per resource
-├── index.js         # Express app composition + graceful shutdown
-├── render.yaml      # Render service + cron + Redis blueprint
-├── .env.example
-└── package.json
+├── config/                              # bootstrap & 3rd-party clients (6 files)
+│   ├── env.js                           # Zod-style env schema + fail-fast validation
+│   ├── db.js                            # Mongoose connection with retry + pool tuning
+│   ├── redis.js                         # ioredis client (rate-limit + blocklist backend)
+│   ├── cloudinary.js                    # signed upload preset + MIME / size guards
+│   ├── swagger.js                       # OpenAPI 3 spec served at /api-docs
+│   └── features.js                      # server-side feature flags
+│
+├── controllers/                         # request handlers — thin, business logic in services (10 files)
+│   ├── auth.controller.js               # register, login, refresh, logout, verify, forgot, reset
+│   ├── user.controller.js               # profile, avatar, public profile by username
+│   ├── course.controller.js             # CRUD + publish/submit-for-review + filtered search
+│   ├── section.controller.js            # course curriculum sections (reorderable)
+│   ├── lesson.controller.js             # lessons with video/article/quiz polymorphism
+│   ├── quiz.controller.js               # instructor quiz authoring (CRUD + reorder questions)
+│   ├── enrollment.controller.js         # enroll / unenroll / list "my courses"
+│   ├── progress.controller.js           # mark lesson complete + certificate eligibility
+│   ├── admin.controller.js              # platform KPIs, moderation queue, user directory
+│   └── upload.controller.js             # signed Cloudinary signatures (image + video)
+│
+├── middleware/                          # cross-cutting request pipeline (9 files)
+│   ├── auth.middleware.js               # JWT verify + refresh-token rotation guard
+│   ├── role.middleware.js               # RBAC: requireRole('admin' | 'instructor' | 'student')
+│   ├── rateLimit.middleware.js          # per-flow factory (login, register, forgot, upload…)
+│   ├── security.middleware.js           # Helmet, strict CSP, NoSQL sanitizer, hpp
+│   ├── upload.middleware.js             # multer memory storage + size/MIME pre-check
+│   ├── validate.middleware.js           # express-validator runner + 422 formatter
+│   ├── error.middleware.js              # central error normalizer (no stack leaks)
+│   ├── notFound.middleware.js           # 404 catch-all with route hint
+│   └── requestId.middleware.js          # X-Request-Id propagation for log correlation
+│
+├── models/                              # Mongoose schemas with strategic indexes (7 schemas)
+│   ├── User.model.js                    # auth, roles, tokenVersion, lockout counters
+│   ├── Course.model.js                  # slug index, status enum, instructor ref, ratings
+│   ├── Section.model.js                 # ordered children of a course
+│   ├── Lesson.model.js                  # type discriminator (video/article/quiz) + order
+│   ├── Quiz.model.js                    # questions[], passing score, time limit, attached lesson
+│   ├── QuizAttempt.model.js             # per-user scored attempt with answers + duration
+│   └── Enrollment.model.js              # compound (user, course) unique index + progress map
+│
+├── routes/                              # one router per resource (12 files)
+│   ├── auth.routes.js                   # /api/auth/*
+│   ├── user.routes.js                   # /api/users/*
+│   ├── course.routes.js                 # /api/courses/* (public + protected)
+│   ├── section.routes.js                # nested under a course
+│   ├── lesson.routes.js                 # nested under a section
+│   ├── quiz.routes.js                   # instructor-side authoring
+│   ├── quiz.student.routes.js           # student-side attempt submission
+│   ├── enrollment.routes.js             # /api/enrollments/*
+│   ├── progress.routes.js               # /api/progress/*
+│   ├── instructor.routes.js             # /api/instructor/* dashboard aggregates
+│   ├── admin.routes.js                  # /api/admin/* (RBAC: admin only)
+│   └── upload.routes.js                 # signed-upload signatures
+│
+├── validators/                          # express-validator schemas per resource (8 files)
+│   ├── auth.validator.js                # register/login/forgot/reset shape + length caps
+│   ├── user.validator.js, course.validator.js, section.validator.js
+│   ├── lesson.validator.js, quiz.validator.js, enrollment.validator.js
+│   └── admin.validator.js
+│
+├── utils/                               # pure helpers — no I/O at import time (11 files)
+│   ├── ApiError.js                      # typed error class with statusCode + code
+│   ├── asyncHandler.js                  # wraps async controllers, forwards to error mw
+│   ├── tokens.js, generateToken.js      # access + refresh JWT issuance & verification
+│   ├── email.js                         # Nodemailer transport + templated sends
+│   ├── welcomePage.js                   # transactional HTML templates
+│   ├── computeProgress.js               # % completion across sections/lessons
+│   ├── slugify.js                       # URL-safe slug w/ collision suffix
+│   ├── escapeRegex.js                   # ReDoS-safe search regex builder
+│   ├── pickFields.js                    # explicit allowlist (mass-assignment guard)
+│   └── logger.js                        # pino with redaction of sensitive fields
+│
+├── scripts/                             # cron jobs invoked by Render schedulers (3 files)
+│   ├── cleanupStaleDrafts.js            # daily — purge draft courses untouched > 30d
+│   ├── cleanupExpiredTokens.js          # hourly — drop expired verify/reset tokens
+│   └── certificateReminder.js           # weekly — nudge near-completion enrollments
+│
+├── seeders/
+│   └── seedAdmin.js                     # idempotent admin bootstrap + optional demo dataset
+│
+├── index.js                             # Express app composition + graceful SIGTERM
+├── render.yaml                          # Render Web Service + 3 Cron Jobs + Redis blueprint
+├── .env.example                         # every required env var with inline docs
+├── .nvmrc                               # pinned Node version
+└── package.json                         # scripts: dev, start, lint, seed, cron:*
 ```
 
 </details>
 
 <details>
-<summary><b>Client</b> — React 19 + Vite SPA</summary>
+<summary><b>Client</b> — React 19 + Vite 7 SPA · 92 components · 38 routed pages · 9 service modules</summary>
 
 ```
 client/
-├── public/          # favicon, manifest, sitemap, _headers, offline.html
+├── public/                              # static assets served verbatim
+│   ├── favicon.svg, favicon-*.png, apple-touch-icon.png
+│   ├── manifest.webmanifest             # PWA install metadata
+│   ├── theme-bootstrap.js               # blocking pre-paint theme/lang resolution
+│   ├── _headers                         # Netlify CSP, Cache-Control, security headers
+│   ├── offline.html                     # standalone offline fallback
+│   ├── robots.txt, sitemap.xml
+│   └── sw.js (generated by VitePWA)
+│
+├── scripts/
+│   └── generate-favicons.mjs            # build-time favicon set from a single SVG
+│
 ├── src/
-│   ├── api/         # Axios instance + endpoint wrappers
-│   ├── assets/      # brand logo, mark, illustrations
-│   ├── components/  # UI primitives (Button, Modal, Drawer…) + features
-│   ├── config/      # routes, features, seo, brand constants
-│   ├── context/     # AuthContext, ThemeContext
-│   ├── hooks/       # useAuth, useFetch, useDebounce, useMediaQuery…
-│   ├── i18n/        # i18next setup + locale resources
-│   ├── layouts/     # PublicLayout, DashboardLayout, AuthLayout
-│   ├── pages/       # routed pages (auth, courses, dashboard, admin…)
-│   ├── services/    # business logic that wraps api/
-│   ├── utils/       # formatters, guards, schema helpers
-│   ├── App.jsx      # router + providers
-│   ├── main.jsx     # entry point
-│   └── index.css    # Tailwind v4 entry + design tokens
-├── netlify.toml     # Netlify build + redirects + headers
-├── .env.example
-└── package.json
+│   ├── api/
+│   │   └── axios.js                     # single instance: baseURL, interceptors,
+│   │                                    # auto-refresh on 401, request-id propagation
+│   │
+│   ├── assets/brand/                    # SVG brand kit
+│   │   ├── logo.svg, logo-mark.svg
+│   │   └── illustrations/               # 404, empty-search, empty-courses,
+│   │                                    # hero-shape, certificate-bg
+│   │
+│   ├── components/                      # 92 components grouped by domain
+│   │   ├── ui/                          # 37 design-system primitives
+│   │   │   ├── Button, IconButton, Icon, Spinner, Card, Badge, RoleBadge,
+│   │   │   ├── StatusBadge, Avatar, Rating, Stat, ProgressBar, ProgressRing,
+│   │   │   ├── Input, Textarea, Select, Checkbox, Radio, Toggle, Slider,
+│   │   │   ├── ChipInput, FormField, Dropdown, Popover, Tooltip, Modal,
+│   │   │   ├── ConfirmModal, Drawer, Sheet, Tabs, Accordion, Banner, Alert,
+│   │   │   └── EmptyState, Skeleton, Pagination, Breadcrumbs, KBD, Divider…
+│   │   ├── layout/                      # Navbar, Footer, CommandPalette, ScrollToTop,
+│   │   │                                # EmailVerificationBanner, OfflineBanner,
+│   │   │                                # OfflineGate, RouteSkeleton, Reveal,
+│   │   │                                # PageTransition, MotionProvider
+│   │   ├── guards/                      # ProtectedRoute, GuestOnlyRoute, EnrolledRoute,
+│   │   │                                # InstructorRoute, AdminRoute, RedirectWithToast,
+│   │   │                                # FullPageSpinner
+│   │   ├── landing/                     # HeroSection, FeatureGrid, CategoryGrid,
+│   │   │                                # FeaturedCourses, HowItWorks, TestimonialGrid,
+│   │   │                                # FaqAccordion, InstructorCTA, FinalCta
+│   │   ├── course/                      # CourseCard, CourseHero, CoursesGrid,
+│   │   │                                # FiltersSidebar, ActiveFilterChips,
+│   │   │                                # CurriculumOutline, EnrollmentCard,
+│   │   │                                # CourseCardSkeleton, CourseDetailSkeleton
+│   │   ├── lesson/                      # PlayerCurriculumDrawer
+│   │   ├── quiz/                        # SelectableCard
+│   │   ├── instructor/                  # CourseForm, CurriculumTree, SectionModal,
+│   │   │                                # LessonModal, LessonPreview, ImageDropzone,
+│   │   │                                # VideoDropzone
+│   │   ├── onboarding/                  # OnboardingModal (post-signup setup wizard)
+│   │   ├── seo/                         # Seo (react-helmet wrapper) + JsonLd
+│   │   ├── brand/                       # Logo, LogoMark
+│   │   └── ErrorBoundary.jsx            # top-level boundary with reset CTA
+│   │
+│   ├── pages/                           # 38 routed pages — 1 file = 1 route
+│   │   ├── public/                      # Landing, CourseCatalog, CourseDetail,
+│   │   │                                # About, BecomeInstructor, PublicProfile,
+│   │   │                                # Privacy, Terms, NotFound
+│   │   ├── auth/                        # Login, Register, ForgotPassword, ResetPassword,
+│   │   │                                # VerifyEmail, VerifyEmailPending, _AuthShell
+│   │   ├── student/                     # StudentDashboard, LessonPlayer, Quiz
+│   │   ├── instructor/                  # InstructorDashboard, CourseCreate, CourseEdit,
+│   │   │                                # CurriculumBuilder, QuizBuilder
+│   │   ├── admin/                       # Dashboard, Users, Courses, PendingReview
+│   │   ├── settings/                    # Profile, Account, Appearance, Notifications,
+│   │   │                                # Playback, Privacy, _settingsShared,
+│   │   │                                # useAutoSaveIndicator
+│   │   ├── dev/                         # StyleGuidePage (component gallery, dev-only)
+│   │   └── _PlaceholderPage.jsx
+│   │
+│   ├── services/                        # API call orchestration on top of api/axios.js
+│   │   └── auth, user, course, lesson, quiz, enrollment,
+│   │       progress, admin, upload .service.js          # 9 files
+│   │
+│   ├── hooks/                           # 13 reusable hooks
+│   │   ├── useDocumentTitle, useMediaQuery, useDebounce, useLocalStorage,
+│   │   ├── useOnClickOutside, useEscapeKey, useFocusTrap, useScrollLock,
+│   │   ├── useIntersection, usePrefersReducedMotion, useOnlineStatus,
+│   │   └── useFeature, useQuery
+│   │
+│   ├── context/                         # React contexts + their consumer hooks
+│   │   ├── AuthContext.jsx + useAuth.js          # session + token refresh state
+│   │   └── PreferencesContext.jsx + usePreferences.js  # theme, motion, language
+│   │
+│   ├── layouts/                         # route-level shells
+│   │   ├── MainLayout.jsx               # Navbar + Footer for public/student/instructor
+│   │   ├── LearnLayout.jsx              # distraction-free shell for the lesson player
+│   │   ├── SettingsLayout.jsx           # sidebar nav for /settings/*
+│   │   └── AdminLayout.jsx              # admin console shell with role-gated nav
+│   │
+│   ├── config/
+│   │   └── features.js                  # client feature flags (parity with server)
+│   │
+│   ├── i18n/
+│   │   ├── index.js                     # i18next init (ICU plural, fallback chain)
+│   │   └── en.json                      # default locale resources
+│   │
+│   ├── utils/                           # 11 pure helpers
+│   │   ├── cn.js                        # className merger (tailwind-merge wrapper)
+│   │   ├── motion.js                    # framer-motion variants + reduced-motion
+│   │   ├── certificate.js               # client-side jsPDF certificate generator
+│   │   ├── cloudinaryUrl.js             # responsive transform URL builder
+│   │   ├── prefetch.js                  # idle-time route prefetch helper
+│   │   ├── lazyWithReload.js            # React.lazy w/ chunk-failure auto-reload
+│   │   ├── analytics.js                 # opt-in event dispatcher
+│   │   ├── formatDate.js, formatDuration.js, sessionHint.js, constants.js
+│   │
+│   ├── App.jsx                          # router tree + provider stack
+│   ├── main.jsx                         # ReactDOM root + Suspense boundary
+│   └── index.css                        # Tailwind v4 entry + design tokens
+│
+├── index.html                           # SPA shell w/ pre-paint theme bootstrap
+├── vite.config.js                       # Vite + VitePWA + React plugin config
+├── netlify.toml                         # build cmd, redirects, security headers
+├── .env.example                         # VITE_API_BASE_URL et al.
+└── package.json                         # scripts: dev, build, preview, lint
 ```
 
 </details>
@@ -520,16 +689,28 @@ client/
 
 ```
 lumen-lms/
-├── client/          # → see Client panel above
-├── server/          # → see Server panel above
-├── docs/            # ARCHITECTURE.md, DEPLOYMENT.md, RUNBOOK.md, QUIZ-INTEGRITY.md
-├── assets/          # branding + screenshots/ (3×3 README grid)
-├── .github/         # issue templates, PR template, CI workflows
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── LICENSE
-└── README.md
+├── client/                              # → see Client panel above
+├── server/                              # → see Server panel above
+│
+├── docs/                                # operator + contributor handbooks
+│   ├── ARCHITECTURE.md                  # high-level system map (mirrors README diagrams)
+│   ├── DEPLOYMENT.md                    # step-by-step Render + Netlify rollout
+│   ├── RUNBOOK.md                       # incident triage, rollback, on-call cheatsheet
+│   └── QUIZ-INTEGRITY.md                # how server-side scoring prevents tampering
+│
+├── assets/                              # README-only static assets
+│   └── screenshots/                     # 11 PNGs powering the 3×3 README grid
+│
+├── .github/                             # community + CI surface
+│   ├── ISSUE_TEMPLATE/                  # bug, feature, question templates
+│   ├── pull_request_template.md
+│   └── workflows/                       # lint, test, deploy GitHub Actions
+│
+├── CODE_OF_CONDUCT.md                   # Contributor Covenant 2.1
+├── CONTRIBUTING.md                      # branch model, commit conventions, PR checklist
+├── SECURITY.md                          # vulnerability reporting policy + SLA
+├── LICENSE                              # MIT
+└── README.md                            # this file
 ```
 
 </details>
