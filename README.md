@@ -465,7 +465,7 @@ All endpoints are mounted under `/api`. Auth column legend: `—` public, `User`
 
 A clean monorepo layout with an explicit backend / frontend split. Each panel below is collapsible — expand the scope you care about. Every folder is annotated with its purpose and a representative file or two so you can navigate the codebase without opening anything.
 
-<details open>
+<details>
 <summary><b>Server</b> — Express 5 API · 7 Mongoose models · 12 route groups · 3 cron jobs</summary>
 
 ```
