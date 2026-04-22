@@ -463,49 +463,76 @@ All endpoints are mounted under `/api`. Auth column legend: `—` public, `User`
 
 ## Project Structure
 
+A clean monorepo layout with an explicit backend / frontend split. Each panel below is collapsible — expand the one you care about.
+
+<details open>
+<summary><b>Server</b> — Express 5 API</summary>
+
+```
+server/
+├── config/          # env validation, db, cloudinary, mailer, redis
+├── controllers/     # auth, course, lesson, quiz, enrollment, admin…
+├── middleware/      # auth, rbac, rateLimit, validate, error, sanitize
+├── models/          # Mongoose schemas + compound/sparse/TTL indexes
+├── routes/          # one file per resource group
+├── scripts/         # cron jobs (drafts, tokens, certificate reminders)
+├── seeders/         # initial admin + optional demo data
+├── utils/           # token, mailer templates, slug, error classes
+├── validators/      # express-validator schemas per resource
+├── index.js         # Express app composition + graceful shutdown
+├── render.yaml      # Render service + cron + Redis blueprint
+├── .env.example
+└── package.json
+```
+
+</details>
+
+<details>
+<summary><b>Client</b> — React 19 + Vite SPA</summary>
+
+```
+client/
+├── public/          # favicon, manifest, sitemap, _headers, offline.html
+├── src/
+│   ├── api/         # Axios instance + endpoint wrappers
+│   ├── assets/      # brand logo, mark, illustrations
+│   ├── components/  # UI primitives (Button, Modal, Drawer…) + features
+│   ├── config/      # routes, features, seo, brand constants
+│   ├── context/     # AuthContext, ThemeContext
+│   ├── hooks/       # useAuth, useFetch, useDebounce, useMediaQuery…
+│   ├── i18n/        # i18next setup + locale resources
+│   ├── layouts/     # PublicLayout, DashboardLayout, AuthLayout
+│   ├── pages/       # routed pages (auth, courses, dashboard, admin…)
+│   ├── services/    # business logic that wraps api/
+│   ├── utils/       # formatters, guards, schema helpers
+│   ├── App.jsx      # router + providers
+│   ├── main.jsx     # entry point
+│   └── index.css    # Tailwind v4 entry + design tokens
+├── netlify.toml     # Netlify build + redirects + headers
+├── .env.example
+└── package.json
+```
+
+</details>
+
+<details>
+<summary><b>Repository root</b> — docs, governance & shared assets</summary>
+
 ```
 lumen-lms/
-├── client/                       # React 19 + Vite SPA
-│   ├── public/                   # favicon, manifest, sitemap, _headers, offline.html
-│   ├── src/
-│   │   ├── api/                  # Axios instance + endpoint wrappers
-│   │   ├── assets/               # Brand logo, mark, illustrations
-│   │   ├── components/           # UI primitives (Button, Modal, Drawer…) + features
-│   │   ├── config/               # routes, features, seo, brand constants
-│   │   ├── context/              # AuthContext, ThemeContext
-│   │   ├── hooks/                # useAuth, useFetch, useDebounce, useMediaQuery…
-│   │   ├── i18n/                 # i18next setup + locale resources
-│   │   ├── layouts/              # PublicLayout, DashboardLayout, AuthLayout
-│   │   ├── pages/                # Routed pages (auth, courses, dashboard, admin…)
-│   │   ├── services/             # Business logic that wraps api/
-│   │   ├── utils/                # Formatters, guards, schema helpers
-│   │   ├── App.jsx               # Router + providers
-│   │   ├── main.jsx              # Entry point
-│   │   └── index.css             # Tailwind v4 entry + design tokens
-│   ├── netlify.toml              # Netlify build + redirects + headers
-│   └── package.json
-├── server/                       # Express 5 API
-│   ├── config/                   # env validation, db, cloudinary, mailer, redis
-│   ├── controllers/              # auth, course, lesson, quiz, enrollment, admin…
-│   ├── middleware/               # auth, rbac, rateLimit, validate, error, sanitize
-│   ├── models/                   # Mongoose schemas + compound/sparse/TTL indexes
-│   ├── routes/                   # One file per resource group
-│   ├── scripts/                  # Cron jobs (drafts, tokens, certificate reminders)
-│   ├── seeders/                  # Initial admin + optional demo data
-│   ├── utils/                    # Token, mailer templates, slug, error classes
-│   ├── validators/               # express-validator schemas per resource
-│   ├── index.js                  # Express app composition + graceful shutdown
-│   ├── render.yaml               # Render service + cron + Redis blueprint
-│   └── package.json
-├── docs/                         # ARCHITECTURE.md, DEPLOYMENT.md, RUNBOOK.md
-├── assets/                       # Branding + screenshots
-├── .github/                      # Issue templates, PR template, workflows
+├── client/          # → see Client panel above
+├── server/          # → see Server panel above
+├── docs/            # ARCHITECTURE.md, DEPLOYMENT.md, RUNBOOK.md, QUIZ-INTEGRITY.md
+├── assets/          # branding + screenshots/ (3×3 README grid)
+├── .github/         # issue templates, PR template, CI workflows
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── SECURITY.md
 ├── LICENSE
 └── README.md
 ```
+
+</details>
 
 ---
 
