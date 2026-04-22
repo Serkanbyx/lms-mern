@@ -37,6 +37,8 @@ A full-stack **Learning Management System** built with the **MERN** stack (Mongo
 
 ## Screenshots
 
+All screenshots are captured from the [live deployment](https://lms-mernn.netlify.app/) running against the seeded demo dataset.
+
 ### Landing & Catalog
 
 ![Landing](./assets/screenshots/landing.png)
@@ -49,21 +51,34 @@ The marketing landing surface and the filterable catalog (role, category, level,
 ![Course detail](./assets/screenshots/course-detail.png)
 ![Lesson player](./assets/screenshots/lesson-player.png)
 
-Course overview with curriculum tree and the React Player–based lesson view.
+Course overview with the curriculum tree and the lesson player with completion tracking, keyboard shortcuts and a collapsible curriculum sidebar.
 
 ### Quiz Flow & Certificate
 
 ![Quiz](./assets/screenshots/quiz.png)
 ![Certificate](./assets/screenshots/certificate.png)
 
-Multi-step quiz with server-side scoring, and the auto-generated PDF certificate at 100% progress.
+Multi-question quiz authored from the instructor builder (preview mode shown) and the auto-generated PDF certificate awarded at 100% completion.
 
-### Instructor & Admin
+### My Learning Dashboard
+
+![Student dashboard](./assets/screenshots/student-dashboard.png)
+
+The student home — continue-where-you-left-off card, completion stats, recommendations, and a searchable enrollment table with one-click certificate downloads.
+
+### Instructor Dashboard
 
 ![Instructor dashboard](./assets/screenshots/instructor-dashboard.png)
+
+Instructor authoring surface with revenue / student / rating stats and a status-segmented course list (Draft / Pending / Published / Rejected / Archived).
+
+### Admin Console
+
+![Admin dashboard](./assets/screenshots/admin-dashboard.png)
+![Admin users](./assets/screenshots/admin-users.png)
 ![Admin moderation](./assets/screenshots/admin-moderation.png)
 
-Instructor authoring dashboard and the admin moderation queue for pending submissions.
+Platform-level operator tooling: at-a-glance KPIs, the user directory with role / verification filters, and the courses table that doubles as the moderation queue for pending submissions.
 
 ---
 
