@@ -39,46 +39,52 @@ A full-stack **Learning Management System** built with the **MERN** stack (Mongo
 
 All screenshots are captured from the [live deployment](https://lms-mernn.netlify.app/) running against the seeded demo dataset.
 
-### Landing & Catalog
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/landing.png"><img src="./assets/screenshots/landing.png" alt="Landing" /></a>
+      <sub><b>Landing</b><br/>Marketing hero & feature pitch</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/catalog.png"><img src="./assets/screenshots/catalog.png" alt="Catalog" /></a>
+      <sub><b>Catalog</b><br/>Filterable course discovery</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/course-detail.png"><img src="./assets/screenshots/course-detail.png" alt="Course detail" /></a>
+      <sub><b>Course detail</b><br/>Curriculum tree & enrollment</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/lesson-player.png"><img src="./assets/screenshots/lesson-player.png" alt="Lesson player" /></a>
+      <sub><b>Lesson player</b><br/>Video + progress tracking</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/quiz.png"><img src="./assets/screenshots/quiz.png" alt="Quiz" /></a>
+      <sub><b>Quiz</b><br/>Server-scored multi-question flow</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/certificate.png"><img src="./assets/screenshots/certificate.png" alt="Certificate" /></a>
+      <sub><b>Certificate</b><br/>Auto-generated PDF on 100%</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/student-dashboard.png"><img src="./assets/screenshots/student-dashboard.png" alt="Student dashboard" /></a>
+      <sub><b>Student dashboard</b><br/>Continue learning & enrollments</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/instructor-dashboard.png"><img src="./assets/screenshots/instructor-dashboard.png" alt="Instructor dashboard" /></a>
+      <sub><b>Instructor dashboard</b><br/>Revenue, students & course status</sub>
+    </td>
+    <td align="center" width="33%">
+      <a href="./assets/screenshots/admin-moderation.png"><img src="./assets/screenshots/admin-moderation.png" alt="Admin console" /></a>
+      <sub><b>Admin console</b><br/>Moderation queue & course directory</sub>
+    </td>
+  </tr>
+</table>
 
-![Landing](./assets/screenshots/landing.png)
-![Catalog](./assets/screenshots/catalog.png)
-
-The marketing landing surface and the filterable catalog (role, category, level, price).
-
-### Course Detail & Lesson Player
-
-![Course detail](./assets/screenshots/course-detail.png)
-![Lesson player](./assets/screenshots/lesson-player.png)
-
-Course overview with the curriculum tree and the lesson player with completion tracking, keyboard shortcuts and a collapsible curriculum sidebar.
-
-### Quiz Flow & Certificate
-
-![Quiz](./assets/screenshots/quiz.png)
-![Certificate](./assets/screenshots/certificate.png)
-
-Multi-question quiz authored from the instructor builder (preview mode shown) and the auto-generated PDF certificate awarded at 100% completion.
-
-### My Learning Dashboard
-
-![Student dashboard](./assets/screenshots/student-dashboard.png)
-
-The student home — continue-where-you-left-off card, completion stats, recommendations, and a searchable enrollment table with one-click certificate downloads.
-
-### Instructor Dashboard
-
-![Instructor dashboard](./assets/screenshots/instructor-dashboard.png)
-
-Instructor authoring surface with revenue / student / rating stats and a status-segmented course list (Draft / Pending / Published / Rejected / Archived).
-
-### Admin Console
-
-![Admin dashboard](./assets/screenshots/admin-dashboard.png)
-![Admin users](./assets/screenshots/admin-users.png)
-![Admin moderation](./assets/screenshots/admin-moderation.png)
-
-Platform-level operator tooling: at-a-glance KPIs, the user directory with role / verification filters, and the courses table that doubles as the moderation queue for pending submissions.
+> Bonus operator views — the platform overview (`admin-dashboard.png`) and the user directory (`admin-users.png`) — also live in `assets/screenshots/` for reference.
 
 ---
 
